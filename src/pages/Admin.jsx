@@ -142,6 +142,7 @@ export default function Admin() {
                 coverUrl,
                 audioUrl,
                 forSale: true,
+                status: 'active',
                 createdAt: serverTimestamp()
             });
             setIsAddingProduct(false);
