@@ -4,7 +4,7 @@ import { auth, db, storage } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, collection, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Search, ShoppingCart, Play, CheckCircle2, Menu, X, ArrowRight, User, KeyRound, Timer, Layers, Music, Music2, Globe, Camera, ChevronLeft, ChevronRight, Instagram, Youtube } from 'lucide-react';
+import { Search, ShoppingCart, Play, CheckCircle2, Menu, X, ArrowRight, User, KeyRound, Timer, Layers, Music, Music2, Globe, Camera, ChevronLeft, ChevronRight, Instagram, Youtube, ExternalLink } from 'lucide-react';
 import Footer from '../components/Footer';
 import { HorizontalMixer } from '../components/HorizontalMixer';
 
@@ -1355,49 +1355,7 @@ export default function Landing() {
 
 
 
-            {/* SOCIAL MEDIA SECTION */}
-            <section style={{ padding: '100px 40px', backgroundColor: '#000000', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '15px', color: 'white' }}>CONNECT WITH ME</h2>
-                    <p style={{ color: '#8892a4', fontSize: '0.85rem', marginBottom: '50px', letterSpacing: '2px' }}>SÍGUEME EN MIS REDES PARA MÁS CONTENIDO</p>
-                    
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                        {[
-                            { name: 'Instagram', icon: <Instagram size={24} />, url: socials.instagram || 'https://www.instagram.com/juniorlug', color: '#E1306C' },
-                            { name: 'YouTube', icon: <Youtube size={24} />, url: socials.youtube || 'https://www.youtube.com/@juniorlugoproducciones', color: '#FF0000' },
-                            { name: 'TikTok', icon: <Music2 size={24} />, url: socials.tiktok || 'https://www.tiktok.com/@juniorlugoproducciones', color: '#00f2ea' },
-                            { name: 'Spotify', icon: <Music size={18} />, url: socials.spotify || '#', color: '#1DB954' }
-                        ].map((social, i) => (
-                            <a 
-                                key={i} 
-                                href={social.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="nav-social-btn"
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px',
-                                    padding: '16px 25px',
-                                    background: 'rgba(255,255,255,0.03)',
-                                    borderRadius: '12px',
-                                    border: '1px solid rgba(255,255,255,0.05)',
-                                    color: 'white',
-                                    textDecoration: 'none',
-                                    transition: 'all 0.3s ease'
-                                }}
-                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = social.color; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; }}
-                            >
-                                <div style={{ color: social.color }}>{social.icon}</div>
-                                <span style={{ fontSize: '0.75rem', fontWeight: '800', letterSpacing: '1px' }}>{social.name}</span>
-                            </a>
-                        ))}
-                    </div>
-                </div>
-            </section>
 
-            <Footer />
 
             {/* PREVIEW MODAL (Horizontal Studio Design) - Compact Version */}
             {
@@ -1659,17 +1617,57 @@ export default function Landing() {
                     </div>
                 )
             }
+            {/* CREDITS SECTION: MUSO.AI */}
+            <section id="creditos" style={{ padding: '80px 40px', background: '#000000', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                    <div style={{ marginBottom: '30px', display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', padding: '10px 20px', borderRadius: '50px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', animation: 'pulse 2s infinite' }}></span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: '800', letterSpacing: '2px', color: 'white', textTransform: 'uppercase' }}>Créditos Verificados</span>
+                    </div>
+                    <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: '900', color: 'white', marginBottom: '20px', letterSpacing: '-1px' }}>TRAYECTORIA PROFESIONAL</h2>
+                    <p style={{ color: '#94a3b8', fontSize: '1.1rem', lineHeight: '1.7', marginBottom: '40px', maxWidth: '600px', margin: '0 auto 40px' }}>
+                        Consulta mi historial completo de créditos en producciones, ingeniería de sonido y colaboraciones con artistas internacionales a través de Muso.ai.
+                    </p>
+                    <button 
+                        onClick={() => window.open('https://credits.muso.ai/profile/816a8ebd-5537-4c14-bc2e-4283b52ffbcc', '_blank')}
+                        style={{ 
+                            padding: '18px 45px', 
+                            background: '#FFFFFF', 
+                            color: '#000000', 
+                            border: 'none', 
+                            borderRadius: '50px', 
+                            fontSize: '0.95rem', 
+                            fontWeight: '900', 
+                            letterSpacing: '1px', 
+                            cursor: 'pointer', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '12px', 
+                            margin: '0 auto',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(255,255,255,0.2)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                        VER CREDITOS EN MUSO.AI <ExternalLink size={18} />
+                    </button>
+                    <div style={{ marginTop: '50px', opacity: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '0.9rem', fontWeight: '900', color: 'white', letterSpacing: '3px' }}>MUSO<span style={{ color: '#94a3b8' }}>.AI</span></span>
+                    </div>
+                </div>
+            </section>
+
             {/* CONTACT SECTION */}
             <section id="contacto" style={{ padding: '100px 20px', background: 'linear-gradient(to bottom, #000, #020617)' }}>
-                <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', background: 'rgba(139,92,246,0.05)', padding: '80px 40px', borderRadius: '40px', border: '1px solid rgba(139,92,246,0.1)' }}>
+                <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', background: 'rgba(255,255,255,0.03)', padding: '80px 40px', borderRadius: '40px', border: '1px solid rgba(255,255,255,0.08)' }}>
                     <h2 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '20px' }}>¿LISTO PARA EMPEZAR?</h2>
                     <p style={{ fontSize: '1.2rem', color: '#94a3b8', marginBottom: '40px' }}>
                         Transformemos tu idea en un sonido profesional. Contáctame directamente para hablar de tu proyecto.
                     </p>
                     <button 
-                        onClick={() => window.open('https://wa.me/521234567890', '_blank')} 
+                        onClick={() => window.open('https://wa.me/5215519805954', '_blank')} 
                         className="btn-teal" 
-                        style={{ padding: '20px 50px', fontSize: '1.2rem', background: '#25D366', border: 'none', display: 'flex', alignItems: 'center', gap: '15px', margin: '0 auto' }}
+                        style={{ padding: '20px 50px', fontSize: '1.2rem', background: '#25D366', border: 'none', display: 'flex', alignItems: 'center', gap: '15px', margin: '0 auto', cursor: 'pointer', borderRadius: '12px', fontWeight: '900', color: 'white' }}
                     >
                         <span style={{ fontSize: '1.5rem' }}>💬</span> Hablar por WhatsApp
                     </button>
@@ -1678,6 +1676,7 @@ export default function Landing() {
                     </div>
                 </div>
             </section>
+            <Footer />
         </div >
     );
 }
