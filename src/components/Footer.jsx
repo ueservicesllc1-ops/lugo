@@ -86,9 +86,9 @@ export default function Footer() {
                                 alert('PIN Incorrecto');
                             }
                         }}
-                        style={{ marginLeft: '10px', opacity: 0.2, cursor: 'pointer', fontSize: '0.7rem' }}
+                        style={{ marginLeft: '15px', color: '#FFFFFF', opacity: 0.8, cursor: 'pointer', fontSize: '0.75rem', fontWeight: '800', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '15px' }}
                     >
-                        Admin
+                        ADMIN
                     </span>
                 </div>
             </div>
