@@ -469,7 +469,7 @@ export default function Landing() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '35px' }}>
                     <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                         <h1 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '900', color: 'white', letterSpacing: '-1.5px', textTransform: 'uppercase' }}>
-                            JUNIOR<span style={{ color: '#8B5CF6' }}>LUGO</span><span style={{ fontSize: '0.6rem', verticalAlign: 'middle', marginLeft: '5px', opacity: 0.5, letterSpacing: '2px' }}>PROD</span>
+                            JUNIOR<span style={{ color: '#00A3FF' }}>LUGO</span><span style={{ fontSize: '0.6rem', verticalAlign: 'middle', marginLeft: '5px', opacity: 0.5, letterSpacing: '2px' }}>PROD</span>
                         </h1>
                     </div>
 
