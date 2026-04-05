@@ -4,8 +4,8 @@
   font-family: var(--font-main);
   background-color: #ebf0f4;
   color: #3f4e5e;
-  --primary-cyan: #13b5b6;
-  --transport-blue: #13b5b6;
+  --primary-cyan: #0000FF;
+  --transport-blue: #0000FF;
   --danger-red: #ef4444;
   --warning-yellow: #f59e0b;
   --prime-coral: #f17853;
@@ -35,7 +35,7 @@ body {
 }
 
 body.dark-mode {
-  background-color: #0f172a;
+  background-color: #000a1a;
   color: #e2e8f0;
 }
 
@@ -56,12 +56,12 @@ body.dark-mode {
 
 .hero-gradient {
   background: radial-gradient(circle at top right, rgba(0, 188, 212, 0.15), transparent),
-    radial-gradient(circle at bottom left, rgba(155, 89, 182, 0.1), transparent),
-    #0f172a;
+    radial-gradient(circle at bottom left, rgba(0, 0, 255, 0.1), transparent),
+    #000a1a;
 }
 
 .btn-teal {
-  background: #00bcd4;
+  background: #0000FF;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -96,7 +96,7 @@ body.dark-mode {
 }
 
 .card-premium {
-  background: #1a1a22;
+  background: #000b1a;
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 24px;
@@ -110,7 +110,7 @@ body.dark-mode {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #fff 0%, #00bcd4 100%);
+  background: linear-gradient(135deg, #fff 0%, #0000FF 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -122,7 +122,7 @@ div:has(> .avatar-overlay):hover .avatar-overlay {
 }
 
 div:has(> .avatar-overlay):hover {
-  border-color: #00bcd4 !important;
+  border-color: #0000FF !important;
 }
 
 .hide-mobile {
@@ -324,7 +324,7 @@ body.dark-mode .song-name-display {
 .waveform-section {
   width: 100%;
   height: 85px;
-  background: #0f172a;
+  background: #000a1a;
   border-radius: 12px;
   margin-bottom: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
@@ -340,7 +340,7 @@ body.dark-mode .song-name-display {
 
 .waveform-section:hover {
   transform: scale(1.005);
-  border-color: rgba(0, 188, 212, 0.3);
+  border-color: rgba(0, 0, 255, 0.3);
 }
 
 .professional-scrubber {
@@ -532,7 +532,7 @@ body.dark-mode .tab-btn.active {
 }
 
 body.dark-mode .channel-strip {
-  background: #0f172a;
+  background: #000a1a;
   /* Deep black/navy */
   border-color: rgba(255, 255, 255, 0.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -1232,7 +1232,7 @@ body.dark-mode .action-btn {
 body.dark-mode .action-btn:hover {
   background: #3a4a5a;
   color: white;
-  border-color: #00bcd4;
+  border-color: #0000FF;
 }
 
 .right-panel-item {
@@ -1438,7 +1438,7 @@ body.dark-mode .song-index-badge {
 }
 
 .toggle-switch.on {
-  background: linear-gradient(135deg, #00bcd4, #0097a7);
+  background: linear-gradient(135deg, #0000FF, #0097a7);
   box-shadow: 0 2px 12px rgba(0, 188, 212, 0.4);
 }
 
@@ -1626,7 +1626,7 @@ body.dark-mode .setlist-item-card h4 {
 }
 
 body.dark-mode .setlist-item-card:hover {
-  border-color: #00bcd4 !important;
+  border-color: #0000FF !important;
   background: #3a4a5a !important;
 }
 

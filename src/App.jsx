@@ -16,6 +16,11 @@ import SellerProfile from './pages/SellerProfile'
 import Checkout from './pages/Checkout'
 import Gallery from './pages/Gallery'
 import Portfolio from './pages/Portfolio'
+import ProduccionIntegral from './pages/ProduccionIntegral'
+import MezclaMastering from './pages/MezclaMastering'
+import ArreglosMusicales from './pages/ArreglosMusicales'
+import PartiturasPro from './pages/PartiturasPro'
+import ScrollToTop from './components/ScrollToTop'
 import './index.css'
 
 // Heavy pages — loaded on demand to reduce initial bundle size
@@ -47,6 +52,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route
@@ -71,6 +77,10 @@ function App() {
           <Route path="/academy" element={<Academy />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/produccion-integral" element={<ProduccionIntegral />} />
+          <Route path="/mezcla-y-mastering" element={<MezclaMastering />} />
+          <Route path="/arreglos-musicales" element={<ArreglosMusicales />} />
+          <Route path="/partituras-pro" element={<PartiturasPro />} />
         </Routes>
       </Suspense>
     </Router>

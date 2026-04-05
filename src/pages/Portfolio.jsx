@@ -21,15 +21,7 @@ export default function Portfolio() {
         return () => unsubscribe();
     }, []);
 
-    // Fallback if empty database
-    const PLACEHOLDERS = [
-        { videoId: 'wJGUbmth5T4', title: 'Whatsap (Y si te miro tanto) - Enza Rigano', genre: 'POP' },
-        { videoId: 'iK7devs8FGc', title: 'Lo que tú pediste - Enza (Urbano)', genre: 'URBANO' },
-        { videoId: '7469MKm5VyA', title: 'Baja la temperatura - Enza Rigano', genre: 'POP' },
-        { videoId: 'NRarqQpM-38', title: 'Sanyer - A la Antigüita', genre: 'FOLKLORE' }
-    ];
-
-    const displayVideos = videos.length > 0 ? videos : PLACEHOLDERS;
+    const displayVideos = videos;
 
     return (
         <div style={{ backgroundColor: '#020617', minHeight: '110vh', color: 'white', fontFamily: '"Outfit", sans-serif' }}>

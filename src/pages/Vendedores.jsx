@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useNavigate } from 'react-router-dom';
 import JSZip from 'jszip';
 import { db, auth } from '../firebase';
@@ -14,44 +12,6 @@ import {
     AlertCircle, ArrowLeft, Wallet, Star, ShoppingBag, CheckCircle2 as CheckIcon,
     FileText, Trash2
 } from 'lucide-react';
-
-// Usando clave LIVE de Stripe 
-const stripePromise = loadStripe('pk_live_51S37NBId1DsVBhR7DBfuwJHCjLo2KzUWPxEKew3JdyI5ypBwgt420B9pXM6qQuHRscOLyNeLjxumZHwVfWdZsMQp003Gc0ne2Y');
-
-const StripeCheckoutForm = ({ onPaymentSuccess }) => {
-    const stripe = useStripe();
-    const elements = useElements();
-    const [isProcessing, setIsProcessing] = useState(false);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!stripe || !elements) return;
-
-        setIsProcessing(true);
-        const result = await stripe.confirmPayment({
-            elements,
-            redirect: 'if_required'
-        });
-
-        if (result.error) {
-            alert("Error en el pago: " + result.error.message);
-            setIsProcessing(false);
-        } else {
-            onPaymentSuccess();
-        }
-    };
-
-    return (
-        <form onSubmit={handleSubmit} style={{ margin: '0 auto', maxWidth: '400px', textAlign: 'left', background: 'white', padding: '15px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)' }}>
-            <h4 style={{ color: '#0f172a', marginBottom: '10px', fontWeight: '800', textAlign: 'center', fontSize: '1rem' }}>Suscripción Vendedor</h4>
-            <PaymentElement options={{ layout: 'accordion' }} />
-            <button disabled={!stripe || isProcessing} className="btn-teal" style={{ width: '100%', padding: '12px', marginTop: '15px', fontSize: '1rem' }}>
-                {isProcessing ? <Loader2 className="animate-spin" style={{ margin: '0 auto' }} /> : 'Pagar $1.99 Ahora'}
-            </button>
-        </form>
-    );
-};
-
 
 // ── Audio Multi-Track Mixing System for Waveforms ───────────────
 async function generateMixBlob(tracks) {
@@ -142,10 +102,6 @@ function Vendedores() {
     });
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
-
-    // Stripe States
-    const [stripeClientSecret, setStripeClientSecret] = useState('');
-    const [subscriptionId, setSubscriptionId] = useState('');
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
     // Upload Wizard States
@@ -301,7 +257,7 @@ function Vendedores() {
         }
     };
 
-    const handleCompleteRegistration = async (stripeSubscriptionId) => {
+    const handleCompleteRegistration = async (subscriptionId) => {
         if (!currentUser) return;
         setRegStep('verifying');
         try {
@@ -311,7 +267,7 @@ function Vendedores() {
             const applicationData = {
                 ...regForm,
                 userId: currentUser.uid,
-                stripeSubscriptionId: stripeSubscriptionId,
+                subscriptionId: subscriptionId,
                 status: 'pending_review',
                 createdAt: serverTimestamp()
             };
@@ -466,31 +422,9 @@ function Vendedores() {
         }
     };
 
-    const handleGoToPayment = async () => {
+    const handleGoToPayment = () => {
+        // Move to payment step — registration is free-form, no payment backend needed
         setRegStep('payment');
-        try {
-            const devProxy = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
-
-            const res = await fetch(`${devProxy}/api/stripe/create-subscription`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: regForm.email,
-                    name: `${regForm.firstName} ${regForm.lastName}`,
-                    userId: currentUser?.uid
-                })
-            });
-            const data = await res.json();
-            if (data.clientSecret) {
-                setStripeClientSecret(data.clientSecret);
-                setSubscriptionId(data.subscriptionId);
-            } else {
-                throw new Error(data.error || "Error al crear suscripción");
-            }
-        } catch (error) {
-            alert(error.message);
-        }
     };
 
     const resetWizard = () => {
@@ -678,16 +612,20 @@ function Vendedores() {
                             </div>
 
                             <div style={{ margin: '0 auto 30px', maxWidth: '400px' }}>
-                                {stripeClientSecret ? (
-                                    <Elements stripe={stripePromise} options={{ clientSecret: stripeClientSecret }}>
-                                        <StripeCheckoutForm
-                                            clientSecret={stripeClientSecret}
-                                            onPaymentSuccess={() => handleCompleteRegistration(subscriptionId)}
-                                        />
-                                    </Elements>
-                                ) : (
-                                    <div style={{ padding: '40px' }}><Loader2 className="animate-spin" style={{ margin: '0 auto', color: '#00bcd4' }} /></div>
-                                )}
+                                <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '16px', padding: '30px', textAlign: 'center' }}>
+                                    <CheckIcon size={40} color="#16a34a" style={{ margin: '0 auto 16px' }} />
+                                    <h4 style={{ fontWeight: '800', color: '#166534', marginBottom: '12px' }}>¡Registro Recibido!</h4>
+                                    <p style={{ color: '#166534', fontSize: '0.9rem', marginBottom: '20px' }}>
+                                        Nuestro equipo revisará tu solicitud y te contactará en 24-48 horas para activar tu cuenta de vendedor.
+                                    </p>
+                                    <button
+                                        onClick={() => handleCompleteRegistration(null)}
+                                        className="btn-teal"
+                                        style={{ width: '100%', padding: '14px', fontWeight: '800' }}
+                                    >
+                                        Enviar Solicitud
+                                    </button>
+                                </div>
                             </div>
 
                             <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: '16px', borderRadius: '12px', textAlign: 'left', fontSize: '0.8rem', color: '#92400e' }}>

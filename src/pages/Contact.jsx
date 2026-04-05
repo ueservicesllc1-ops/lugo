@@ -58,23 +58,23 @@ export default function Contact() {
                 {/* Left info */}
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                        <div style={{ width: '24px', height: '24px', background: '#00d2d3', borderRadius: '50%' }} />
-                        <span style={{ color: '#00d2d3', fontWeight: '700', fontSize: '0.85rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Freedom Labs</span>
+                        <div style={{ width: '24px', height: '24px', background: '#8B5CF6', borderRadius: '50%' }} />
+                        <span style={{ color: '#8B5CF6', fontWeight: '700', fontSize: '0.85rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Junior Lugo Productions</span>
                     </div>
                     <h1 style={{ fontSize: '2rem', fontWeight: '900', margin: '0 0 16px', lineHeight: '1.2' }}>Hablemos.</h1>
                     <p style={{ color: '#64748b', lineHeight: '1.7', marginBottom: '40px', fontSize: '0.88rem' }}>
-                        Tienes preguntas sobre Zion Stage, tu plan de suscripción, el Marketplace o cualquier otro tema? Nuestro equipo en Freedom Labs estará feliz de ayudarte. Respondemos dentro de 24-48 horas hábiles.
+                        ¿Tienes preguntas sobre los servicios de producción, el Marketplace o cualquier otro tema? Estaré feliz de ayudarte personalmente. Respondo dentro de 24 horas.
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
                         {[
-                            { icon: <Mail size={20} />, label: 'Correo General', value: 'hello@freedomlabs.io' },
-                            { icon: <Mail size={20} />, label: 'Soporte Técnico', value: 'soporte@freedomlabs.io' },
-                            { icon: <Phone size={20} />, label: 'WhatsApp Business', value: '+1 (305) 000-0000' },
-                            { icon: <MapPin size={20} />, label: 'Ubicación', value: 'New Jersey — USA' },
+                            { icon: <Mail size={20} />, label: 'Correo General', value: 'hello@juniorlugo.com' },
+                            { icon: <Mail size={20} />, label: 'Soporte Técnico', value: 'soporte@juniorlugo.com' },
+                            { icon: <Phone size={20} />, label: 'WhatsApp Directo', value: '+52 1 55 1980 5954' },
+                            { icon: <MapPin size={20} />, label: 'Ubicación', value: 'México' },
                         ].map((item, i) => (
                             <div key={i} style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                                <div style={{ width: '42px', height: '42px', background: 'rgba(0,210,211,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00d2d3', flexShrink: 0 }}>
+                                <div style={{ width: '42px', height: '42px', background: 'rgba(139,92,246,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8B5CF6', flexShrink: 0 }}>
                                     {item.icon}
                                 </div>
                                 <div>
@@ -93,7 +93,7 @@ export default function Contact() {
                             <CheckCircle2 size={52} color="#10b981" style={{ marginBottom: '16px' }} />
                             <h2 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '10px' }}>¡Mensaje enviado!</h2>
                             <p style={{ color: '#64748b', lineHeight: '1.7', marginBottom: '24px', fontSize: '0.88rem' }}>
-                                Gracias por contactarnos. Nuestro equipo revisará tu mensaje y te responderá en las próximas 24-48 horas hábiles.
+                                Gracias por contactarme. Revisaré tu mensaje y te responderé en las próximas 24 horas.
                             </p>
                             <button onClick={() => { setSent(false); setForm({ nombre: '', email: '', asunto: '', mensaje: '' }); }} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: '#94a3b8', padding: '10px 24px', borderRadius: '8px', cursor: 'pointer', fontFamily: '"Outfit", sans-serif' }}>
                                 Enviar otro mensaje
@@ -110,11 +110,11 @@ export default function Contact() {
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                                     <div>
                                         <label style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '6px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Nombre *</label>
-                                        <input name="nombre" value={form.nombre} onChange={handleChange} required placeholder="Tu nombre" style={inputStyle} onFocus={e => e.target.style.borderColor = '#00d2d3'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
+                                        <input name="nombre" value={form.nombre} onChange={handleChange} required placeholder="Tu nombre" style={inputStyle} onFocus={e => e.target.style.borderColor = '#8B5CF6'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
                                     </div>
                                     <div>
                                         <label style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '6px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email *</label>
-                                        <input name="email" type="email" value={form.email} onChange={handleChange} required placeholder="tu@email.com" style={inputStyle} onFocus={e => e.target.style.borderColor = '#00d2d3'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
+                                        <input name="email" type="email" value={form.email} onChange={handleChange} required placeholder="tu@email.com" style={inputStyle} onFocus={e => e.target.style.borderColor = '#8B5CF6'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
                                     </div>
                                 </div>
 
@@ -122,20 +122,19 @@ export default function Contact() {
                                     <label style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '6px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Asunto</label>
                                     <select name="asunto" value={form.asunto} onChange={handleChange} style={{ ...inputStyle, appearance: 'none' }}>
                                         <option value="" style={{ background: '#1e293b' }}>Selecciona un asunto</option>
-                                        <option value="soporte" style={{ background: '#1e293b' }}>Soporte técnico</option>
-                                        <option value="facturacion" style={{ background: '#1e293b' }}>Facturación / Pagos</option>
-                                        <option value="marketplace" style={{ background: '#1e293b' }}>Marketplace / Venta de pistas</option>
-                                        <option value="planes" style={{ background: '#1e293b' }}>Planes y suscripciones</option>
+                                        <option value="produccion" style={{ background: '#1e293b' }}>Producción Integral</option>
+                                        <option value="mezcla" style={{ background: '#1e293b' }}>Mezcla & Mastering</option>
+                                        <option value="marketplace" style={{ background: '#1e293b' }}>Tienda / Beats</option>
                                         <option value="otro" style={{ background: '#1e293b' }}>Otro</option>
                                     </select>
                                 </div>
 
                                 <div>
                                     <label style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '6px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Mensaje *</label>
-                                    <textarea name="mensaje" value={form.mensaje} onChange={handleChange} required placeholder="Escribe tu mensaje aquí..." rows={6} style={{ ...inputStyle, resize: 'vertical', minHeight: '140px' }} onFocus={e => e.target.style.borderColor = '#00d2d3'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
+                                    <textarea name="mensaje" value={form.mensaje} onChange={handleChange} required placeholder="Escribe tu mensaje aquí..." rows={6} style={{ ...inputStyle, resize: 'vertical', minHeight: '140px' }} onFocus={e => e.target.style.borderColor = '#8B5CF6'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
                                 </div>
 
-                                <button type="submit" disabled={sending} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '15px', background: sending ? 'rgba(0,210,211,0.4)' : '#00d2d3', border: 'none', borderRadius: '10px', color: '#0f172a', fontWeight: '800', fontSize: '1rem', cursor: sending ? 'not-allowed' : 'pointer', fontFamily: '"Outfit", sans-serif', transition: 'background 0.2s' }}>
+                                <button type="submit" disabled={sending} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '15px', background: sending ? 'rgba(139,92,246,0.4)' : '#8B5CF6', border: 'none', borderRadius: '10px', color: 'white', fontWeight: '800', fontSize: '1rem', cursor: sending ? 'not-allowed' : 'pointer', fontFamily: '"Outfit", sans-serif', transition: 'background 0.2s', boxShadow: '0 10px 30px rgba(139,92,246,0.2)' }}>
                                     <Send size={18} /> {sending ? 'Enviando...' : 'Enviar mensaje'}
                                 </button>
                             </form>

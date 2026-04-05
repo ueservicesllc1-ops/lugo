@@ -131,14 +131,12 @@ const StageBadge = ({ stage, isActive }) => (
 
 // ─── XP Toast notification ────────────────────────────────────────────────────
 const XPToast = ({ amount, onDone }) => {
-    // Total lifetime: 800ms  (250ms in + 300ms visible + 250ms out)
     const [fading, setFading] = React.useState(false);
     useEffect(() => {
         const fadeTimer = setTimeout(() => setFading(true), 550);
         const doneTimer = setTimeout(onDone, 800);
         return () => { clearTimeout(fadeTimer); clearTimeout(doneTimer); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [onDone]);
     return (
         <div style={{
             position: 'fixed', top: 72, right: 16, zIndex: 9999,
@@ -158,7 +156,7 @@ const XPToast = ({ amount, onDone }) => {
     );
 };
 
-// ─── Loading Screen (declared outside Academy to prevent state reset on re-render) ─────
+// ─── Loading Screen ──────────────────────────────────────────────────────────
 const LoadingScreen = ({ loadingMsg }) => (
     <div style={{
         position: 'fixed', inset: 0,
@@ -181,6 +179,518 @@ const LoadingScreen = ({ loadingMsg }) => (
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
 );
+
+// ─── Academy Sub-Views (Moved outside to prevent state resets) ────────────────
+
+const HomeScreen = ({ user, onStartLevel }) => {
+    const userLevel = getUserLevel(user.xp);
+    const xpToNextLevel = getXPToNext(user.xp);
+    const currentLevelXP = XP_LEVELS[userLevel - 1] || 0;
+    const nextLevelXP = XP_LEVELS[userLevel] || XP_LEVELS[XP_LEVELS.length - 1];
+    const levelProgress = ((user.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+    const currentLevelMeta = LEVEL_META[user.unlockedLevel] || {};
+
+    return (
+        <div className="home-view fade-in">
+            {/* Header */}
+            <header className="home-header">
+                <div className="logo-group">
+                    <div className="logo-box" style={{ background: 'none', padding: 0, overflow: 'hidden' }}>
+                        <img src="/logo2.png" alt="Zion Academy Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <span className="logo-text">Zion Academy</span>
+                </div>
+                <div className="header-pills">
+                    <div className="pill gem-pill"><Icon name="diamond" size={14}/> {user.gems}</div>
+                    <div className="pill fire-pill"><Icon name="flame" size={14}/> {user.streak}</div>
+                    <div className="pill heart-pill"><Icon name="heart" size={14}/> {user.hearts}</div>
+                </div>
+            </header>
+
+            {/* Mascot welcoming */}
+            <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'center' }}>
+                <Mascot 
+                    pose="happy" 
+                    size={100} 
+                    speech={`¡Hola! ¿Listo para tocar? 🎹`}
+                    speechStyle={{ bottom: '80%' }}
+                />
+            </div>
+
+            {/* User Level Card */}
+            <div className="user-level-card">
+                <div className="level-info">
+                    <span className="level-label">Nivel de usuario</span>
+                    <div className="level-number" style={{display:'flex', alignItems:'center', gap:8}}>
+                        <Icon name="star" size={22} color="#fcd34d" />
+                        Nivel {userLevel}
+                    </div>
+                    <div className="xp-row">
+                        <span className="xp-val">{user.xp} XP</span>
+                        <span className="xp-next">→ {xpToNextLevel} XP para Nivel {userLevel + 1}</span>
+                    </div>
+                    <div className="xp-bar-wrap">
+                        <div className="xp-bar-fill" style={{ width: `${Math.min(100, levelProgress)}%` }} />
+                    </div>
+                </div>
+                <div style={{ opacity: 0.9 }}>
+                    <Icon name={currentLevelMeta.icon || 'music'} size={56} color="#fff" />
+                </div>
+            </div>
+
+            {/* Continue Card */}
+            <div
+                className="continue-card ui-card"
+                style={{ cursor: 'pointer' }}
+                onClick={() => onStartLevel(user.unlockedLevel)}
+            >
+                <div className="continue-info">
+                    <span className="label-tag">▶ Continuar aprendiendo</span>
+                    <h4 className="continue-title">
+                        Nivel {user.unlockedLevel} — {currentLevelMeta.title || `Nivel ${user.unlockedLevel}`}
+                    </h4>
+                    <div className="type-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        {currentLevelMeta.type === 'ear' && <><Icon name="ear" size={13}/> Entrenamiento auditivo</>}
+                        {currentLevelMeta.type === 'theory' && <><Icon name="book-open" size={13}/> Teoría musical</>}
+                        {currentLevelMeta.type === 'rhythm' && <><Icon name="activity" size={13}/> Ritmo</>}
+                        {currentLevelMeta.type === 'piano' && <><Icon name="keyboard" size={13}/> Teclado interactivo</>}
+                    </div>
+                    <button className="big-continue-btn">Continuar →</button>
+                </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="stats-row">
+                <div className="stat-box">
+                    <div className="stat-num">{accuracy(user)}%</div>
+                    <div className="stat-lbl">Precisión</div>
+                </div>
+                <div className="stat-box">
+                    <div className="stat-num">{user.totalCorrect}</div>
+                    <div className="stat-lbl">Correctas</div>
+                </div>
+                <div className="stat-box">
+                    <div className="stat-num">{user.completedLessons.length}</div>
+                    <div className="stat-lbl">Niveles</div>
+                </div>
+                <div className="stat-box">
+                    <div className="stat-num">{user.achievements.length}</div>
+                    <div className="stat-lbl">Logros</div>
+                </div>
+            </div>
+
+            {/* Quick Practice */}
+            <h3 className="section-heading">Práctica Rápida</h3>
+            <div className="quick-grid">
+                {[
+                    { icon: 'ear', label: 'Oído Musical', lvl: 5, bg: '#fdf4ff', c: '#d946ef' },
+                    { icon: 'keyboard', label: 'Piano', lvl: 10, bg: '#eff6ff', c: '#3b82f6' },
+                    { icon: 'book-open', label: 'Teoría', lvl: 2, bg: '#f0fdf4', c: '#22c55e' },
+                    { icon: 'layers', label: 'Acordes', lvl: 31, bg: '#fff7ed', c: '#f97316' },
+                    { icon: 'activity', label: 'Ritmo', lvl: 11, bg: '#fef2f2', c: '#ef4444' },
+                    { icon: 'music', label: 'Intervalos', lvl: 9, bg: '#f8fafc', c: '#64748b' },
+                ].map((item, i) => (
+                    <div
+                        key={i}
+                        className="quick-card"
+                        onClick={() => onStartLevel(item.lvl, true)}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        <div className="quick-icon" style={{ background: item.bg }}>
+                            <Icon name={item.icon} size={24} color={item.c} />
+                        </div>
+                        <span className="quick-label">{item.label}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const LearnView = ({ user, onStartLevel }) => (
+    <div className="learn-view fade-in">
+        <header className="view-header">
+            <h2 className="heading-l">Aprender</h2>
+        </header>
+
+        {ACADEMY_STAGES.map(stage => {
+            const [start, end] = stage.levelsRange;
+            const stageActive = user.unlockedLevel >= start && user.unlockedLevel <= end;
+            return (
+                <div key={stage.id} style={{ marginBottom: 24 }}>
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: 14,
+                        padding: '14px 18px',
+                        background: stageActive ? stage.color + '10' : '#f8fafc',
+                        borderRadius: 16,
+                        marginBottom: 12,
+                        border: `1px solid ${stageActive ? stage.color + '30' : '#e2e8f0'}`,
+                    }}>
+                        <div style={{ 
+                            width: 44, height: 44, borderRadius: 12, 
+                            background: stageActive ? stage.color : '#e2e8f0',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <Icon name={stage.icon} size={24} color={stageActive ? '#fff' : '#94a3b8'} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>{stage.title}</div>
+                            <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                                {Math.min(end, user.unlockedLevel - 1) - start + 1 > 0
+                                    ? `${Math.max(0, Math.min(end, user.unlockedLevel - 1) - start + 1)} de ${end - start + 1} completados`
+                                    : 'No comenzado'
+                                }
+                            </div>
+                        </div>
+                        {stageActive && (
+                            <div style={{
+                                background: stage.color, color: '#fff',
+                                fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 100,
+                            }}>ACTIVO</div>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
+                        {Array.from({ length: end - start + 1 }, (_, i) => start + i)
+                            .filter(lvl => LEVEL_META[lvl] || lvl <= 20)
+                            .slice(0, 10)
+                            .map(lvl => {
+                                const meta = LEVEL_META[lvl] || { title: `Nivel ${lvl}`, icon: 'music', type: 'theory' };
+                                const isCompleted = user.completedLessons.includes(`${lvl}`);
+                                const isCurrent = lvl === user.unlockedLevel;
+                                const isLocked = lvl > user.unlockedLevel;
+                                return (
+                                    <div
+                                        key={lvl}
+                                        className={`path-item ${isCompleted ? 'completed' : isCurrent ? 'current-lvl' : isLocked ? 'locked' : ''}`}
+                                        onClick={() => !isLocked && onStartLevel(lvl)}
+                                        style={{ cursor: isLocked ? 'default' : 'pointer', borderColor: isCurrent ? stage.color : 'transparent' }}
+                                    >
+                                        <div className="path-dot" style={{
+                                            background: isCompleted ? '#22c55e' : isCurrent ? stage.color : '#f1f5f9',
+                                        }}>
+                                            {isCompleted ? <Icon name="check" size={20} color="#fff" />
+                                            : isLocked ? <Icon name="lock" size={20} color="#94a3b8" />
+                                            : <Icon name={meta.icon} size={20} color={isCurrent ? '#fff' : '#64748b'} />}
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: 700, fontSize: 14, color: isLocked ? '#94a3b8' : '#1e293b' }}>
+                                                {meta.title}
+                                            </div>
+                                            <div style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', display: 'flex', gap: 8, marginTop: 4 }}>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                    {isCompleted ? <><Icon name="check-circle-2" size={12} color="#22c55e"/> Completado</> 
+                                                    : isCurrent ? <><Icon name="play-circle" size={12} color={stage.color}/> En progreso</> 
+                                                    : isLocked ? <><Icon name="lock" size={12}/> Bloqueado</> 
+                                                    : <><Icon name="circle-dashed" size={12}/> Disponible</>}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {!isLocked && (
+                                            <div style={{ color: '#cbd5e1' }}><Icon name="chevron-right" size={20} /></div>
+                                        )}
+                                    </div>
+                                );
+                            })
+                        }
+                    </div>
+                </div>
+            );
+        })}
+    </div>
+);
+
+const PracticeView = ({ user, onStartLevel }) => {
+    const practiceCategories = [
+        { icon: 'ear', label: 'Entrenamiento Auditivo', desc: 'Intervalos y notas por oído', levels: [5, 7, 9, 25, 26], color: '#8b5cf6' },
+        { icon: 'keyboard', label: 'Teclado Interactivo', desc: 'Aprende a ubicar notas', levels: [10], color: '#6366f1' },
+        { icon: 'book-open', label: 'Teoría Musical', desc: 'Pentagrama, claves y figuras', levels: [1, 2, 3, 4, 6, 8, 11, 12], color: '#0ea5e9' },
+        { icon: 'layers', label: 'Acordes y Armonía', desc: 'Tríadas, inversiones, progresiones', levels: [31, 32, 33, 34], color: '#f59e0b' },
+        { icon: 'activity', label: 'Ritmo y Tiempo', desc: 'Compases, figuras y tempo', levels: [11, 12, 13, 14], color: '#10b981' },
+        { icon: 'rainbow', label: 'Escalas y Modos', desc: 'Mayor, menor y modos griegos', levels: [21, 22, 23, 24], color: '#ef4444' },
+    ];
+
+    return (
+        <div className="practice-view fade-in">
+            <header className="view-header">
+                <h2 className="heading-l">Práctica</h2>
+                <span style={{ fontSize: 13, color: '#64748b' }}>Elige una categoría</span>
+            </header>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {practiceCategories.map((cat, i) => {
+                    const bestLevel = cat.levels.find(l => l <= user.unlockedLevel) || cat.levels[0];
+                    const available = bestLevel <= user.unlockedLevel;
+                    return (
+                        <div
+                            key={i}
+                            className="practice-cat-card"
+                            onClick={() => available && onStartLevel(bestLevel)}
+                            style={{ cursor: available ? 'pointer' : 'default', opacity: available ? 1 : 0.5 }}
+                        >
+                            <div className="cat-icon" style={{ background: cat.color + '15' }}>
+                                <Icon name={cat.icon} size={24} color={cat.color} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontWeight: 700, fontSize: 15, color: '#1e293b' }}>{cat.label}</div>
+                                <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{cat.desc}</div>
+                            </div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: cat.color }}>
+                                {available ? `▶ Nivel ${bestLevel}` : '🔒'}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+const ProgressView = ({ user }) => {
+    const acc = accuracy(user);
+    const userLevel = getUserLevel(user.xp);
+    const circumference = 2 * Math.PI * 45;
+    const weekDays = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+    const maxWeeklyXP = Math.max(...(user.weeklyXP || [1]));
+
+    return (
+        <div className="progress-view fade-in">
+            <header className="view-header">
+                <h2 className="heading-l">Progreso</h2>
+            </header>
+
+            <div className="ui-card accuracy-card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                    <svg width={100} height={100} style={{ flexShrink: 0 }}>
+                        <circle cx={50} cy={50} r={45} fill="none" stroke="#e2e8f0" strokeWidth={8} />
+                        <circle
+                            cx={50} cy={50} r={45} fill="none"
+                            stroke={acc >= 80 ? '#22c55e' : acc >= 60 ? '#f59e0b' : '#ef4444'}
+                            strokeWidth={8}
+                            strokeDasharray={circumference}
+                            strokeDashoffset={circumference - (circumference * acc / 100)}
+                            strokeLinecap="round"
+                            transform="rotate(-90 50 50)"
+                        />
+                        <text x={50} y={46} textAnchor="middle" fontSize={18} fontWeight={800} fill="#1e293b">{acc}%</text>
+                        <text x={50} y={60} textAnchor="middle" fontSize={9} fill="#64748b">Precisión</text>
+                    </svg>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            {[
+                                { label: 'XP Total', val: user.xp },
+                                { label: 'Racha', val: <span style={{display:'flex', alignItems:'center', justifyContent:'center', gap:4}}>{user.streak} <Icon name="flame" size={18} color="#d97706"/></span> },
+                                { label: 'Nivel', val: userLevel },
+                                { label: 'Correctas', val: user.totalCorrect },
+                                { label: 'Más XP diarios', val: `${(user.weeklyXP || [0]).reduce((a,b)=>a+b,0)}` },
+                                { label: 'Logros', val: `${user.achievements.length}/${ACHIEVEMENTS.length}` },
+                            ].map(({ label, val }) => (
+                                <div key={label}>
+                                    <div style={{ fontSize: 18, fontWeight: 800, color: '#1e293b' }}>{val}</div>
+                                    <div style={{ fontSize: 11, color: '#64748b' }}>{label}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="ui-card" style={{ marginTop: 16 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>Actividad Semanal</div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 60 }}>
+                    {(user.weeklyXP || [0, 0, 0, 0, 0, 0, 0]).map((xp, i) => (
+                        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                            <div style={{
+                                width: '100%',
+                                height: maxWeeklyXP > 0 ? `${(xp / maxWeeklyXP) * 44}px` : '4px',
+                                minHeight: 4,
+                                background: xp > 0 ? 'linear-gradient(180deg, #6366f1, #8b5cf6)' : '#e2e8f0',
+                                borderRadius: 4,
+                                transition: 'height 0.3s',
+                            }} />
+                            <div style={{ fontSize: 10, color: '#94a3b8' }}>{weekDays[i]}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="ui-card" style={{ marginTop: 16 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Icon name="star" size={18} color="#fcd34d" /> Nivel {userLevel} → {userLevel + 1}
+                </div>
+                <div style={{ height: 12, background: '#e2e8f0', borderRadius: 6, overflow: 'hidden', marginBottom: 8 }}>
+                    <div style={{
+                        height: '100%',
+                        width: `${Math.min(100, ((user.xp - (XP_LEVELS[userLevel - 1] || 0)) / ((XP_LEVELS[userLevel] || 10000) - (XP_LEVELS[userLevel - 1] || 0))) * 100)}%`,
+                        background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+                        borderRadius: 6,
+                        transition: 'width 0.5s ease',
+                    }} />
+                </div>
+                <div style={{ fontSize: 12, color: '#64748b' }}>
+                    {getXPToNext(user.xp)} XP para el siguiente nivel
+                </div>
+            </div>
+
+            <div style={{ marginTop: 16 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Icon name="trophy" size={18} color="#f59e0b" /> Logros
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    {ACHIEVEMENTS.map(ach => {
+                        const earned = user.achievements.includes(ach.id);
+                        return (
+                            <div key={ach.id} className="ui-card achievement-card" style={{
+                                opacity: earned ? 1 : 0.4,
+                                background: earned ? '#ede9fe' : '#f8fafc',
+                                border: earned ? '2px solid #8b5cf6' : '2px solid #e2e8f0',
+                                padding: '12px',
+                                borderRadius: 14,
+                            }}>
+                                <div style={{ marginBottom: 6, opacity: earned ? 1 : 0.5, color: '#6366f1' }}>
+                                    <Icon name={ach.icon} size={26} color="currentColor" />
+                                </div>
+                                <div style={{ fontWeight: 700, fontSize: 12, color: '#1e293b' }}>{ach.title}</div>
+                                <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>{ach.desc}</div>
+                                {earned && <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: '#7c3aed', fontWeight: 700, marginTop: 4 }}>
+                                    +{ach.xp} XP <Icon name="check" size={12} strokeWidth={3} />
+                                </div>}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const ProfileView = ({ user, onReset }) => {
+    const userLevel = getUserLevel(user.xp);
+    const titles = ['Oyente Curioso', 'Aprendiz Musical', 'Estudiante', 'Músico', 'Teórico', 'Virtuoso', 'Maestro'];
+    const titleIdx = Math.min(Math.floor((user.unlockedLevel - 1) / 8), titles.length - 1);
+
+    return (
+        <div className="profile-view fade-in">
+            <header className="view-header">
+                <h2 className="heading-l">Perfil</h2>
+                <button
+                    onClick={onReset}
+                    style={{ background: 'none', border: 'none', fontSize: 12, color: '#94a3b8', cursor: 'pointer' }}
+                >
+                    Reiniciar
+                </button>
+            </header>
+
+            <div className="ui-card" style={{ textAlign: 'center', padding: 28 }}>
+                <div style={{
+                    width: 80, height: 80, borderRadius: '50%',
+                    background: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 16px',
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                    overflow: 'hidden'
+                }}>
+                    <img src="/logo2.png" alt="Zion Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>Músico Zion Academy</h3>
+                <div style={{ fontSize: 13, color: '#64748b', marginBottom: 16 }}>
+                    {titles[titleIdx]} · Nivel {userLevel}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginTop: 20 }}>
+                    {[
+                        { label: 'XP Total', val: user.xp, icon: '⭐' },
+                        { label: 'Racha', val: `${user.streak}d`, icon: '🔥' },
+                        { label: 'Precisión', val: `${accuracy(user)}%`, icon: '🎯' },
+                    ].map(({ label, val, icon }) => (
+                        <div key={label} style={{ background: '#f8fafc', borderRadius: 12, padding: 12 }}>
+                            <div style={{ fontSize: 20 }}>{icon}</div>
+                            <div style={{ fontSize: 18, fontWeight: 800, color: '#1e293b', marginTop: 4 }}>{val}</div>
+                            <div style={{ fontSize: 10, color: '#64748b' }}>{label}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="ui-card" style={{ marginTop: 16, background: 'linear-gradient(135deg, #ede9fe, #faf5ff)' }}>
+                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8, color: '#7c3aed' }}>🎓 Tu Camino Musical</div>
+                <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6 }}>
+                    Has completado <strong>{user.completedLessons.length} lecciones</strong> con <strong>{user.totalCorrect} respuestas correctas</strong>.
+                    {user.unlockedLevel < 5 && ' Sigue practicando los fundamentos para desbloquear el entrenamiento auditivo.'}
+                    {user.unlockedLevel >= 5 && user.unlockedLevel < 15 && ' Ya puedes empezar el entrenamiento auditivo. ¡Tu oído musical está mejorando!'}
+                    {user.unlockedLevel >= 15 && ' Excelente progreso. Estás en el camino de los músicos serios.'}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const SuccessScreen = ({ showSuccess, onContinue, onGoHome }) => (
+    <div className="lesson-success-flow">
+        <div className="success-content ui-card">
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+                <Mascot 
+                    pose={showSuccess?.perfect ? "celebrate" : "happy"} 
+                    size={120} 
+                    speech={showSuccess?.perfect ? "¡INCREÍBLE! 🌟" : "¡Lo logramos! 🎵"}
+                    speechStyle={{ fontSize: 16, padding: '10px 20px', bottom: '85%' }}
+                />
+            </div>
+            <h1 className="heading-xl" style={{ color: '#1e293b', marginTop: 10 }}>
+                {showSuccess?.perfect ? '¡Perfecto!' : '¡Nivel Completado!'}
+            </h1>
+            <p className="body-l" style={{ color: '#64748b' }}>
+                {showSuccess?.perfect
+                    ? 'Sin ningún error. Tu concentración es impresionante.'
+                    : 'Sigue practicando para mejorar la precisión.'}
+            </p>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', margin: '20px 0' }}>
+                <div className="xp-badge">+{showSuccess?.xp} XP</div>
+                {showSuccess?.perfect && <div className="xp-badge" style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fef3c7', color: '#d97706' }}>
+                    <Icon name="medal" size={16} color="currentColor" /> Perfecto
+                </div>}
+            </div>
+            <button
+                className="ui-button-primary"
+                style={{ width: '100%', padding: '16px', fontSize: 16, borderRadius: 16 }}
+                onClick={onContinue}
+            >
+                Continuar →
+            </button>
+            <button
+                style={{ width: '100%', marginTop: 12, padding: '12px', background: 'none', border: '2px solid #e2e8f0', borderRadius: 16, cursor: 'pointer', fontWeight: 600, color: '#64748b', fontSize: 14 }}
+                onClick={onGoHome}
+            >
+                Ir al inicio
+            </button>
+        </div>
+    </div>
+);
+
+const AchievementPopup = ({ achievement }) => (
+    <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.6)', zIndex: 9998,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+        <div style={{
+            background: '#fff', borderRadius: 24, padding: 32, maxWidth: 320, textAlign: 'center',
+            boxShadow: '0 25px 50px rgba(0,0,0,0.3)',
+            animation: 'toastIn 0.4s ease',
+        }}>
+            <div style={{ fontSize: 56, marginBottom: 12 }}>{achievement.icon}</div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>
+                ¡Nuevo Logro!
+            </div>
+            <h3 style={{ fontSize: 22, fontWeight: 800, color: '#1e293b', marginBottom: 8 }}>{achievement.title}</h3>
+            <p style={{ color: '#64748b', fontSize: 14, marginBottom: 16 }}>{achievement.desc}</p>
+            <div style={{ background: '#ede9fe', color: '#7c3aed', fontWeight: 800, borderRadius: 100, padding: '8px 20px', display: 'inline-block' }}>
+                +{achievement.xp} XP
+            </div>
+        </div>
+    </div>
+);
+
+// ─── Main Academy Component ───────────────────────────────────────────────────
 
 // ─── Main Academy Component ───────────────────────────────────────────────────
 const Academy = () => {
@@ -369,542 +879,7 @@ const Academy = () => {
         }));
     }, []);
 
-    // ─── VIEWS ────────────────────────────────────────────────────────────────
 
-    const renderHomeScreen = () => {
-        const userLevel = getUserLevel(user.xp);
-        const xpToNextLevel = getXPToNext(user.xp);
-        const currentLevelXP = XP_LEVELS[userLevel - 1] || 0;
-        const nextLevelXP = XP_LEVELS[userLevel] || XP_LEVELS[XP_LEVELS.length - 1];
-        const levelProgress = ((user.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
-        const currentLevelMeta = LEVEL_META[user.unlockedLevel] || {};
-
-        return (
-            <div className="home-view fade-in">
-                {/* Header */}
-                <header className="home-header">
-                    <div className="logo-group">
-                        <div className="logo-box" style={{ background: 'none', padding: 0, overflow: 'hidden' }}>
-                            <img src="/logo2.png" alt="Zion Academy Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                        <span className="logo-text">Zion Academy</span>
-                    </div>
-                    <div className="header-pills">
-                        <div className="pill gem-pill"><Icon name="diamond" size={14}/> {user.gems}</div>
-                        <div className="pill fire-pill"><Icon name="flame" size={14}/> {user.streak}</div>
-                        <div className="pill heart-pill"><Icon name="heart" size={14}/> {user.hearts}</div>
-                    </div>
-                </header>
-
-                {/* Mascot welcoming */}
-                <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'center' }}>
-                    <Mascot 
-                        pose="happy" 
-                        size={100} 
-                        speech={`¡Hola! ¿Listo para tocar? 🎹`}
-                        speechStyle={{ bottom: '80%' }}
-                    />
-                </div>
-
-                {/* User Level Card */}
-                <div className="user-level-card">
-                    <div className="level-info">
-                        <span className="level-label">Nivel de usuario</span>
-                        <div className="level-number" style={{display:'flex', alignItems:'center', gap:8}}>
-                            <Icon name="star" size={22} color="#fcd34d" />
-                            Nivel {userLevel}
-                        </div>
-                        <div className="xp-row">
-                            <span className="xp-val">{user.xp} XP</span>
-                            <span className="xp-next">→ {xpToNextLevel} XP para Nivel {userLevel + 1}</span>
-                        </div>
-                        <div className="xp-bar-wrap">
-                            <div className="xp-bar-fill" style={{ width: `${Math.min(100, levelProgress)}%` }} />
-                        </div>
-                    </div>
-                    <div style={{ opacity: 0.9 }}>
-                        <Icon name={currentLevelMeta.icon || 'music'} size={56} color="#fff" />
-                    </div>
-                </div>
-
-                {/* Continue Card */}
-                <div
-                    className="continue-card ui-card"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => startLevel(user.unlockedLevel)}
-                >
-                    <div className="continue-info">
-                        <span className="label-tag">▶ Continuar aprendiendo</span>
-                        <h4 className="continue-title">
-                            Nivel {user.unlockedLevel} — {currentLevelMeta.title || `Nivel ${user.unlockedLevel}`}
-                        </h4>
-                        <div className="type-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                            {currentLevelMeta.type === 'ear' && <><Icon name="ear" size={13}/> Entrenamiento auditivo</>}
-                            {currentLevelMeta.type === 'theory' && <><Icon name="book-open" size={13}/> Teoría musical</>}
-                            {currentLevelMeta.type === 'rhythm' && <><Icon name="activity" size={13}/> Ritmo</>}
-                            {currentLevelMeta.type === 'piano' && <><Icon name="keyboard" size={13}/> Teclado interactivo</>}
-                        </div>
-                        <button className="big-continue-btn">Continuar →</button>
-                    </div>
-                </div>
-
-                {/* Stats Grid */}
-                <div className="stats-row">
-                    <div className="stat-box">
-                        <div className="stat-num">{accuracy(user)}%</div>
-                        <div className="stat-lbl">Precisión</div>
-                    </div>
-                    <div className="stat-box">
-                        <div className="stat-num">{user.totalCorrect}</div>
-                        <div className="stat-lbl">Correctas</div>
-                    </div>
-                    <div className="stat-box">
-                        <div className="stat-num">{user.completedLessons.length}</div>
-                        <div className="stat-lbl">Niveles</div>
-                    </div>
-                    <div className="stat-box">
-                        <div className="stat-num">{user.achievements.length}</div>
-                        <div className="stat-lbl">Logros</div>
-                    </div>
-                </div>
-
-                {/* Quick Practice */}
-                <h3 className="section-heading">Práctica Rápida</h3>
-                <div className="quick-grid">
-                    {[
-                        { icon: 'ear', label: 'Oído Musical', lvl: 5, bg: '#fdf4ff', c: '#d946ef' },
-                        { icon: 'keyboard', label: 'Piano', lvl: 10, bg: '#eff6ff', c: '#3b82f6' },
-                        { icon: 'book-open', label: 'Teoría', lvl: 2, bg: '#f0fdf4', c: '#22c55e' },
-                        { icon: 'layers', label: 'Acordes', lvl: 31, bg: '#fff7ed', c: '#f97316' },
-                        { icon: 'activity', label: 'Ritmo', lvl: 11, bg: '#fef2f2', c: '#ef4444' },
-                        { icon: 'music', label: 'Intervalos', lvl: 9, bg: '#f8fafc', c: '#64748b' },
-                    ].map((item, i) => (
-                        <div
-                            key={i}
-                            className="quick-card"
-                            onClick={() => startLevel(item.lvl, true)}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <div className="quick-icon" style={{ background: item.bg }}>
-                                <Icon name={item.icon} size={24} color={item.c} />
-                            </div>
-                            <span className="quick-label">{item.label}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
-    };
-
-    const renderLearnView = () => {
-        return (
-            <div className="learn-view fade-in">
-                <header className="view-header">
-                    <h2 className="heading-l">Aprender</h2>
-                </header>
-
-                {ACADEMY_STAGES.map(stage => {
-                    const [start, end] = stage.levelsRange;
-                    const stageActive = user.unlockedLevel >= start && user.unlockedLevel <= end;
-                    return (
-                        <div key={stage.id} style={{ marginBottom: 24 }}>
-                            {/* Stage header */}
-                            <div style={{
-                                display: 'flex', alignItems: 'center', gap: 14,
-                                padding: '14px 18px',
-                                background: stageActive ? stage.color + '10' : '#f8fafc',
-                                borderRadius: 16,
-                                marginBottom: 12,
-                                border: `1px solid ${stageActive ? stage.color + '30' : '#e2e8f0'}`,
-                            }}>
-                                <div style={{ 
-                                    width: 44, height: 44, borderRadius: 12, 
-                                    background: stageActive ? stage.color : '#e2e8f0',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                }}>
-                                    <Icon name={stage.icon} size={24} color={stageActive ? '#fff' : '#94a3b8'} />
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>{stage.title}</div>
-                                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
-                                        {Math.min(end, user.unlockedLevel - 1) - start + 1 > 0
-                                            ? `${Math.max(0, Math.min(end, user.unlockedLevel - 1) - start + 1)} de ${end - start + 1} completados`
-                                            : 'No comenzado'
-                                        }
-                                    </div>
-                                </div>
-                                {stageActive && (
-                                    <div style={{
-                                        background: stage.color, color: '#fff',
-                                        fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 100,
-                                    }}>ACTIVO</div>
-                                )}
-                            </div>
-
-                            {/* Level list */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
-                                {Array.from({ length: end - start + 1 }, (_, i) => start + i)
-                                    .filter(lvl => LEVEL_META[lvl] || lvl <= 20) // only show levels with metadata or first 20
-                                    .slice(0, 10)
-                                    .map(lvl => {
-                                        const meta = LEVEL_META[lvl] || { title: `Nivel ${lvl}`, icon: 'music', type: 'theory' };
-                                        const isCompleted = user.completedLessons.includes(`${lvl}`);
-                                        const isCurrent = lvl === user.unlockedLevel;
-                                        const isLocked = lvl > user.unlockedLevel;
-                                        return (
-                                            <div
-                                                key={lvl}
-                                                className={`path-item ${isCompleted ? 'completed' : isCurrent ? 'current-lvl' : isLocked ? 'locked' : ''}`}
-                                                onClick={() => !isLocked && startLevel(lvl)}
-                                                style={{ cursor: isLocked ? 'default' : 'pointer', borderColor: isCurrent ? stage.color : 'transparent' }}
-                                            >
-                                                <div className="path-dot" style={{
-                                                    background: isCompleted ? '#22c55e' : isCurrent ? stage.color : '#f1f5f9',
-                                                }}>
-                                                    {isCompleted ? <Icon name="check" size={20} color="#fff" />
-                                                    : isLocked ? <Icon name="lock" size={20} color="#94a3b8" />
-                                                    : <Icon name={meta.icon} size={20} color={isCurrent ? '#fff' : '#64748b'} />}
-                                                </div>
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontWeight: 700, fontSize: 14, color: isLocked ? '#94a3b8' : '#1e293b' }}>
-                                                        {meta.title}
-                                                    </div>
-                                                    <div style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', display: 'flex', gap: 8, marginTop: 4 }}>
-                                                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                            {isCompleted ? <><Icon name="check-circle-2" size={12} color="#22c55e"/> Completado</> 
-                                                            : isCurrent ? <><Icon name="play-circle" size={12} color={stage.color}/> En progreso</> 
-                                                            : isLocked ? <><Icon name="lock" size={12}/> Bloqueado</> 
-                                                            : <><Icon name="circle-dashed" size={12}/> Disponible</>}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                {!isLocked && (
-                                                    <div style={{ color: '#cbd5e1' }}><Icon name="chevron-right" size={20} /></div>
-                                                )}
-                                            </div>
-                                        );
-                                    })
-                                }
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    };
-
-    const renderPracticeView = () => {
-        const practiceCategories = [
-            { icon: 'ear', label: 'Entrenamiento Auditivo', desc: 'Intervalos y notas por oído', levels: [5, 7, 9, 25, 26], color: '#8b5cf6' },
-            { icon: 'keyboard', label: 'Teclado Interactivo', desc: 'Aprende a ubicar notas', levels: [10], color: '#6366f1' },
-            { icon: 'book-open', label: 'Teoría Musical', desc: 'Pentagrama, claves y figuras', levels: [1, 2, 3, 4, 6, 8, 11, 12], color: '#0ea5e9' },
-            { icon: 'layers', label: 'Acordes y Armonía', desc: 'Tríadas, inversiones, progresiones', levels: [31, 32, 33, 34], color: '#f59e0b' },
-            { icon: 'activity', label: 'Ritmo y Tiempo', desc: 'Compases, figuras y tempo', levels: [11, 12, 13, 14], color: '#10b981' },
-            { icon: 'rainbow', label: 'Escalas y Modos', desc: 'Mayor, menor y modos griegos', levels: [21, 22, 23, 24], color: '#ef4444' },
-        ];
-
-        return (
-            <div className="practice-view fade-in">
-                <header className="view-header">
-                    <h2 className="heading-l">Práctica</h2>
-                    <span style={{ fontSize: 13, color: '#64748b' }}>Elige una categoría</span>
-                </header>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {practiceCategories.map((cat, i) => {
-                        const bestLevel = cat.levels.find(l => l <= user.unlockedLevel) || cat.levels[0];
-                        const available = bestLevel <= user.unlockedLevel;
-                        return (
-                            <div
-                                key={i}
-                                className="practice-cat-card"
-                                onClick={() => available && startLevel(bestLevel)}
-                                style={{ cursor: available ? 'pointer' : 'default', opacity: available ? 1 : 0.5 }}
-                            >
-                                <div className="cat-icon" style={{ background: cat.color + '15' }}>
-                                    <Icon name={cat.icon} size={24} color={cat.color} />
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 700, fontSize: 15, color: '#1e293b' }}>{cat.label}</div>
-                                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{cat.desc}</div>
-                                </div>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: cat.color }}>
-                                    {available ? `▶ Nivel ${bestLevel}` : '🔒'}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    };
-
-    const renderProgressView = () => {
-        const acc = accuracy(user);
-        const userLevel = getUserLevel(user.xp);
-        const circumference = 2 * Math.PI * 45;
-        const weekDays = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
-        const maxWeeklyXP = Math.max(...(user.weeklyXP || [1]));
-
-        return (
-            <div className="progress-view fade-in">
-                <header className="view-header">
-                    <h2 className="heading-l">Progreso</h2>
-                </header>
-
-                {/* Accuracy Ring */}
-                <div className="ui-card accuracy-card">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                        <svg width={100} height={100} style={{ flexShrink: 0 }}>
-                            <circle cx={50} cy={50} r={45} fill="none" stroke="#e2e8f0" strokeWidth={8} />
-                            <circle
-                                cx={50} cy={50} r={45} fill="none"
-                                stroke={acc >= 80 ? '#22c55e' : acc >= 60 ? '#f59e0b' : '#ef4444'}
-                                strokeWidth={8}
-                                strokeDasharray={circumference}
-                                strokeDashoffset={circumference - (circumference * acc / 100)}
-                                strokeLinecap="round"
-                                transform="rotate(-90 50 50)"
-                            />
-                            <text x={50} y={46} textAnchor="middle" fontSize={18} fontWeight={800} fill="#1e293b">{acc}%</text>
-                            <text x={50} y={60} textAnchor="middle" fontSize={9} fill="#64748b">Precisión</text>
-                        </svg>
-                        <div style={{ flex: 1 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                {[
-                                    { label: 'XP Total', val: user.xp },
-                                    { label: 'Racha', val: <span style={{display:'flex', alignItems:'center', justifyContent:'center', gap:4}}>{user.streak} <Icon name="flame" size={18} color="#d97706"/></span> },
-                                    { label: 'Nivel', val: userLevel },
-                                    { label: 'Correctas', val: user.totalCorrect },
-                                    { label: 'Más XP diarios', val: `${(user.weeklyXP || [0]).reduce((a,b)=>a+b,0)}` },
-                                    { label: 'Logros', val: `${user.achievements.length}/${ACHIEVEMENTS.length}` },
-                                ].map(({ label, val }) => (
-                                    <div key={label}>
-                                        <div style={{ fontSize: 18, fontWeight: 800, color: '#1e293b' }}>{val}</div>
-                                        <div style={{ fontSize: 11, color: '#64748b' }}>{label}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Weekly Activity */}
-                <div className="ui-card" style={{ marginTop: 16 }}>
-                    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>Actividad Semanal</div>
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 60 }}>
-                        {(user.weeklyXP || [0, 0, 0, 0, 0, 0, 0]).map((xp, i) => (
-                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                                <div style={{
-                                    width: '100%',
-                                    height: maxWeeklyXP > 0 ? `${(xp / maxWeeklyXP) * 44}px` : '4px',
-                                    minHeight: 4,
-                                    background: xp > 0 ? 'linear-gradient(180deg, #6366f1, #8b5cf6)' : '#e2e8f0',
-                                    borderRadius: 4,
-                                    transition: 'height 0.3s',
-                                }} />
-                                <div style={{ fontSize: 10, color: '#94a3b8' }}>{weekDays[i]}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* XP Level Progress */}
-                <div className="ui-card" style={{ marginTop: 16 }}>
-                    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <Icon name="star" size={18} color="#fcd34d" /> Nivel {userLevel} → {userLevel + 1}
-                    </div>
-                    <div style={{ height: 12, background: '#e2e8f0', borderRadius: 6, overflow: 'hidden', marginBottom: 8 }}>
-                        <div style={{
-                            height: '100%',
-                            width: `${Math.min(100, ((user.xp - (XP_LEVELS[userLevel - 1] || 0)) / ((XP_LEVELS[userLevel] || 10000) - (XP_LEVELS[userLevel - 1] || 0))) * 100)}%`,
-                            background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
-                            borderRadius: 6,
-                            transition: 'width 0.5s ease',
-                        }} />
-                    </div>
-                    <div style={{ fontSize: 12, color: '#64748b' }}>
-                        {getXPToNext(user.xp)} XP para el siguiente nivel
-                    </div>
-                </div>
-
-                {/* Achievements */}
-                <div style={{ marginTop: 16 }}>
-                    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <Icon name="trophy" size={18} color="#f59e0b" /> Logros
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                        {ACHIEVEMENTS.map(ach => {
-                            const earned = user.achievements.includes(ach.id);
-                            return (
-                                <div key={ach.id} className="ui-card achievement-card" style={{
-                                    opacity: earned ? 1 : 0.4,
-                                    background: earned ? '#ede9fe' : '#f8fafc',
-                                    border: earned ? '2px solid #8b5cf6' : '2px solid #e2e8f0',
-                                    padding: '12px',
-                                    borderRadius: 14,
-                                }}>
-                                    <div style={{ marginBottom: 6, opacity: earned ? 1 : 0.5, color: '#6366f1' }}>
-                                        <Icon name={ach.icon} size={26} color="currentColor" />
-                                    </div>
-                                    <div style={{ fontWeight: 700, fontSize: 12, color: '#1e293b' }}>{ach.title}</div>
-                                    <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>{ach.desc}</div>
-                                    {earned && <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: '#7c3aed', fontWeight: 700, marginTop: 4 }}>
-                                        +{ach.xp} XP <Icon name="check" size={12} strokeWidth={3} />
-                                    </div>}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const renderProfileView = () => {
-        const userLevel = getUserLevel(user.xp);
-        const titles = ['Oyente Curioso', 'Aprendiz Musical', 'Estudiante', 'Músico', 'Teórico', 'Virtuoso', 'Maestro'];
-        const titleIdx = Math.min(Math.floor((user.unlockedLevel - 1) / 8), titles.length - 1);
-
-        return (
-            <div className="profile-view fade-in">
-                <header className="view-header">
-                    <h2 className="heading-l">Perfil</h2>
-                    <button
-                        onClick={() => {
-                            if (confirm('¿Reiniciar todo el progreso?')) {
-                                localStorage.removeItem('zion_academy_user');
-                                setUser({ ...INITIAL_USER_STATE });
-                            }
-                        }}
-                        style={{ background: 'none', border: 'none', fontSize: 12, color: '#94a3b8', cursor: 'pointer' }}
-                    >
-                        Reiniciar
-                    </button>
-                </header>
-
-                <div className="ui-card" style={{ textAlign: 'center', padding: 28 }}>
-                    <div style={{
-                        width: 80, height: 80, borderRadius: '50%',
-                        background: '#fff',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        margin: '0 auto 16px',
-                        boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
-                        overflow: 'hidden'
-                    }}>
-                        <img src="/logo2.png" alt="Zion Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <h3 style={{ fontSize: 22, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>Músico Zion Academy</h3>
-                    <div style={{ fontSize: 13, color: '#64748b', marginBottom: 16 }}>
-                        {titles[titleIdx]} · Nivel {userLevel}
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginTop: 20 }}>
-                        {[
-                            { label: 'XP Total', val: user.xp, icon: '⭐' },
-                            { label: 'Racha', val: `${user.streak}d`, icon: '🔥' },
-                            { label: 'Precisión', val: `${accuracy(user)}%`, icon: '🎯' },
-                        ].map(({ label, val, icon }) => (
-                            <div key={label} style={{ background: '#f8fafc', borderRadius: 12, padding: 12 }}>
-                                <div style={{ fontSize: 20 }}>{icon}</div>
-                                <div style={{ fontSize: 18, fontWeight: 800, color: '#1e293b', marginTop: 4 }}>{val}</div>
-                                <div style={{ fontSize: 10, color: '#64748b' }}>{label}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Instrument tips based on progress */}
-                <div className="ui-card" style={{ marginTop: 16, background: 'linear-gradient(135deg, #ede9fe, #faf5ff)' }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8, color: '#7c3aed' }}>🎓 Tu Camino Musical</div>
-                    <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6 }}>
-                        Has completado <strong>{user.completedLessons.length} lecciones</strong> con <strong>{user.totalCorrect} respuestas correctas</strong>.
-                        {user.unlockedLevel < 5 && ' Sigue practicando los fundamentos para desbloquear el entrenamiento auditivo.'}
-                        {user.unlockedLevel >= 5 && user.unlockedLevel < 15 && ' Ya puedes empezar el entrenamiento auditivo. ¡Tu oído musical está mejorando!'}
-                        {user.unlockedLevel >= 15 && ' Excelente progreso. Estás en el camino de los músicos serios.'}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    // ─── SUCCESS SCREEN ───────────────────────────────────────────────────────
-    const renderSuccessScreen = () => (
-        <div className="lesson-success-flow">
-            <div className="success-content ui-card">
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-                    <Mascot 
-                        pose={showSuccess?.perfect ? "celebrate" : "happy"} 
-                        size={120} 
-                        speech={showSuccess?.perfect ? "¡INCREÍBLE! 🌟" : "¡Lo logramos! 🎵"}
-                        speechStyle={{ fontSize: 16, padding: '10px 20px', bottom: '85%' }}
-                    />
-                </div>
-                <h1 className="heading-xl" style={{ color: '#1e293b', marginTop: 10 }}>
-                    {showSuccess?.perfect ? '¡Perfecto!' : '¡Nivel Completado!'}
-                </h1>
-                <p className="body-l" style={{ color: '#64748b' }}>
-                    {showSuccess?.perfect
-                        ? 'Sin ningún error. Tu concentración es impresionante.'
-                        : 'Sigue practicando para mejorar la precisión.'}
-                </p>
-                <div style={{ display: 'flex', gap: 16, justifyContent: 'center', margin: '20px 0' }}>
-                    <div className="xp-badge">+{showSuccess?.xp} XP</div>
-                    {showSuccess?.perfect && <div className="xp-badge" style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fef3c7', color: '#d97706' }}>
-                        <Icon name="medal" size={16} color="currentColor" /> Perfecto
-                    </div>}
-                </div>
-                <button
-                    className="ui-button-primary"
-                    style={{ width: '100%', padding: '16px', fontSize: 16, borderRadius: 16 }}
-                    onClick={() => {
-                        setActiveLesson(null);
-                        setActiveLevel(null);
-                        setShowSuccess(null);
-                        setCurrentTab('learn');
-                    }}
-                >
-                    Continuar →
-                </button>
-                <button
-                    style={{ width: '100%', marginTop: 12, padding: '12px', background: 'none', border: '2px solid #e2e8f0', borderRadius: 16, cursor: 'pointer', fontWeight: 600, color: '#64748b', fontSize: 14 }}
-                    onClick={() => {
-                        setActiveLesson(null);
-                        setActiveLevel(null);
-                        setShowSuccess(null);
-                        setCurrentTab('home');
-                    }}
-                >
-                    Ir al inicio
-                </button>
-            </div>
-            <style>{`@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}`}</style>
-        </div>
-    );
-
-    // ─── ACHIEVEMENT POPUP ────────────────────────────────────────────────────
-    const renderAchievementPopup = () => newAchievement && (
-        <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.6)', zIndex: 9998,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-            <div style={{
-                background: '#fff', borderRadius: 24, padding: 32, maxWidth: 320, textAlign: 'center',
-                boxShadow: '0 25px 50px rgba(0,0,0,0.3)',
-                animation: 'toastIn 0.4s ease',
-            }}>
-                <div style={{ fontSize: 56, marginBottom: 12 }}>{newAchievement.icon}</div>
-                <div style={{ fontSize: 12, fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>
-                    ¡Nuevo Logro!
-                </div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#1e293b', marginBottom: 8 }}>{newAchievement.title}</h3>
-                <p style={{ color: '#64748b', fontSize: 14, marginBottom: 16 }}>{newAchievement.desc}</p>
-                <div style={{ background: '#ede9fe', color: '#7c3aed', fontWeight: 800, borderRadius: 100, padding: '8px 20px', display: 'inline-block' }}>
-                    +{newAchievement.xp} XP
-                </div>
-            </div>
-        </div>
-    );
 
     // ─── MAIN RENDER ──────────────────────────────────────────────────────────
     return (
@@ -914,12 +889,26 @@ const Academy = () => {
             {xpToast && <XPToast amount={xpToast} onDone={() => setXpToast(null)} />}
 
             {/* Achievement popup */}
-            {renderAchievementPopup()}
+            {newAchievement && <AchievementPopup achievement={newAchievement} />}
 
             {activeLesson ? (
                 <div className="lesson-frame-flow">
                     {showSuccess ? (
-                        renderSuccessScreen()
+                        <SuccessScreen 
+                            showSuccess={showSuccess} 
+                            onContinue={() => {
+                                setActiveLesson(null);
+                                setActiveLevel(null);
+                                setShowSuccess(null);
+                                setCurrentTab('learn');
+                            }}
+                            onGoHome={() => {
+                                setActiveLesson(null);
+                                setActiveLevel(null);
+                                setShowSuccess(null);
+                                setCurrentTab('home');
+                            }}
+                        />
                     ) : (
                         <ExercisePlayer
                             exercise={activeLesson.exercises[currentExerciseIdx]}
@@ -938,11 +927,21 @@ const Academy = () => {
             ) : (
                 <>
                     <main className="content-scroll">
-                        {currentTab === 'home'     && renderHomeScreen()}
-                        {currentTab === 'learn'    && renderLearnView()}
-                        {currentTab === 'practice' && renderPracticeView()}
-                        {currentTab === 'progress' && renderProgressView()}
-                        {currentTab === 'profile'  && renderProfileView()}
+                        {currentTab === 'home'     && <HomeScreen user={user} onStartLevel={startLevel} />}
+                        {currentTab === 'learn'    && <LearnView user={user} onStartLevel={startLevel} />}
+                        {currentTab === 'practice' && <PracticeView user={user} onStartLevel={startLevel} />}
+                        {currentTab === 'progress' && <ProgressView user={user} />}
+                        {currentTab === 'profile'  && (
+                            <ProfileView 
+                                user={user} 
+                                onReset={() => {
+                                    if (confirm('¿Reiniciar todo el progreso?')) {
+                                        localStorage.removeItem('zion_academy_user');
+                                        setUser({ ...INITIAL_USER_STATE });
+                                    }
+                                }} 
+                            />
+                        )}
                     </main>
 
                     {/* Bottom Nav */}

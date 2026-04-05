@@ -596,7 +596,7 @@ export default function Landing() {
             {/* HERO SECTION - PREMIUM CINEMATIC EXPERIENCE */}
              <header style={{
                  position: 'relative',
-                 minHeight: '60vh',
+                 minHeight: '85vh',
                  display: 'flex',
                  alignItems: 'center',
                  padding: '0 60px',
@@ -621,7 +621,7 @@ export default function Landing() {
                          zIndex: 2
                      }} />
                      <img 
-                         src="/hero_junior_lugo.png" 
+                         src="/portada.jpg" 
                          alt="Junior Lugo Studio" 
                          style={{
                              width: '100%',
@@ -641,47 +641,37 @@ export default function Landing() {
                      position: 'relative', 
                      zIndex: 10
                  }}>
-                     <div style={{ flex: 1, textAlign: 'left', maxWidth: '650px' }}>
+                     <div style={{ flex: 1, textAlign: 'left', maxWidth: '650px', transform: 'translateX(-180px)' }}>
                          <div style={{ marginBottom: '24px', animation: 'fadeInDown 1s ease-out' }}>
-                             <span style={{
-                                 display: 'block',
-                                 fontSize: '0.8rem',
-                                 fontWeight: '800',
-                                 letterSpacing: '5px',
-                                 color: '#8B5CF6',
-                                 textTransform: 'uppercase',
-                                 marginBottom: '15px'
-                             }}>STUDIO PRODUCTION</span>
+
                              
-                             <h2 style={{
-                                 fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
-                                 fontWeight: '900',
-                                 color: 'white',
-                                 lineHeight: '0.9',
-                                 margin: 0,
-                                 letterSpacing: '-2px',
-                                 textTransform: 'uppercase'
-                             }}>
-                                 JUNIOR<br />
-                                 <span style={{ 
-                                     background: 'linear-gradient(to right, #fff, #8B5CF6)',
-                                     WebkitBackgroundClip: 'text',
-                                     WebkitTextFillColor: 'transparent',
-                                     display: 'inline-block'
-                                 }}>LUGO</span>
-                             </h2>
+                             <div style={{ marginBottom: '40px', marginTop: '20px' }}>
+                                 <img 
+                                     src="/logo.png" 
+                                     alt="Logo" 
+                                     style={{ 
+                                         height: 'clamp(300px, 50vw, 600px)', 
+                                         objectFit: 'contain', 
+                                         animation: 'fadeInDown 1s ease-out'
+                                     }} 
+                                 />
+                             </div>
                          </div>
 
                          <p style={{
-                             fontSize: '1rem',
-                             color: 'rgba(255,255,255,0.6)',
-                             maxWidth: '450px',
-                             lineHeight: '1.6',
-                             marginBottom: '32px',
-                             fontWeight: '400',
+                             fontSize: 'clamp(1.2rem, 2.5vw, 1.5rem)',
+                             color: 'rgba(255,255,255,0.9)',
+                             maxWidth: '550px',
+                             lineHeight: '1.4',
+                             marginBottom: '35px',
+                             fontWeight: '300',
+                             letterSpacing: '0.5px',
+                             borderLeft: '3px solid #FFFFFF',
+                             paddingLeft: '20px',
                              animation: 'fadeIn 1.5s ease-out'
                          }}>
-                             Producción musical para artistas globales. Más allá del sonido, creamos tu legado.
+                             Producción musical para artistas globales.<br/>
+                             <strong style={{ fontWeight: '800', letterSpacing: '1px' }}>Más allá del sonido, creamos tu legado.</strong>
                          </p>
 
                          <div style={{ 
@@ -693,16 +683,18 @@ export default function Landing() {
                                  onClick={() => navigate('/store')}
                                  style={{
                                      padding: '14px 40px',
-                                     background: '#8B5CF6',
-                                     border: 'none',
+                                     background: '#FFFFFF',
+                                     border: '1px solid #FFFFFF',
                                      borderRadius: '6px',
-                                     color: 'white',
+                                     color: '#000000',
                                      fontSize: '0.85rem',
                                      fontWeight: '800',
                                      cursor: 'pointer',
                                      transition: 'all 0.3s ease',
                                      textTransform: 'uppercase'
                                  }}
+                                 onMouseOver={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}
+                                 onMouseOut={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#000000'; }}
                              >
                                  Ir a Tienda
                              </button>
@@ -729,7 +721,7 @@ export default function Landing() {
 
 
             {/* CATÁLOGO DE PRODUCTOS */}
-            <section id="tienda" style={{ padding: '20px 40px 100px 40px', backgroundColor: '#080d1a', position: 'relative', overflow: 'hidden' }}>
+            <section id="tienda" style={{ padding: '20px 40px 100px 40px', background: 'linear-gradient(to bottom, #0000CC 0%, #000000 100%)', position: 'relative', overflow: 'hidden' }}>
                 <style>{`
                     @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
                     @keyframes pulse { 0%,100%{opacity:0.3;} 50%{opacity:1;} }
@@ -888,10 +880,10 @@ export default function Landing() {
             </section>
 
             {/* MULTITRACKS EN VENTA - SECCION ADICIONAL */}
-            <section style={{ padding: '80px 40px', backgroundColor: '#020617', position: 'relative' }}>
+            <section style={{ padding: '80px 40px', backgroundColor: '#000000', position: 'relative' }}>
                 <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '10px', color: '#8B5CF6' }}>MULTITRACKS EN VENTA</h2>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '10px', color: '#FFFFFF' }}>MULTITRACKS EN VENTA</h2>
                         <p style={{ color: 'white', fontSize: '0.85rem', letterSpacing: '2px', textTransform: 'uppercase' }}>Sesiones profesionales de estudio listas para tu motor</p>
                     </div>
 
@@ -918,9 +910,9 @@ export default function Landing() {
                                     <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <button 
                                             onClick={() => openPreview(track)}
-                                            style={{ background: '#8B5CF6', border: 'none', width: '50px', height: '50px', borderRadius: '50%', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                            style={{ background: '#FFFFFF', border: 'none', width: '50px', height: '50px', borderRadius: '50%', color: 'black', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                         >
-                                            <Play size={20} fill="white" />
+                                            <Play size={20} fill="black" />
                                         </button>
                                     </div>
                                     <div style={{ position: 'absolute', bottom: '15px', right: '15px', background: 'rgba(0,0,0,0.7)', padding: '4px 10px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: '900', backdropFilter: 'blur(4px)' }}>
@@ -931,12 +923,12 @@ export default function Landing() {
                                     <h3 style={{ margin: '0 0 5px 0', fontSize: '1rem', fontWeight: '800' }}>{track.name}</h3>
                                     <p style={{ color: '#64748b', fontSize: '0.8rem', margin: '0 0 15px 0' }}>{track.artist}</p>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '1.2rem', fontWeight: '900', color: '#8B5CF6' }}>${track.price || '99.00'}</span>
+                                        <span style={{ fontSize: '1.2rem', fontWeight: '900', color: '#FFFFFF' }}>${track.price || '99.00'}</span>
                                         <button 
                                             onClick={() => addToCart(track)}
-                                            style={{ background: 'transparent', border: '1px solid #8B5CF6', color: '#8B5CF6', padding: '6px 15px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s' }}
-                                            onMouseEnter={e => { e.currentTarget.style.background = '#8B5CF6'; e.currentTarget.style.color = 'white'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8B5CF6'; }}
+                                            style={{ background: 'transparent', border: '1px solid #FFFFFF', color: '#FFFFFF', padding: '6px 15px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s' }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#000000'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}
                                         >AGREGAR</button>
                                     </div>
                                 </div>
@@ -952,7 +944,7 @@ export default function Landing() {
             </section>
 
             {/* SERVICIOS DE PRODUCCIÓN */}
-            <section id="servicios" style={{ padding: '100px 40px', backgroundColor: '#050a18' }}>
+            <section id="servicios" style={{ padding: '100px 40px', background: 'linear-gradient(to bottom, #0000CC 0%, #000000 100%)' }}>
                 <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: '60px' }}>
                         <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '10px', color: 'white' }}>SERVICIOS DE PRODUCCIÓN</h2>
@@ -1043,9 +1035,9 @@ export default function Landing() {
             </section>
 
             {/* GALERÍA DE FOTOS - ESTILO FILMES PRO */}
-            <section id="galeria" style={{ padding: '120px 0', backgroundColor: '#02040a', position: 'relative', overflow: 'hidden' }}>
+            <section id="galeria" style={{ padding: '120px 0', backgroundColor: '#000000', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 60px', marginBottom: '60px', textAlign: 'center' }}>
-                    <span style={{ color: '#8B5CF6', fontSize: '0.8rem', fontWeight: '800', letterSpacing: '6px', textTransform: 'uppercase', display: 'block', marginBottom: '15px' }}>Visuales</span>
+                    <span style={{ color: '#FFFFFF', fontSize: '0.8rem', fontWeight: '800', letterSpacing: '6px', textTransform: 'uppercase', display: 'block', marginBottom: '15px' }}>Visuales</span>
                     <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '900', color: 'white', textTransform: 'uppercase', margin: 0, letterSpacing: '-1px' }}>Experiencia en el Estudio</h2>
                 </div>
 
@@ -1065,18 +1057,18 @@ export default function Landing() {
                     <button 
                         onClick={() => scrollGallery('left')}
                         style={{ pointerEvents: 'auto', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', width: '64px', height: '64px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s', backdropFilter: 'blur(10px)' }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#8B5CF6'}
+                        onMouseEnter={e => e.currentTarget.style.background = '#FFFFFF'}
                         onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
                     >
-                        <ChevronLeft size={32} />
+                        <ChevronLeft size={32} color="currentColor" />
                     </button>
                     <button 
                         onClick={() => scrollGallery('right')}
                         style={{ pointerEvents: 'auto', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', width: '64px', height: '64px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s', backdropFilter: 'blur(10px)' }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#8B5CF6'}
+                        onMouseEnter={e => e.currentTarget.style.background = '#FFFFFF'}
                         onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
                     >
-                        <ChevronRight size={32} />
+                        <ChevronRight size={32} color="currentColor" />
                     </button>
                 </div>
 
@@ -1140,7 +1132,7 @@ export default function Landing() {
                                     opacity: 0.8,
                                     pointerEvents: 'none'
                                 }}>
-                                    <span style={{ color: 'white', fontSize: '0.65rem', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', borderLeft: '2px solid #8B5CF6', paddingLeft: '10px' }}>{photo.caption}</span>
+                                    <span style={{ color: 'white', fontSize: '0.65rem', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', borderLeft: '2px solid #FFFFFF', paddingLeft: '10px' }}>{photo.caption}</span>
                                 </div>
                             </div>
                         ))}
@@ -1163,10 +1155,10 @@ export default function Landing() {
                             cursor: 'pointer',
                             textTransform: 'uppercase',
                             transition: 'all 0.3s',
-                            boxShadow: '0 10px 30px rgba(139, 92, 246, 0.2)'
+                            boxShadow: '0 10px 30px rgba(255, 255, 255, 0.2)'
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.background = '#8B5CF6'; e.currentTarget.style.color = 'white'; }}
-                        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'white'; e.currentTarget.style.color = 'black'; }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.background = '#000000'; e.currentTarget.style.color = 'white'; e.currentTarget.style.border = '1px solid white'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'white'; e.currentTarget.style.color = 'black'; e.currentTarget.style.border = 'none'; }}
                     > Ver Galería Completa </button>
                 </div>
 
@@ -1206,7 +1198,7 @@ export default function Landing() {
             </section>
 
             {/* ETAPAS DEL PROCESO */}
-            <section id="proceso" style={{ padding: '80px 40px 40px', background: '#050a18' }}>
+            <section id="proceso" style={{ padding: '80px 40px 40px', background: 'linear-gradient(to bottom, #0000CC 0%, #000000 100%)' }}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: '50px' }}>
                         <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '10px', color: 'white' }}>ETAPAS DEL PROCESO</h2>
@@ -1242,7 +1234,7 @@ export default function Landing() {
             </section>
 
             {/* PORTAFOLIO / VIDEOS */}
-            <section id="portafolio" style={{ padding: '40px 40px 100px', background: '#050a18' }}>
+            <section id="portafolio" style={{ padding: '40px 40px 100px', background: 'linear-gradient(to bottom, #0000CC 0%, #000000 100%)' }}>
                 <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                         <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', color: 'white', marginBottom: '4px' }}>PORTAFOLIO</h2>
@@ -1273,7 +1265,7 @@ export default function Landing() {
                                 boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
                                 transition: 'all 0.3s ease'
                             }} className="video-card-hover">
-                                <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(139, 92, 246, 0.8)', padding: '4px 12px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '1px', color: 'white', zIndex: 2, textTransform: 'uppercase' }}>{video.genre}</div>
+                                <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(255, 255, 255, 0.8)', padding: '4px 12px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '1px', color: 'black', zIndex: 2, textTransform: 'uppercase' }}>{video.genre}</div>
                                 <iframe
                                     width="100%"
                                     height="100%"
@@ -1295,8 +1287,8 @@ export default function Landing() {
                                 style={{
                                     padding: '16px 40px',
                                     background: 'transparent',
-                                    border: '2px solid #8B5CF6',
-                                    color: '#8B5CF6',
+                                    border: '2px solid #FFFFFF',
+                                    color: '#FFFFFF',
                                     borderRadius: '50px',
                                     fontSize: '0.9rem',
                                     fontWeight: '900',
@@ -1304,8 +1296,8 @@ export default function Landing() {
                                     cursor: 'pointer',
                                     transition: 'all 0.3s'
                                 }}
-                                onMouseEnter={e => { e.currentTarget.style.background = '#8B5CF6'; e.currentTarget.style.color = 'white'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8B5CF6'; }}
+                                onMouseEnter={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#000000'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}
                             >
                                 VER TODO EL PORTAFOLIO
                             </button>
@@ -1315,7 +1307,7 @@ export default function Landing() {
             </section>
 
             {/* TOP 10 RANKING SECTION */}
-            <section style={{ padding: '100px 60px', backgroundColor: '#0f172a' }}>
+            <section style={{ padding: '100px 60px', backgroundColor: '#000000' }}>
                 <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
                     <h2 style={{ textAlign: 'center', fontSize: '2.5rem', fontWeight: '800', marginBottom: '60px' }}>Top 10 de este Mes</h2>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '32px' }}>
@@ -1364,7 +1356,7 @@ export default function Landing() {
 
 
             {/* SOCIAL MEDIA SECTION */}
-            <section style={{ padding: '100px 40px', backgroundColor: '#020617', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+            <section style={{ padding: '100px 40px', backgroundColor: '#000000', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <h2 style={{ fontSize: '1.2rem', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '15px', color: 'white' }}>CONNECT WITH ME</h2>
                     <p style={{ color: '#8892a4', fontSize: '0.85rem', marginBottom: '50px', letterSpacing: '2px' }}>SÍGUEME EN MIS REDES PARA MÁS CONTENIDO</p>

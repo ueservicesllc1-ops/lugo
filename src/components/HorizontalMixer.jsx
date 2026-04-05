@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { Volume2, VolumeX, Headphones, Music, Mic2, Disc, Layers } from 'lucide-react';
 
 // ── Per-track mini waveform canvas ──────────────────────────────────────────
@@ -38,7 +38,7 @@ const TrackWaveform = ({ trackId, color, muted, progress }) => {
 
                 peaksRef.current = peaks;
                 drawWaveform(peaks, progress, color, muted);
-            } catch (e) {
+            } catch {
                 // No buffer yet — draw placeholder
                 const W = canvasRef.current?.offsetWidth || 300;
                 const peaks = new Float32Array(W);

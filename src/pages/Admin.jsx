@@ -29,7 +29,13 @@ import {
     ArrowLeft,
     Camera,
     Loader2,
-    CheckCircle2 as CheckIcon
+    CheckCircle2 as CheckIcon,
+    DollarSign,
+    Users,
+    TrendingUp,
+    Calendar,
+    Search,
+    CreditCard
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -96,6 +102,8 @@ export default function Admin() {
     const [gallery, setGallery] = useState([]);
     const [videos, setVideos] = useState([]);
     const [socials, setSocials] = useState({ instagram: '', youtube: '', tiktok: '', spotify: '' });
+    const [sales, setSales] = useState([]);
+    const [salesSearch, setSalesSearch] = useState('');
 
     // Derived: split catalog into MTs vs simple songs
     const mtProducts = products.filter(p => Array.isArray(p.tracks) && p.tracks.length > 0);
@@ -114,7 +122,8 @@ export default function Admin() {
     const [previews, setPreviews] = useState({ photo: null, cover: null });
 
     // ── MT Wizard States (igual que Vendedores) ──────────────────────────────
-    const [mtStep, setMtStep] = useState('idle'); // idle | review-tracks | details | uploading | done
+    const [mtStep, setMtStep] = useState('idle'); // idle | review-tracks | details | uploading | done | error
+    const [mtError, setMtError] = useState('');
     const [fileList, setFileList] = useState([]);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [songName, setSongName] = useState('');
@@ -156,7 +165,10 @@ export default function Admin() {
             setVideos(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         });
         getDoc(doc(db, 'settings', 'socials')).then(snap => { if (snap.exists()) setSocials(snap.data()); });
-        return () => { unsubP(); unsubG(); unsubV(); };
+        const unsubS = onSnapshot(query(collection(db, 'sales'), orderBy('createdAt', 'desc')), (snap) => {
+            setSales(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+        return () => { unsubP(); unsubG(); unsubV(); unsubS(); };
     }, [isAdmin]);
 
     const handleLogout = () => { auth.signOut(); navigate('/'); };
@@ -173,14 +185,30 @@ export default function Admin() {
             if (parts.length >= 2) setArtist(parts[1]);
             const contents = await zip.loadAsync(file);
             const extractedFiles = [];
-            const filesToExtract = Object.keys(contents.files).filter(f => f.endsWith('.wav') || f.endsWith('.mp3'));
+            
+            // Validación de formatos solicitada por el usuario
+            const allFileNames = Object.keys(contents.files).filter(f => !contents.files[f].dir && !f.includes('__MACOSX') && !f.endsWith('.DS_Store'));
+            const invalidFiles = allFileNames.filter(f => !f.toLowerCase().endsWith('.wav') && !f.toLowerCase().endsWith('.mp3'));
+            
+            if (invalidFiles.length > 0) {
+                setMtError(`Se detectaron archivos con formato no permitido:\n\n${invalidFiles.join('\n')}\n\nSolo se permiten archivos MP3 o WAV para asegurar la calidad del marketplace.`);
+                setMtStep('error');
+                return;
+            }
+
+            const filesToExtract = allFileNames.filter(f => f.toLowerCase().endsWith('.wav') || f.toLowerCase().endsWith('.mp3'));
             for (let i = 0; i < filesToExtract.length; i++) {
                 const filename = filesToExtract[i];
                 const fileData = await contents.files[filename].async('blob');
-                let rawName = filename.split('/').pop().replace(/\.(wav|mp3)$/i, '');
-                let finalDisplayName = rawName.replace(/[^a-zA-Z0-9_-]/g, '');
+                let rawName = filename.split('/').pop().replace(/\.(wav|mp3|WAV|MP3)$/i, '');
+                let finalDisplayName = rawName.replace(/[^a-zA-Z0-9_-]/g, ' ').trim();
                 if (finalDisplayName.toLowerCase().includes('clicktrack')) finalDisplayName = 'Click';
-                extractedFiles.push({ originalName: filename, displayName: finalDisplayName, blob: fileData, extension: filename.split('.').pop() });
+                extractedFiles.push({ 
+                    originalName: filename, 
+                    displayName: finalDisplayName, 
+                    blob: fileData, 
+                    extension: filename.split('.').pop().toLowerCase() 
+                });
             }
             if (extractedFiles.length === 0) throw new Error('No se encontraron archivos de audio en el ZIP.');
             setFileList(extractedFiles);
@@ -214,7 +242,8 @@ export default function Admin() {
                 const track = fileList[i];
                 const formData = new FormData();
                 formData.append('audioFile', track.blob);
-                const b2Filename = `sell_admin_${Date.now()}_${songName.replace(/\s+/g, '_')}_${track.displayName.replace(/\s+/g, '_')}.mp3`;
+                // Usar extensión original para preservar calidad (wav o mp3)
+                const b2Filename = `sell_admin_${Date.now()}_${songName.replace(/\s+/g, '_')}_${track.displayName.replace(/\s+/g, '_')}.${track.extension}`;
                 formData.append('fileName', b2Filename);
                 formData.append('generatePreview', 'true');
                 const uploadRes = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
@@ -233,7 +262,8 @@ export default function Admin() {
             if (mixBlob) {
                 const formData = new FormData();
                 formData.append('audioFile', mixBlob);
-                formData.append('fileName', `sell_admin_${Date.now()}_${songName.replace(/\s+/g, '_')}__PreviewMix.mp3`);
+                // El mix total es un WAV generado en el cliente
+                formData.append('fileName', `sell_admin_${Date.now()}_${songName.replace(/\s+/g, '_')}__PreviewMix.wav`);
                 formData.append('generatePreview', 'true');
                 const res = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
                 if (res.ok) {
@@ -272,7 +302,7 @@ export default function Admin() {
     const resetMtWizard = () => {
         setMtStep('idle'); setFileList([]); setSongName(''); setArtist('');
         setSongKey(''); setTempo(''); setTimeSignature('4/4'); setPrice('9.99');
-        setCoverUrl(''); setCoverFileId(''); setUploadProgress(0);
+        setCoverUrl(''); setCoverFileId(''); setUploadProgress(0); setMtError('');
     };
 
     // ── Catálogo handlers ────────────────────────────────────────────────────
@@ -446,6 +476,7 @@ export default function Admin() {
                     <button onClick={() => setActiveTab('products')} style={S.sideBtn(activeTab === 'products')}><Music size={18} /> Catálogo Simple</button>
                     <button onClick={() => setActiveTab('gallery')} style={S.sideBtn(activeTab === 'gallery')}><ImageIcon size={18} /> Galería</button>
                     <button onClick={() => setActiveTab('portfolio')} style={S.sideBtn(activeTab === 'portfolio')}><Video size={18} /> Portafolio</button>
+                    <button onClick={() => setActiveTab('sales')} style={S.sideBtn(activeTab === 'sales')}><DollarSign size={18} /> Ventas</button>
                     <button onClick={() => setActiveTab('socials')} style={S.sideBtn(activeTab === 'socials')}><Share2 size={18} /> Redes</button>
                 </nav>
                 <button onClick={handleLogout} style={{ marginTop: 'auto', padding: '12px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', gap: '10px', fontWeight: '700' }}><LogOut size={18} /> Salir</button>
@@ -599,13 +630,28 @@ export default function Admin() {
 
                         {/* DONE */}
                         {mtStep === 'done' && (
-                            <div style={{ background: '#080d1a', padding: '60px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center' }}>
-                                <div style={{ color: '#10b981', marginBottom: '24px' }}><CheckIcon size={72} style={{ margin: '0 auto' }} /></div>
-                                <h3 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '12px' }}>¡Multitrack Publicado!</h3>
-                                <p style={{ color: '#64748b', marginBottom: '30px' }}>La pista ha sido cargada con éxito y ya está visible en el marketplace.</p>
-                                <button onClick={resetMtWizard} style={{ ...S.btnTeal, padding: '14px 40px', fontSize: '1rem' }}>Subir Otro Multitrack</button>
+                            <div style={{ background: '#080d1a', padding: '60px', borderRadius: '24px', border: '1px solid #10b981', textAlign: 'center' }}>
+                                <div style={{ width: '80px', height: '80px', background: 'rgba(16,185,129,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                                    <CheckIcon size={40} color="#10b981" />
+                                </div>
+                                <h3 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '12px' }}>¡Publicado con éxito!</h3>
+                                <p style={{ color: '#64748b', marginBottom: '30px' }}>La canción ya está disponible en el marketplace principal.</p>
+                                <button onClick={resetMtWizard} style={{ ...S.btnTeal, padding: '15px 40px' }}>SUBIR OTRO MULTITRACK</button>
                             </div>
                         )}
+
+                        {/* ERROR POPUP */}
+                        {mtStep === 'error' && (
+                            <div style={{ background: 'rgba(239,68,68,0.1)', padding: '50px', borderRadius: '24px', border: '1px solid #ef4444', textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
+                                <div style={{ width: '80px', height: '80px', background: 'rgba(239,68,68,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                                    <X size={40} color="#ef4444" />
+                                </div>
+                                <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#ef4444', marginBottom: '16px' }}>¡Formato No Permitido!</h2>
+                                <p style={{ color: 'white', fontSize: '1.1rem', marginBottom: '30px', lineHeight: '1.6', whiteSpace: 'pre-line' }}>{mtError}</p>
+                                <button onClick={resetMtWizard} style={{ ...S.btnGhost, padding: '15px 40px', fontWeight: '800' }}>VOLVER A INTENTAR</button>
+                            </div>
+                        )}
+
                     </div>
                 )}
 
@@ -754,6 +800,126 @@ export default function Admin() {
                         </div>
                     </>
                 )}
+
+                {/* ── TAB: VENTAS ── */}
+                {activeTab === 'sales' && (
+                    <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
+                        <header style={{ marginBottom: '40px' }}>
+                            <h1 style={{ margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Registro de Ventas</h1>
+                            <p style={{ color: '#64748b', margin: 0 }}>Historial de transacciones y métricas de ingresos.</p>
+                        </header>
+
+                        {/* Metrics Grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+                            <div style={{ background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', padding: '24px', borderRadius: '20px', position: 'relative', overflow: 'hidden' }}>
+                                <DollarSign style={{ position: 'absolute', right: '-10px', bottom: '-10px', opacity: 0.2, width: '100px', height: '100px' }} />
+                                <div style={{ fontSize: '0.85rem', fontWeight: '800', opacity: 0.8, textTransform: 'uppercase', marginBottom: '8px' }}>Ingresos Totales</div>
+                                <div style={{ fontSize: '2.2rem', fontWeight: '900' }}>${sales.reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0).toFixed(2)}</div>
+                            </div>
+                            <div style={{ background: '#080d1a', border: '1px solid rgba(255,255,255,0.08)', padding: '24px', borderRadius: '20px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>Ventas Totales</div>
+                                    <TrendingUp size={20} color="#10b981" />
+                                </div>
+                                <div style={{ fontSize: '2.2rem', fontWeight: '900' }}>{sales.length}</div>
+                                <div style={{ fontSize: '0.8rem', color: '#10b981', marginTop: '4px', fontWeight: '700' }}>+100% crecimiento</div>
+                            </div>
+                            <div style={{ background: '#080d1a', border: '1px solid rgba(255,255,255,0.08)', padding: '24px', borderRadius: '20px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>Últimos 30 Días</div>
+                                    <Calendar size={20} color="#8B5CF6" />
+                                </div>
+                                <div style={{ fontSize: '2.2rem', fontWeight: '900' }}>
+                                    ${sales
+                                        .filter(s => s.createdAt?.toDate() > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
+                                        .reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0)
+                                        .toFixed(2)}
+                                </div>
+                                <div style={{ fontSize: '0.8rem', color: '#8B5CF6', marginTop: '4px', fontWeight: '700' }}>Ingresos recientes</div>
+                            </div>
+                        </div>
+
+                        {/* Sales Table Holder */}
+                        <div style={{ background: '#080d1a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', overflow: 'hidden' }}>
+                            <div style={{ padding: '24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                                <h3 style={{ margin: 0, fontWeight: '800', fontSize: '1.2rem' }}>Transacciones Recientes</h3>
+                                <div style={{ position: 'relative', width: '300px' }}>
+                                    <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#475569' }} size={16} />
+                                    <input 
+                                        style={{ ...S.input, paddingLeft: '40px', margin: 0, height: '42px', fontSize: '0.9rem' }} 
+                                        placeholder="Buscar por cliente o canción..." 
+                                        value={salesSearch}
+                                        onChange={e => setSalesSearch(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                    <thead>
+                                        <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
+                                            {['Fecha', 'Cliente', 'Productos', 'Total', 'Método', 'Estado'].map(h => (
+                                                <th key={h} style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>{h}</th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sales
+                                            .filter(s => {
+                                                const search = salesSearch.toLowerCase();
+                                                const emailMatch = s.userEmail?.toLowerCase().includes(search);
+                                                const nameMatch = s.userName?.toLowerCase().includes(search);
+                                                const songMatch = s.songs?.some(song => song.name.toLowerCase().includes(search));
+                                                return !salesSearch || emailMatch || nameMatch || songMatch;
+                                            })
+                                            .map((sale) => (
+                                                <tr key={sale.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s', ':hover': { background: 'rgba(255,255,255,0.01)' } }}>
+                                                    <td style={{ padding: '20px 24px', fontSize: '0.85rem', color: '#94a3b8' }}>
+                                                        {sale.createdAt?.toDate().toLocaleDateString() || 'N/A'}
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px' }}>
+                                                        <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{sale.userName}</div>
+                                                        <div style={{ fontSize: '0.75rem', color: '#475569' }}>{sale.userEmail}</div>
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                            {sale.songs?.map((song, i) => (
+                                                                <div key={i} style={{ fontSize: '0.8rem', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#8B5CF6' }}></div>
+                                                                    {song.name}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px', fontWeight: '900', color: '#10b981' }}>
+                                                        ${parseFloat(sale.total).toFixed(2)}
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: '800' }}>
+                                                            <CreditCard size={14} /> {sale.paymentMethod || 'PayPal'}
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px' }}>
+                                                        <span style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '6px 12px', borderRadius: '30px', fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase' }}>
+                                                            Completado
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        {sales.length === 0 && (
+                                            <tr>
+                                                <td colSpan="6" style={{ padding: '60px', textAlign: 'center', color: '#475569' }}>
+                                                    No hay ventas registradas todavía.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </main>
 
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

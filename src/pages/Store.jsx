@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
-import { ShoppingCart, Search, Music2, ArrowLeft, X, CheckCircle2, Play, Pause, Loader2, LogOut } from 'lucide-react';
+import { Search, ShoppingCart, Play, X, ArrowLeft, Music2, Globe, LogOut } from 'lucide-react';
+import { useTranslation } from '../context/LanguageContext';
 import Footer from '../components/Footer';
 import { HorizontalMixer } from '../components/HorizontalMixer';
 
@@ -10,26 +11,46 @@ const SongCard = ({ song, onPreview, onBuy, navigate }) => {
     const [realSellerName, setRealSellerName] = useState(song.sellerName || 'Vendedor Lugo');
 
     useEffect(() => {
+        let isMounted = true;
+        if (!song || !song.userId) {
+            const name = song?.sellerName || song?.artist || 'Vendedor Lugo';
+            Promise.resolve().then(() => {
+                if (isMounted) setRealSellerName(prev => prev !== name ? name : prev);
+            });
+            return;
+        }
+
         if (!song.sellerName || song.sellerName === 'Vendedor Lugo') {
             const fetchName = async () => {
                 try {
                     const userSnap = await getDoc(doc(db, 'users', song.userId));
-                    if (userSnap.exists()) {
+                    if (isMounted && userSnap.exists()) {
                         const userData = userSnap.data();
                         const fullName = userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : userData.displayName;
-                        if (fullName) setRealSellerName(fullName);
+                        if (isMounted && fullName) {
+                            Promise.resolve().then(() => {
+                                setRealSellerName(fullName);
+                            });
+                        }
                     }
-                } catch (e) { console.error("Error fetching seller name:", e); }
+                } catch (_e) {
+                    console.error("Error fetching seller name:", _e);
+                }
             };
             fetchName();
         } else {
-            Promise.resolve().then(() => setRealSellerName(song.sellerName));
+            const name = song.sellerName;
+            Promise.resolve().then(() => {
+                if (isMounted) setRealSellerName(prev => prev !== name ? name : prev);
+            });
         }
-    }, [song.sellerName, song.userId]);
+        return () => { isMounted = false; };
+    }, [song]);
 
     const previewUrl = song.tracks?.find(t => t.name === '__PreviewMix')?.previewUrl || 
                       song.tracks?.find(t => t.name === '__PreviewMix')?.url ||
-                      song.tracks?.[0]?.previewUrl;
+                      song.tracks?.[0]?.previewUrl ||
+                      song.audioUrl;
 
     return (
         <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden', transition: 'transform 0.2s', cursor: 'pointer', height: '100%', position: 'relative' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
@@ -109,17 +130,24 @@ const SongCard = ({ song, onPreview, onBuy, navigate }) => {
 
 export default function Store() {
     const navigate = useNavigate();
+    const { t, language, toggleLanguage } = useTranslation();
+    const location = useLocation();
     const [storeSongs, setStoreSongs] = useState([]);
+    
+    const [activeCategory, setActiveCategory] = useState('multitrack');
+    
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const type = params.get('type');
+        if (type) setActiveCategory(type);
+    }, [location.search]);
+    
     const [searchQuery, setSearchQuery] = useState('');
     const [currentUser, setCurrentUser] = useState(null);
-    const [showDropdown, setShowDropdown] = useState(false); // Nuevo: Estado para dropdown de usuario
-
-    // Nueva lógica de carrito
+    const [showDropdown, setShowDropdown] = useState(false);
     const [cart, setCart] = useState([]);
-
-    const [toast, setToast] = useState(null); // { message, type }
+    const [toast, setToast] = useState(null); 
     
-    // Preview Engine States (Like Landing)
     const [previewSong, setPreviewSong] = useState(null);
     const [previewTracks, setPreviewTracks] = useState([]);
     const [previewLoading, setPreviewLoading] = useState(false);
@@ -139,17 +167,16 @@ export default function Store() {
             await audioEngine.clear();
             previewEngineRef.current = audioEngine;
 
-            // Filtrar solo tracks que no sean __PreviewMix para el mixer real o si solo hay Preview usar ese
             const validTracks = song.tracks?.filter(t => t.name !== '__PreviewMix') || [];
-            
-            // Si hay tracks reales, detectamos si son clips o completos.
-            // Si NO hay tracks reales (solo __PreviewMix), entonces ES un clip (generado por el proxy).
             const isUsingPreviewMixOnly = validTracks.length === 0;
             const useClips = isUsingPreviewMixOnly || validTracks.some(t => t.previewUrl && t.previewUrl !== t.url);
             
-            const rawTracks = (!isUsingPreviewMixOnly)
+            const rawTracks = (validTracks.length > 0)
                 ? validTracks.map(t => ({ id: t.id || Math.random().toString(), name: t.name || 'UNNAMED', url: (useClips ? t.previewUrl : t.url) || t.url }))
-                : song.tracks?.filter(t => t.name === '__PreviewMix').map(t => ({ id: 'preview', name: 'DEMO CLIP', url: t.url || t.previewUrl }));
+                : (song.tracks?.some(t => t.name === '__PreviewMix')
+                    ? song.tracks?.filter(t => t.name === '__PreviewMix').map(t => ({ id: 'preview', name: 'DEMO CLIP', url: t.url || t.previewUrl }))
+                    : (song.audioUrl ? [{ id: 'single', name: 'PISTA FULL', url: song.audioUrl }] : [])
+                );
 
             const getProxyUrl = (url) => {
                 if (!url) return '';
@@ -265,37 +292,42 @@ export default function Store() {
             return newCart;
         });
 
-        // Mostrar notificación visual en lugar de alert
-        setToast({ message: `"${song.name}" añadida al carrito`, type: 'success' });
-        setTimeout(() => setToast(null), 3000);
+        setToast({ 
+            message: `¡${song.name} agregada con éxito!`, 
+            song,
+            type: 'success' 
+        });
+        setTimeout(() => setToast(null), 6000);
     };
-
-
 
     useEffect(() => {
         const unsubAuth = auth.onAuthStateChanged((user) => {
             setCurrentUser(user);
         });
 
-        // Solo traer lo que es para venta. Filtramos en cliente para evitar problemas de índices incompletos
         const q = query(
             collection(db, 'songs'), 
             where('forSale', '==', true)
         );
         
         const unsubSongs = onSnapshot(q, (snap) => {
-            const songs = [];
+            const songsList = [];
             snap.forEach(doc => {
                 const data = doc.data();
-                // Permitir 'active' o 'pending_review' (el usuario quiere verlas aunque estén en revisión)
-                // Pero SOLO si es para venta (forSale ya está en la query)
+                const isMT = data.isMultitrack === true || (Array.isArray(data.tracks) && data.tracks.length > 0);
+                const isSingle = !isMT; 
+
                 if (data.status === 'active' || data.status === 'pending_review' || data.status === 'pending') {
-                    songs.push({ id: doc.id, ...data });
+                    songsList.push({ 
+                        id: doc.id, 
+                        ...data, 
+                        isMultitrack: isMT, 
+                        isSingle: isSingle 
+                    });
                 }
             });
             
-            // Ordenar por fecha: nuevos arriba
-            const sorted = songs.sort((a, b) => {
+            const sorted = songsList.sort((a, b) => {
                 const timeA = a.createdAt?.toMillis() || 0;
                 const timeB = b.createdAt?.toMillis() || 0;
                 return timeB - timeA;
@@ -306,35 +338,50 @@ export default function Store() {
         return () => { 
             unsubAuth(); 
             unsubSongs();
-            // Clear engine callback
             import('../AudioEngine').then(({ audioEngine }) => {
                 if (audioEngine.onProgress) audioEngine.onProgress = null;
             }).catch(() => {});
         };
     }, []);
 
-
-    const filteredStore = storeSongs.filter(s =>
-        (s.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (s.artist || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
     return (
         <div style={{ backgroundColor: '#0f172a', minHeight: '100vh', color: 'white', fontFamily: '"Outfit", sans-serif' }}>
 
-            {/* NOTIFICACIÓN TIPO TOAST */}
             {toast && (
                 <div key="toast-notification" style={{
-                    position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
+                    position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
                     background: '#1e293b', border: `1px solid ${toast.type === 'error' ? '#ef4444' : '#8B5CF6'}`, color: 'white',
-                    padding: '12px 24px', borderRadius: '50px', zIndex: 5000,
-                    boxShadow: '0 10px 30px rgba(0,0,10,0.5)', display: 'flex', alignItems: 'center', gap: '12px',
-                    animation: 'slideUp 0.3s ease-out'
+                    padding: '16px 28px', borderRadius: '24px', zIndex: 5000,
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', gap: '20px',
+                    animation: 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}>
-                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: toast.type === 'error' ? '#ef4444' : '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {toast.type === 'error' ? <X size={14} color="white" /> : <CheckCircle2 size={16} color="black" />}
+                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: toast.type === 'error' ? '#ef4444' : 'rgba(139,92,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {toast.type === 'error' ? <X size={20} color="white" /> : <ShoppingCart size={20} color="#8B5CF6" />}
                     </div>
-                    <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>{toast.message}</span>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontWeight: '800', fontSize: '1rem', color: '#f8fafc' }}>{toast.message}</span>
+                        {toast.type === 'success' && (
+                            <div style={{ display: 'flex', gap: '15px', marginTop: '4px' }}>
+                                <button 
+                                    onClick={() => navigate('/checkout')} 
+                                    style={{ background: '#8B5CF6', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s' }}
+                                >
+                                    VER MI CARRITO
+                                </button>
+                                <button 
+                                    onClick={() => setToast(null)} 
+                                    style={{ background: 'transparent', color: '#94a3b8', border: 'none', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', padding: 0 }}
+                                >
+                                    SEGUIR COMPRANDO
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <button onClick={() => setToast(null)} style={{ background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', marginLeft: '10px' }}>
+                        <X size={18} />
+                    </button>
                 </div>
             )}
 
@@ -346,7 +393,7 @@ export default function Store() {
             `}</style>
 
             <nav style={{
-                padding: '15px 40px',
+                padding: window.innerWidth < 768 ? '10px 15px' : '15px 40px',
                 background: '#0f172a',
                 borderBottom: '1px solid rgba(255,255,255,0.05)',
                 display: 'flex',
@@ -357,37 +404,44 @@ export default function Store() {
                 zIndex: 1000,
                 backdropFilter: 'blur(20px)'
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: window.innerWidth < 768 ? '10px' : '30px' }}>
                     <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                        <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', color: 'white' }}>LUGO<span style={{ color: '#8B5CF6' }}>STAGE</span></h1>
+                        <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', color: 'white', letterSpacing: '-1px' }}>JUNIOR<span style={{ color: '#8B5CF6' }}>LUGO</span></h1>
                     </div>
 
                     <button
                         onClick={() => navigate('/')}
-                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '8px 16px', borderRadius: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontSize: '0.85rem' }}
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '6px 12px', borderRadius: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700', fontSize: '0.75rem' }}
                     >
-                        <ArrowLeft size={16} /> Volver al Inicio
+                        <ArrowLeft size={14} /> <span className="hide-mobile">Volver</span>
                     </button>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <div style={{ position: 'relative' }} className="hide-mobile">
                         <input
                             type="text"
-                            placeholder="Buscar en el marketplace..."
+                            placeholder="Buscar..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '10px 15px 10px 40px', borderRadius: '30px', width: '250px', fontSize: '0.9rem' }}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '8px 12px 8px 35px', borderRadius: '30px', width: '180px', fontSize: '0.85rem' }}
                         />
-                        <Search size={16} style={{ position: 'absolute', top: '11px', left: '15px', color: '#64748b' }} />
+                        <Search size={14} style={{ position: 'absolute', top: '10px', left: '12px', color: '#64748b' }} />
                     </div>
+
+                    <button 
+                        onClick={toggleLanguage}
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+                    >
+                        <Globe size={14} /> {language === 'es' ? 'EN' : 'ES'}
+                    </button>
 
                     <button
                         onClick={() => navigate('/checkout')}
-                        style={{ position: 'relative', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '42px', height: '42px', borderRadius: '50%', cursor: 'pointer' }}
+                        style={{ position: 'relative', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '38px', height: '38px', borderRadius: '50%', cursor: 'pointer' }}
                     >
                         <ShoppingCart size={18} />
-                        {cart.length > 0 && <span style={{ position: 'absolute', top: '-2px', right: '-2px', background: '#8B5CF6', color: '#fff', fontSize: '0.7rem', fontWeight: '900', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0f172a' }}>
+                        {cart.length > 0 && <span style={{ position: 'absolute', top: '-2px', right: '-2px', background: '#8B5CF6', color: '#fff', fontSize: '0.65rem', fontWeight: '900', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0f172a' }}>
                                 {cart.length}
                             </span>
                         }
@@ -397,27 +451,27 @@ export default function Store() {
                         <div style={{ position: 'relative' }}>
                             <div
                                 onClick={() => setShowDropdown(!showDropdown)}
-                                style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', padding: '5px 5px 5px 12px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)' }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', padding: '4px 4px 4px 10px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)' }}
                             >
-                                <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#e2e8f0' }} className="hide-mobile">{currentUser.displayName || currentUser.email?.split('@')[0]}</span>
-                                <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'linear-gradient(135deg,#8B5CF6,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '0.8rem' }}>
+                                <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#e2e8f0' }} className="hide-mobile">{currentUser.displayName || currentUser.email?.split('@')[0]}</span>
+                                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg,#8B5CF6,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '0.75rem' }}>
                                     {(currentUser.displayName || currentUser.email || 'U')[0].toUpperCase()}
                                 </div>
                             </div>
 
                             {showDropdown && (
-                                <div style={{ position: 'absolute', top: '45px', right: 0, background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', width: '200px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', overflow: 'hidden', zIndex: 2000 }}>
+                                <div style={{ position: 'absolute', top: '42px', right: 0, background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', width: '180px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', overflow: 'hidden', zIndex: 2000 }}>
                                     <div
                                         onClick={() => navigate('/dashboard')}
-                                        style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', color: '#e2e8f0', fontSize: '0.9rem', fontWeight: '600', borderBottom: '1px solid rgba(255,255,255,0.02)' }}
+                                        style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: '#e2e8f0', fontSize: '0.85rem', fontWeight: '600' }}
                                     >
-                                        <Globe size={16} color="#94a3b8" /> Dashboard
+                                        <Globe size={14} color="#94a3b8" /> {t('dashboard')}
                                     </div>
                                     <div
                                         onClick={() => auth.signOut()}
-                                        style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', color: '#ef4444', fontSize: '0.9rem', fontWeight: '600' }}
+                                        style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: '#ef4444', fontSize: '0.85rem', fontWeight: '600' }}
                                     >
-                                        <LogOut size={16} /> Cerrar Sesión
+                                        <LogOut size={14} /> {t('logout')}
                                     </div>
                                 </div>
                             )}
@@ -426,9 +480,15 @@ export default function Store() {
                 </div>
             </nav>
 
-            <header style={{ padding: '60px 40px', textAlign: 'center', background: 'radial-gradient(circle at center, rgba(139,92,246,0.1), transparent)' }}>
-                <h1 style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '20px' }}>Secuencias Premium</h1>
-                <p style={{ color: '#94a3b8', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>Descubre y compra secuencias listas para nuestro motor de audio.</p>
+            <header style={{ padding: window.innerWidth < 768 ? '30px 20px' : '60px 40px 30px', textAlign: 'center', background: 'radial-gradient(circle at center, rgba(139,92,246,0.1), transparent)' }}>
+                <h1 style={{ fontSize: window.innerWidth < 768 ? '2.2rem' : '3.5rem', fontWeight: '900', marginBottom: '10px', lineHeight: 1.1 }}>
+                    {activeCategory === 'multitrack' ? 'Tienda de Secuencias' : 'Venta de Pistas'}
+                </h1>
+                <p style={{ color: '#94a3b8', fontSize: window.innerWidth < 768 ? '1rem' : '1.2rem', maxWidth: '600px', margin: '0 auto 20px' }}>
+                    {activeCategory === 'multitrack' 
+                        ? 'Explora multitracks profesionales para Zion Stage.' 
+                        : 'Encuentra pistas individuales y acompañamientos para tu ministerio.'}
+                </p>
             </header>
 
             <style>{`
@@ -436,31 +496,42 @@ export default function Store() {
                     display: grid;
                     grid-template-columns: repeat(6, 1fr);
                     gap: 15px;
-                    padding: 40px 0;
+                    padding: 20px 0;
                 }
-                @media (max-width: 1600px) {
+                @media (max-width: 1400px) {
                     .store-grid { grid-template-columns: repeat(5, 1fr); }
                 }
-                @media (max-width: 1300px) {
+                @media (max-width: 1100px) {
                     .store-grid { grid-template-columns: repeat(4, 1fr); }
                 }
-                @media (max-width: 1000px) {
+                @media (max-width: 900px) {
                     .store-grid { grid-template-columns: repeat(3, 1fr); }
                 }
-                @media (max-width: 700px) {
+                @media (max-width: 650px) {
                     .store-grid { grid-template-columns: repeat(2, 1fr); }
                 }
-                @media (max-width: 500px) {
+                @media (max-width: 450px) {
                     .store-grid { grid-template-columns: repeat(1, 1fr); }
+                }
+                .hide-mobile {
+                    @media (max-width: 768px) {
+                        display: none !important;
+                    }
                 }
             `}</style>
 
             <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
-                {searchQuery ? (
-                    <div style={{ padding: '40px' }}>
-                        <h2 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '30px' }}>Resultados</h2>
-                        <div className="store-grid">
-                            {filteredStore.map(song => (
+                <div style={{ padding: '40px' }}>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '30px' }}>{searchQuery ? 'Resultados de Búsqueda' : (activeCategory === 'multitrack' ? 'Catálogo de Secuencias' : 'Pistas Individuales')}</h2>
+                    
+                    <div className="store-grid">
+                        {storeSongs
+                            .filter(s => activeCategory === 'multitrack' ? s.isMultitrack : s.isSingle)
+                            .filter(s => 
+                                (s.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                (s.artist || '').toLowerCase().includes(searchQuery.toLowerCase())
+                            )
+                            .map(song => (
                                 <SongCard 
                                     key={song.id} 
                                     song={song} 
@@ -469,40 +540,16 @@ export default function Store() {
                                     navigate={navigate} 
                                 />
                             ))}
-                        </div>
                     </div>
-                ) : (
-                    <div style={{ paddingBottom: '80px' }}>
-                        <div style={{ marginTop: '40px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0', marginBottom: '10px' }}>
-                                <h2 style={{ fontSize: '1.8rem', fontWeight: '900' }}>Catálogo</h2>
-                                {storeSongs.length > 0 && (
-                                    <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>{storeSongs.length} temas</span>
-                                )}
-                            </div>
-                            
-                            <div className="store-grid">
-                                {storeSongs.length > 0 ? (
-                                    storeSongs.map(song => (
-                                        <div key={song.id}>
-                                            <SongCard 
-                                                song={song} 
-                                                onPreview={() => openPreview(song)}
-                                                onBuy={() => addToCart(song)} 
-                                                navigate={navigate} 
-                                            />
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div style={{ gridColumn: '1/-1', padding: '100px 0', textAlign: 'center', color: '#64748b' }}>
-                                        <Music2 size={48} style={{ margin: '0 auto 15px', opacity: 0.2 }} />
-                                        <p>No hay canciones disponibles.</p>
-                                    </div>
-                                )}
-                            </div>
+
+                    {storeSongs.filter(s => activeCategory === 'multitrack' ? s.isMultitrack : s.isSingle).length === 0 && (
+                        <div style={{ textAlign: 'center', padding: '100px 0', color: '#64748b' }}>
+                            <Music2 size={48} style={{ margin: '0 auto 20px', opacity: 0.2 }} />
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#94a3b8' }}>No hay resultados aquí</h3>
+                            <p>Prueba con otra categoría o busca otro nombre.</p>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
             {/* PREVIEW MODAL (Multitrack Mixer) */}
@@ -583,6 +630,7 @@ export default function Store() {
         </div>
     );
 }
+
 
 
 
