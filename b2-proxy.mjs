@@ -209,7 +209,7 @@ app.post('/api/stripe/create-single-payment', async (req, res) => {
             amount: amount,
             currency: 'usd',
             customer: customer.id,
-            description: `Zion Stage - Pistas: ${songName}`,
+            description: `Junior Lugo Producciones - Pistas: ${songName}`,
             metadata: {
                 songId,
                 userId: userId || 'anonymous',
@@ -234,16 +234,16 @@ app.post('/api/stripe/create-single-payment', async (req, res) => {
     }
 });
 
-app.post('/api/upload', upload.fields([{ name: 'audioFile' }, { name: 'file' }]), async (req, res) => {
+app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
     let tempInputPath = '';
     let tempOutputPath = '';
     let tempPreviewPath = '';
     try {
-        const file = req.files?.audioFile?.[0] || req.files?.file?.[0];
-        const b2Filename = req.body.fileName || (file ? file.originalname : null);
-        const generatePreview = req.body.generatePreview === 'true';
+        const file = req.file;
+        const b2Filename = req.body.fileName;
+        const generatePreview = req.body.generatePreview === 'true'; // Bandera para generar preview
 
-        if (!file || !b2Filename) return res.status(400).json({ error: 'Falta archivo o nombre' });
+        if (!file || !b2Filename) return res.status(400).json({ error: 'Falta archivo' });
 
         const uploadNode = await getUploadNode();
         const tempId = crypto.randomBytes(8).toString('hex');

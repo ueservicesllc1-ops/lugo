@@ -507,8 +507,8 @@ export default function Store() {
 
             {/* PREVIEW MODAL (Multitrack Mixer) */}
             {previewSong && (
-                <div key="preview-modal" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
-                    <div style={{ background: '#020617', width: '100%', maxWidth: '700px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.7)', color: 'white' }}>
+                <div key="preview-modal" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(12px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
+                    <div style={{ background: '#020617', width: '100%', maxWidth: '1300px', maxHeight: '95vh', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', overflowY: 'auto', boxShadow: '0 40px 80px rgba(0,0,0,0.8)', color: 'white', display: 'flex', flexDirection: 'column' }}>
 
                         <div style={{ padding: '14px 25px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -540,6 +540,7 @@ export default function Store() {
                                             onMuteToggle={handleMuteToggle}
                                             onSoloToggle={handleSoloToggle}
                                             onPanChange={handlePanChange}
+                                            progress={previewProgress}
                                         />
                                     </div>
 

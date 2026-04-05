@@ -1,128 +1,271 @@
-import React from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Volume2, VolumeX, Headphones, Music, Mic2, Disc, Layers } from 'lucide-react';
 
-export const HorizontalMixer = ({ tracks, onVolumeChange, onMuteToggle, onSoloToggle, onPanChange }) => {
+// ── Per-track mini waveform canvas ──────────────────────────────────────────
+const TrackWaveform = ({ trackId, color, muted, progress }) => {
+    const canvasRef = useRef(null);
+    const peaksRef = useRef(null);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const extract = async () => {
+            try {
+                const { audioEngine } = await import('../AudioEngine');
+                // Wait a tick for engine to be loaded
+                await new Promise(r => setTimeout(r, 200));
+
+                const meta = audioEngine.tracks?.get(trackId) || audioEngine._trackMeta?.get(trackId);
+                const buffer = meta?.buffer;
+                if (!buffer || cancelled) return;
+
+                const W = canvasRef.current?.offsetWidth || 300;
+                const data = buffer.getChannelData(0);
+                const step = Math.max(1, Math.floor(data.length / W));
+                const peaks = new Float32Array(W);
+                for (let i = 0; i < W; i++) {
+                    let max = 0;
+                    for (let j = 0; j < step; j++) {
+                        const v = Math.abs(data[i * step + j] || 0);
+                        if (v > max) max = v;
+                    }
+                    peaks[i] = max;
+                }
+                // Normalize
+                let norm = 0;
+                for (let i = 0; i < peaks.length; i++) if (peaks[i] > norm) norm = peaks[i];
+                if (norm > 0) for (let i = 0; i < peaks.length; i++) peaks[i] = (peaks[i] / norm) * 0.9 + 0.05;
+
+                peaksRef.current = peaks;
+                drawWaveform(peaks, progress, color, muted);
+            } catch (e) {
+                // No buffer yet — draw placeholder
+                const W = canvasRef.current?.offsetWidth || 300;
+                const peaks = new Float32Array(W);
+                for (let i = 0; i < W; i++) {
+                    peaks[i] = 0.08 + Math.abs(Math.sin((i / W) * Math.PI * 12)) * 0.3 + Math.random() * 0.05;
+                }
+                peaksRef.current = peaks;
+                drawWaveform(peaks, progress, color, muted);
+            }
+        };
+
+        extract();
+        return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [trackId]);
+
+    const drawWaveform = useCallback((peaks, prog, col, mut) => {
+        const canvas = canvasRef.current;
+        if (!canvas || !peaks) return;
+        const dpr = window.devicePixelRatio || 1;
+        const W = canvas.offsetWidth;
+        const H = canvas.offsetHeight;
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+
+        ctx.fillStyle = 'rgba(0,0,0,0)';
+        ctx.clearRect(0, 0, W, H);
+
+        const centerY = H / 2;
+        const playheadX = typeof prog === 'number' ? (prog * W) : -1;
+
+        for (let x = 0; x < peaks.length; x++) {
+            const val = peaks[x];
+            const h = Math.max(1, val * (H * 0.9));
+            const played = x < playheadX;
+            ctx.fillStyle = mut
+                ? 'rgba(100,116,139,0.3)'
+                : played
+                    ? col
+                    : `${col}55`;
+            ctx.fillRect(x, centerY - h / 2, 1, h);
+        }
+
+        // Playhead line
+        if (playheadX >= 0 && playheadX < W) {
+            ctx.fillStyle = 'rgba(255,82,82,0.9)';
+            ctx.fillRect(playheadX - 1, 0, 2, H);
+        }
+    }, []);
+
+    // Redraw when progress / muted changes
+    useEffect(() => {
+        if (peaksRef.current) drawWaveform(peaksRef.current, progress, color, muted);
+    }, [progress, color, muted, drawWaveform]);
+
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-            {tracks.map((track) => (
-                <HorizontalTrack
-                    key={track.id}
-                    track={track}
-                    onVolumeChange={onVolumeChange}
-                    onMuteToggle={onMuteToggle}
-                    onSoloToggle={onSoloToggle}
-                    onPanChange={onPanChange}
-                />
-            ))}
-        </div>
+        <canvas
+            ref={canvasRef}
+            style={{ width: '100%', height: '100%', display: 'block', borderRadius: '4px' }}
+        />
     );
 };
 
-const HorizontalTrack = ({ track, onVolumeChange, onMuteToggle, onSoloToggle, onPanChange }) => {
-    const getTrackIcon = (name) => {
-        const n = name.toLowerCase();
-        if (n.includes('vox') || n.includes('voz') || n.includes('vocal')) return <Mic2 size={16} />;
-        if (n.includes('drum') || n.includes('bat')) return <Disc size={16} />;
-        if (n.includes('guit') || n.includes('git')) return <Music size={16} />;
-        if (n.includes('bass') || n.includes('bajo')) return <Layers size={16} />;
-        return <Headphones size={16} />;
+// ── LED indicator ─────────────────────────────────────────────────────────────
+const Led = ({ active, color }) => (
+    <div style={{
+        width: '8px',
+        height: '8px',
+        borderRadius: '50%',
+        flexShrink: 0,
+        background: active ? color : 'rgba(255,255,255,0.1)',
+        boxShadow: active ? `0 0 6px 2px ${color}` : 'none',
+        transition: 'background 0.15s, box-shadow 0.15s',
+    }} />
+);
+
+// ── Main exported component ───────────────────────────────────────────────────
+export const HorizontalMixer = ({ tracks, onVolumeChange, onMuteToggle, onSoloToggle, onPanChange, progress }) => (
+    <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '2px',
+        background: 'rgba(255,255,255,0.02)',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        border: '1px solid rgba(255,255,255,0.05)',
+        width: '100%',
+    }}>
+        {tracks.map(track => (
+            <HorizontalTrack
+                key={track.id}
+                track={track}
+                onVolumeChange={onVolumeChange}
+                onMuteToggle={onMuteToggle}
+                onSoloToggle={onSoloToggle}
+                onPanChange={onPanChange}
+                progress={progress}
+            />
+        ))}
+    </div>
+);
+
+// ── Single track row ──────────────────────────────────────────────────────────
+const HorizontalTrack = ({ track, onVolumeChange, onMuteToggle, onSoloToggle, onPanChange, progress }) => {
+    const getIcon = (name) => {
+        const n = (name || '').toLowerCase();
+        if (n.includes('vox') || n.includes('voz') || n.includes('vocal')) return <Mic2 size={14} />;
+        if (n.includes('drum') || n.includes('bat')) return <Disc size={14} />;
+        if (n.includes('guit') || n.includes('git')) return <Music size={14} />;
+        if (n.includes('bass') || n.includes('bajo')) return <Layers size={14} />;
+        return <Headphones size={14} />;
     };
 
-    const getTrackColor = (name) => {
-        const n = name.toLowerCase();
-        if (n.includes('drum')) return '#94a3b8'; // Grey/Silver
-        if (n.includes('bass')) return '#7c3aed'; // Purple
-        if (n.includes('guit')) return '#dc2626'; // Red
-        if (n.includes('vox')) return '#0284c7'; // Blue
-        if (n.includes('piano') || n.includes('key')) return '#059669'; // Green
-        return '#00d2d3'; // Cyan default
+    const getColor = (name) => {
+        const n = (name || '').toLowerCase();
+        if (n.includes('drum') || n.includes('bat')) return '#94a3b8';
+        if (n.includes('bass') || n.includes('bajo')) return '#a855f7';
+        if (n.includes('guit') || n.includes('git')) return '#f87171';
+        if (n.includes('vox') || n.includes('voz') || n.includes('vocal')) return '#38bdf8';
+        if (n.includes('piano') || n.includes('key') || n.includes('kbd')) return '#34d399';
+        if (n.includes('brass') || n.includes('horn') || n.includes('trp')) return '#fb923c';
+        if (n.includes('string') || n.includes('violin') || n.includes('cello')) return '#f9a8d4';
+        if (n.includes('click') || n.includes('guide') || n.includes('cue')) return '#64748b';
+        return '#00d2d3';
     };
 
-    const color = getTrackColor(track.name);
-    const isMuted = track.muted;
+    const color = getColor(track.name);
+    const isActive = !track.muted && !track.solo === false ? true : !track.muted;
+
+    // Normalized progress 0–1 for waveform
+    const waveProgress = typeof progress === 'number' ? ((progress - 20) / 20) : null;
 
     return (
         <div style={{
             display: 'grid',
-            gridTemplateColumns: '150px 70px 1fr 85px',
+            gridTemplateColumns: '160px 60px 1fr 40px 70px',
             alignItems: 'center',
-            padding: '6px 15px',
-            background: 'rgba(15, 23, 42, 0.4)',
-            borderBottom: '1px solid rgba(255,255,255,0.02)',
-            transition: 'background 0.2s'
+            padding: '7px 16px',
+            gap: '12px',
+            background: 'rgba(15,23,42,0.5)',
+            borderBottom: '1px solid rgba(255,255,255,0.03)',
+            minHeight: '58px',
         }}>
-            {/* Name & Icon */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: isMuted ? '#334155' : color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px' }}>
-                    {getTrackIcon(track.name)}
+            {/* LED + Icon + Name */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                <Led active={isActive} color={color} />
+                <div style={{
+                    width: '22px', height: '22px', borderRadius: '5px', flexShrink: 0,
+                    background: track.muted ? '#1e293b' : `${color}22`,
+                    border: `1px solid ${track.muted ? '#334155' : color}55`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: track.muted ? '#475569' : color,
+                }}>
+                    {getIcon(track.name)}
                 </div>
-                <span style={{ fontSize: '0.8rem', fontWeight: '700', color: isMuted ? '#64748b' : 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.name}</span>
+                <span style={{
+                    fontSize: '0.78rem', fontWeight: '700',
+                    color: track.muted ? '#475569' : 'white',
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                }}>
+                    {track.name}
+                </span>
             </div>
 
-            {/* Panning (L-C-R) */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '50px', fontSize: '0.55rem', color: '#64748b', fontWeight: '800' }}>
-                    <span>L</span>
-                    <span>R</span>
+            {/* Pan */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '46px', fontSize: '0.5rem', color: '#475569', fontWeight: '800' }}>
+                    <span>L</span><span>R</span>
                 </div>
                 <input
-                    type="range"
-                    min="-1" max="1" step="0.1"
+                    type="range" min="-1" max="1" step="0.1"
                     value={track.pan || 0}
-                    onChange={(e) => onPanChange(track.id, parseFloat(e.target.value))}
-                    style={{ width: '50px', height: '3px', accentColor: '#94a3b8' }}
+                    onChange={e => onPanChange(track.id, parseFloat(e.target.value))}
+                    style={{ width: '46px', height: '3px', accentColor: '#94a3b8' }}
                 />
             </div>
 
-            {/* Volume Slider with Color Ramp */}
-            <div style={{ position: 'relative', padding: '0 25px', display: 'flex', alignItems: 'center' }}>
-                <div style={{ position: 'absolute', left: '25px', right: '25px', height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden' }}>
-                    <div style={{
-                        width: `${track.volume * 100}%`,
-                        height: '100%',
-                        background: isMuted ? '#475569' : `linear-gradient(to right, transparent, ${color})`,
-                        transition: 'width 0.1s'
-                    }} />
-                </div>
+            {/* Waveform + Volume overlay */}
+            <div style={{ position: 'relative', height: '34px', borderRadius: '6px', overflow: 'hidden', background: 'rgba(0,0,0,0.3)' }}>
+                <TrackWaveform
+                    trackId={track.id}
+                    color={color}
+                    muted={track.muted}
+                    progress={waveProgress}
+                />
+                {/* Volume fill overlay */}
+                <div style={{
+                    position: 'absolute', inset: 0,
+                    background: track.muted
+                        ? 'rgba(0,0,0,0.5)'
+                        : `linear-gradient(to right, transparent ${Math.round(track.volume * 100)}%, rgba(0,0,0,0.55) ${Math.round(track.volume * 100)}%)`,
+                    pointerEvents: 'none',
+                    transition: 'background 0.1s',
+                }} />
                 <input
-                    type="range"
-                    min="0" max="1" step="0.01"
+                    type="range" min="0" max="1" step="0.01"
                     value={track.volume}
-                    onChange={(e) => onVolumeChange(track.id, parseFloat(e.target.value))}
-                    style={{
-                        position: 'relative',
-                        zIndex: 2,
-                        width: '100%',
-                        height: '20px',
-                        opacity: 0,
-                        cursor: 'pointer'
-                    }}
+                    onChange={e => onVolumeChange(track.id, parseFloat(e.target.value))}
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', zIndex: 10 }}
                 />
-                <div style={{ position: 'absolute', right: '0px', fontSize: '0.65rem', fontWeight: '900', color: '#64748b', width: '20px' }}>
-                    {Math.round(track.volume * 100)}
-                </div>
             </div>
 
-            {/* Mute / Solo Buttons */}
-            <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end' }}>
+            {/* Vol % */}
+            <div style={{ fontSize: '0.62rem', fontWeight: '900', color: '#475569', textAlign: 'center' }}>
+                {Math.round(track.volume * 100)}
+            </div>
+
+            {/* M / S buttons */}
+            <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
                 <button
                     onClick={() => onMuteToggle(track.id)}
                     style={{
-                        width: '30px', height: '30px', borderRadius: '6px',
-                        background: isMuted ? '#ef4444' : 'rgba(255,255,255,0.03)',
-                        color: isMuted ? 'white' : '#64748b',
-                        cursor: 'pointer', fontSize: '11px', fontWeight: '900',
-                        border: '1px solid rgba(255,255,255,0.05)'
+                        width: '28px', height: '28px', borderRadius: '6px', border: 'none',
+                        background: track.muted ? '#ef4444' : 'rgba(255,255,255,0.05)',
+                        color: track.muted ? 'white' : '#64748b',
+                        cursor: 'pointer', fontSize: '10px', fontWeight: '900',
                     }}
                 >M</button>
                 <button
                     onClick={() => onSoloToggle(track.id)}
                     style={{
-                        width: '30px', height: '30px', borderRadius: '6px',
-                        background: track.solo ? '#f59e0b' : 'rgba(255,255,255,0.03)',
-                        color: track.solo ? 'white' : '#64748b',
-                        cursor: 'pointer', fontSize: '11px', fontWeight: '900',
-                        border: '1px solid rgba(255,255,255,0.05)'
+                        width: '28px', height: '28px', borderRadius: '6px', border: 'none',
+                        background: track.solo ? '#f59e0b' : 'rgba(255,255,255,0.05)',
+                        color: track.solo ? '#000' : '#64748b',
+                        cursor: 'pointer', fontSize: '10px', fontWeight: '900',
                     }}
                 >S</button>
             </div>

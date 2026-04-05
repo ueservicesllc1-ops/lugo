@@ -41,6 +41,7 @@ export default function Landing() {
     const [galleryPhotos, setGalleryPhotos] = useState([]);
     const [portfolioVideos, setPortfolioVideos] = useState([]);
     const [socials, setSocials] = useState({ instagram: '', youtube: '', tiktok: '', spotify: '' });
+    const [multitracksForSale, setMultitracksForSale] = useState([]);
 
     const scrollGallery = (direction) => {
         if (carouselRef.current) {
@@ -114,9 +115,16 @@ export default function Landing() {
                         const timeB = b.createdAt?.toMillis() || 0;
                         return timeB - timeA;
                     });
-                    setSongsForSale(sorted);
+                    
+                    // Separar instrumentales de multitracks
+                    const beats = sorted.filter(s => !s.isMultitrack);
+                    const multis = sorted.filter(s => s.isMultitrack);
+                    
+                    setSongsForSale(beats);
+                    setMultitracksForSale(multis);
                 } else {
                     setSongsForSale([]);
+                    setMultitracksForSale([]);
                 }
             } catch {
                 // Maintain placeholders if there's an error
@@ -231,10 +239,13 @@ export default function Landing() {
 
             const getProxyUrl = (url) => {
                 if (!url) return '';
-                if (url.startsWith('/') || url.includes('localhost')) return url;
+                // Limpiar URLs duplicadas por comas (Legacy fix)
+                const cleanUrl = String(url).split(',')[0].trim();
+                if (cleanUrl.startsWith('/') || cleanUrl.includes('localhost')) return cleanUrl;
+                
                 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
                 const baseProxy = isLocal ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
-                return `${baseProxy}/api/download?url=${encodeURIComponent(url)}`;
+                return `${baseProxy}/api/download?url=${encodeURIComponent(cleanUrl)}`;
             };
 
             const tracksToLoad = rawTracks.map(t => ({ ...t, proxyUrl: getProxyUrl(t.url) }));
@@ -876,6 +887,70 @@ export default function Landing() {
                 </div>
             </section>
 
+            {/* MULTITRACKS EN VENTA - SECCION ADICIONAL */}
+            <section style={{ padding: '80px 40px', backgroundColor: '#020617', position: 'relative' }}>
+                <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '10px', color: '#8B5CF6' }}>MULTITRACKS EN VENTA</h2>
+                        <p style={{ color: 'white', fontSize: '0.85rem', letterSpacing: '2px', textTransform: 'uppercase' }}>Sesiones profesionales de estudio listas para tu motor</p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px' }}>
+                        {multitracksForSale.length > 0 ? multitracksForSale.map((track, i) => (
+                            <div 
+                                key={track.id || i}
+                                style={{ 
+                                    background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(139,92,246,0.05) 100%)',
+                                    borderRadius: '16px',
+                                    border: '1px solid rgba(139,92,246,0.15)',
+                                    overflow: 'hidden',
+                                    transition: 'all 0.3s'
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.4)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.15)'; }}
+                            >
+                                <div style={{ position: 'relative', aspectRatio: '1/1' }}>
+                                    <img 
+                                        src={track.coverUrl || '/studio_placeholder.png'} 
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        onError={e => {e.target.src = '/hero_banner_studio.png'}}
+                                    />
+                                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <button 
+                                            onClick={() => openPreview(track)}
+                                            style={{ background: '#8B5CF6', border: 'none', width: '50px', height: '50px', borderRadius: '50%', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                        >
+                                            <Play size={20} fill="white" />
+                                        </button>
+                                    </div>
+                                    <div style={{ position: 'absolute', bottom: '15px', right: '15px', background: 'rgba(0,0,0,0.7)', padding: '4px 10px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: '900', backdropFilter: 'blur(4px)' }}>
+                                        ZIP SESSION
+                                    </div>
+                                </div>
+                                <div style={{ padding: '20px' }}>
+                                    <h3 style={{ margin: '0 0 5px 0', fontSize: '1rem', fontWeight: '800' }}>{track.name}</h3>
+                                    <p style={{ color: '#64748b', fontSize: '0.8rem', margin: '0 0 15px 0' }}>{track.artist}</p>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '1.2rem', fontWeight: '900', color: '#8B5CF6' }}>${track.price || '99.00'}</span>
+                                        <button 
+                                            onClick={() => addToCart(track)}
+                                            style={{ background: 'transparent', border: '1px solid #8B5CF6', color: '#8B5CF6', padding: '6px 15px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s' }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = '#8B5CF6'; e.currentTarget.style.color = 'white'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8B5CF6'; }}
+                                        >AGREGAR</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )) : (
+                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: '#334155' }}>
+                                <Music2 size={48} style={{ opacity: 0.1, margin: '0 auto 10px' }} />
+                                <p>Próximos lanzamientos de multitracks...</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </section>
+
             {/* SERVICIOS DE PRODUCCIÓN */}
             <section id="servicios" style={{ padding: '100px 40px', backgroundColor: '#050a18' }}>
                 <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
@@ -1335,8 +1410,8 @@ export default function Landing() {
             {/* PREVIEW MODAL (Horizontal Studio Design) - Compact Version */}
             {
                 previewSong && (
-                    <div key="preview-modal" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
-                        <div style={{ background: '#020617', width: '100%', maxWidth: '700px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.7)', color: 'white' }}>
+                    <div key="preview-modal" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(12px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
+                        <div style={{ background: '#020617', width: '100%', maxWidth: '1300px', maxHeight: '95vh', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', overflowY: 'auto', boxShadow: '0 40px 80px rgba(0,0,0,0.8)', color: 'white', display: 'flex', flexDirection: 'column' }}>
 
                             <div style={{ padding: '14px 25px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -1374,6 +1449,7 @@ export default function Landing() {
                                                 onMuteToggle={handleMuteToggle}
                                                 onSoloToggle={handleSoloToggle}
                                                 onPanChange={handlePanChange}
+                                                progress={previewProgress}
                                             />
                                         </div>
 

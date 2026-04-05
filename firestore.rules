@@ -27,10 +27,16 @@ service cloud.firestore {
       allow create: if (request.auth != null && request.resource.data.userId == request.auth.uid) || isAdmin();
     }
 
-    // -- SONGS: public can read all songs (for metadata); write admin or owner
+    // -- SONGS: public can read all songs; write admin or owner
     match /songs/{songId} {
       allow read: if true;
-      allow write: if isAdmin() || (request.auth != null && (resource == null || resource.data.userEmail == request.auth.token.email));
+      allow write: if isAdmin() || (request.auth != null && (request.resource == null || request.resource.data.userEmail == request.auth.token.email));
+    }
+
+    // -- SETTINGS: public read; admin write
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     // -- MASTER_ARTISTS: admin can manage, any authenticated or public can read
