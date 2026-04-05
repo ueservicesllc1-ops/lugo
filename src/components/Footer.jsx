@@ -16,7 +16,7 @@ export default function Footer() {
                     <div style={{ gridColumn: 'span 2' }}>
                         <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '20px' }}>
                             <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', color: 'white', letterSpacing: '-1.2px', textTransform: 'uppercase' }}>
-                                JUNIOR<span style={{ color: '#FFFFFF' }}>LUGO</span>
+                                JUNIOR<span style={{ color: '#00A3FF' }}>LUGO</span>
                             </h1>
                         </div>
                         <p style={{ fontSize: '0.9rem', lineHeight: '1.6', maxWidth: '300px', marginBottom: '24px' }}>

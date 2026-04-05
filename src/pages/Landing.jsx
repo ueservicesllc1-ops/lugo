@@ -451,21 +451,25 @@ export default function Landing() {
 
 
 
-             {/* FIXED BLACK HEADER */}
-             <nav style={{
-                 display: 'flex',
-                 alignItems: 'center',
-                 justifyContent: 'space-between',
-                 padding: '12px 40px',
-                 backgroundColor: '#000000',
-                 borderBottom: '1px solid rgba(255,255,255,0.1)',
-                 position: 'fixed',
-                 top: 0,
-                 left: 0,
-                 right: 0,
-                 transition: 'all 0.3s ease',
-                 zIndex: 2000
-             }}>
+              <nav style={{
+                  backgroundColor: '#000000',
+                  borderBottom: '1px solid rgba(255,255,255,0.1)',
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  transition: 'all 0.3s ease',
+                  zIndex: 2000
+              }}>
+                <div style={{
+                  maxWidth: '1400px',
+                  margin: '0 auto',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '1.2rem 5%',
+                  width: '100%'
+                }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '35px' }}>
                     <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                         <h1 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '900', color: 'white', letterSpacing: '-1.5px', textTransform: 'uppercase' }}>
@@ -591,6 +595,7 @@ export default function Landing() {
                         </div>
                     </div>
                 </div>
+              </div>
             </nav >
 
             {/* HERO SECTION - PREMIUM CINEMATIC EXPERIENCE */}
@@ -635,13 +640,14 @@ export default function Landing() {
                  <div style={{ 
                      display: 'flex', 
                      width: '100%', 
-                     maxWidth: '1300px', 
+                     maxWidth: '1400px', 
                      margin: '0 auto', 
                      alignItems: 'center', 
                      position: 'relative', 
-                     zIndex: 10
+                     zIndex: 10,
+                     padding: '0 5%'
                  }}>
-                     <div style={{ flex: 1, textAlign: 'left', maxWidth: '650px', transform: 'translate(-180px, -40px)' }}>
+                     <div style={{ flex: 1, textAlign: 'left', maxWidth: '650px' }}>
                          <div style={{ marginBottom: '24px', animation: 'fadeInDown 1s ease-out' }}>
 
                              
