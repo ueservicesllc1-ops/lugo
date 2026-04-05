@@ -189,7 +189,18 @@ export default function Checkout() {
         if (isDownloading) return;
         setIsDownloading(true);
         const zip = new JSZip();
-        const mainTracks = (song.tracks || []).filter(t => t.name !== '__PreviewMix');
+        let mainTracks = (song.tracks || []).filter(t => t.name !== '__PreviewMix');
+        
+        if (mainTracks.length === 0 && song.audioUrl) {
+            mainTracks = [{ name: song.name.replace(/[^\w\s-]/g, ''), url: song.audioUrl }];
+        }
+
+        if (mainTracks.length === 0) {
+            showToast('Error: No se encontraron archivos para descargar.', 'error');
+            setIsDownloading(false);
+            return;
+        }
+        
         setDownloadProgress({ current: 0, total: mainTracks.length });
 
         const devProxy = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')

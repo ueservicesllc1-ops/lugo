@@ -641,16 +641,16 @@ export default function Landing() {
                      position: 'relative', 
                      zIndex: 10
                  }}>
-                     <div style={{ flex: 1, textAlign: 'left', maxWidth: '650px', transform: 'translateX(-180px)' }}>
+                     <div style={{ flex: 1, textAlign: 'left', maxWidth: '650px', transform: 'translate(-180px, -40px)' }}>
                          <div style={{ marginBottom: '24px', animation: 'fadeInDown 1s ease-out' }}>
 
                              
-                             <div style={{ marginBottom: '40px', marginTop: '20px' }}>
+                             <div style={{ marginBottom: '10px', marginTop: '20px' }}>
                                  <img 
                                      src="/logo.png" 
                                      alt="Logo" 
                                      style={{ 
-                                         height: 'clamp(300px, 50vw, 600px)', 
+                                         height: 'clamp(256px, 42vw, 513px)', 
                                          objectFit: 'contain', 
                                          animation: 'fadeInDown 1s ease-out'
                                      }} 
@@ -663,7 +663,7 @@ export default function Landing() {
                              color: 'rgba(255,255,255,0.9)',
                              maxWidth: '550px',
                              lineHeight: '1.4',
-                             marginBottom: '35px',
+                             marginBottom: '10px',
                              fontWeight: '300',
                              letterSpacing: '0.5px',
                              borderLeft: '3px solid #FFFFFF',
@@ -1501,10 +1501,10 @@ export default function Landing() {
                             <div style={{ flex: '1 1 420px', backgroundColor: 'white', borderRadius: '16px', padding: '48px', boxShadow: '0 20px 50px rgba(0,0,0,0.08)', border: '1px solid #f3f4f6' }}>
                                 <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-                                        <img src="/logo2.png" alt="Zion Stage" style={{ height: '40px' }} />
+                                        <img src="/logo.png" alt="Junior Lugo" style={{ height: '50px', objectFit: 'contain' }} />
                                     </div>
                                     <h1 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '8px' }}>{isLogin ? '¡Bienvenido de nuevo!' : 'Crea tu cuenta gratis'}</h1>
-                                    <p style={{ color: '#6b7280' }}>Únete a la comunidad de líderes de alabanza.</p>
+                                    <p style={{ color: '#6b7280' }}>Accede a tus recursos y proyectos musicales exclusivos.</p>
                                 </div>
 
                                 {errorMsg && <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.85rem', textAlign: 'center' }}>{errorMsg}</div>}
