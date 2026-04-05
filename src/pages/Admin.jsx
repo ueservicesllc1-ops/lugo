@@ -142,7 +142,16 @@ export default function Admin() {
     // Auth Check
     useEffect(() => {
         const unsub = auth.onAuthStateChanged((user) => {
-            if (user && (user.email === 'ueservicesllc1@gmail.com' || user.email === 'juniorlugo@admin.com')) {
+            const adminEmails = [
+                'ueservicesllc1@gmail.com',
+                'juniorlugokey@gmail.com',
+                'juniorlugo@admin.com'
+            ];
+            
+            const isAdminEmail = user && adminEmails.includes(user.email);
+            const hasPinAccess = sessionStorage.getItem('admin_authenticated') === 'true';
+
+            if (isAdminEmail || hasPinAccess) {
                 setIsAdmin(true);
             } else {
                 setIsAdmin(false);

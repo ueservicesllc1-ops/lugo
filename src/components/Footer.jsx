@@ -76,6 +76,20 @@ export default function Footer() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <Music size={14} color="#FFFFFF" />
                     <span style={{ color: '#FFFFFF', fontWeight: '700' }}>Junior Lugo v3.0</span>
+                    <span 
+                        onClick={() => {
+                            const pin = prompt('Ingrese PIN de acceso:');
+                            if (pin === '2026') {
+                                sessionStorage.setItem('admin_authenticated', 'true');
+                                navigate('/admin');
+                            } else if (pin !== null) {
+                                alert('PIN Incorrecto');
+                            }
+                        }}
+                        style={{ marginLeft: '10px', opacity: 0.2, cursor: 'pointer', fontSize: '0.7rem' }}
+                    >
+                        Admin
+                    </span>
                 </div>
             </div>
         </div>

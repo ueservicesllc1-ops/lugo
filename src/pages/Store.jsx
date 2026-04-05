@@ -85,7 +85,7 @@ const SongCard = ({ song, onPreview, onBuy, navigate }) => {
                             width: '44px', 
                             height: '44px', 
                             borderRadius: '50%', 
-                            background: '#8B5CF6', 
+                            background: '#00A3FF', 
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'center',
@@ -110,7 +110,7 @@ const SongCard = ({ song, onPreview, onBuy, navigate }) => {
                 <div style={{ color: '#94a3b8', fontSize: '0.75rem', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.artist}</div>
                 <div
                     onClick={(e) => { e.stopPropagation(); navigate(`/seller/${song.userId}`); }}
-                    style={{ color: '#8B5CF6', fontSize: '0.7rem', marginBottom: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold' }}
+                    style={{ color: '#00A3FF', fontSize: '0.7rem', marginBottom: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold' }}
                 >
                     {realSellerName}
                 </div>
@@ -118,7 +118,7 @@ const SongCard = ({ song, onPreview, onBuy, navigate }) => {
                     <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#fff' }}>${song.price || '9.99'}</div>
                     <button
                         onClick={(e) => { e.stopPropagation(); onBuy(); }}
-                        style={{ background: '#8B5CF6', border: 'none', color: '#fff', padding: '5px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}
+                        style={{ background: '#00A3FF', border: 'none', color: '#fff', padding: '5px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}
                     >
                         Agregar
                     </button>
@@ -350,13 +350,13 @@ export default function Store() {
             {toast && (
                 <div key="toast-notification" style={{
                     position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
-                    background: '#1e293b', border: `1px solid ${toast.type === 'error' ? '#ef4444' : '#8B5CF6'}`, color: 'white',
+                    background: '#1e293b', border: `1px solid ${toast.type === 'error' ? '#ef4444' : '#00A3FF'}`, color: 'white',
                     padding: '16px 28px', borderRadius: '24px', zIndex: 5000,
                     boxShadow: '0 20px 50px rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', gap: '20px',
                     animation: 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: toast.type === 'error' ? '#ef4444' : 'rgba(139,92,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {toast.type === 'error' ? <X size={20} color="white" /> : <ShoppingCart size={20} color="#8B5CF6" />}
+                        {toast.type === 'error' ? <X size={20} color="white" /> : <ShoppingCart size={20} color="#00A3FF" />}
                     </div>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -365,7 +365,7 @@ export default function Store() {
                             <div style={{ display: 'flex', gap: '15px', marginTop: '4px' }}>
                                 <button 
                                     onClick={() => navigate('/checkout')} 
-                                    style={{ background: '#8B5CF6', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s' }}
+                                    style={{ background: '#00A3FF', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s' }}
                                 >
                                     VER MI CARRITO
                                 </button>
@@ -406,7 +406,7 @@ export default function Store() {
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: window.innerWidth < 768 ? '10px' : '30px' }}>
                     <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                        <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', color: 'white', letterSpacing: '-1px' }}>JUNIOR<span style={{ color: '#8B5CF6' }}>LUGO</span></h1>
+                        <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', color: 'white', letterSpacing: '-1px' }}>JUNIOR<span style={{ color: '#00A3FF' }}>LUGO</span></h1>
                     </div>
 
                     <button
@@ -441,7 +441,7 @@ export default function Store() {
                         style={{ position: 'relative', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '38px', height: '38px', borderRadius: '50%', cursor: 'pointer' }}
                     >
                         <ShoppingCart size={18} />
-                        {cart.length > 0 && <span style={{ position: 'absolute', top: '-2px', right: '-2px', background: '#8B5CF6', color: '#fff', fontSize: '0.65rem', fontWeight: '900', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0f172a' }}>
+                        {cart.length > 0 && <span style={{ position: 'absolute', top: '-2px', right: '-2px', background: '#00A3FF', color: '#fff', fontSize: '0.65rem', fontWeight: '900', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0f172a' }}>
                                 {cart.length}
                             </span>
                         }
@@ -454,7 +454,7 @@ export default function Store() {
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', padding: '4px 4px 4px 10px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)' }}
                             >
                                 <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#e2e8f0' }} className="hide-mobile">{currentUser.displayName || currentUser.email?.split('@')[0]}</span>
-                                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg,#8B5CF6,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '0.75rem' }}>
+                                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg,#00A3FF,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '0.75rem' }}>
                                     {(currentUser.displayName || currentUser.email || 'U')[0].toUpperCase()}
                                 </div>
                             </div>
@@ -563,7 +563,7 @@ export default function Store() {
                                     <img src={previewSong.coverUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 </div>
                                 <div>
-                                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900', color: '#8B5CF6' }}>{previewSong.name}</h3>
+                                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900', color: '#00A3FF' }}>{previewSong.name}</h3>
                                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                         <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: '700', letterSpacing: '0.5px' }}>PREVIEW</span>
                                     </div>
@@ -575,8 +575,8 @@ export default function Store() {
                         <div style={{ padding: '20px 25px' }}>
                             {previewLoading ? (
                                 <div style={{ textAlign: 'center', padding: '50px 0' }}>
-                                    <div style={{ width: '40px', height: '40px', border: '3px solid rgba(139,92,246,0.1)', borderTopColor: '#8B5CF6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}></div>
-                                    <p style={{ color: '#8B5CF6', fontSize: '0.9rem', fontWeight: '900', letterSpacing: '1px' }}>INICIALIZANDO MOTOR...</p>
+                                    <div style={{ width: '40px', height: '40px', border: '3px solid rgba(139,92,246,0.1)', borderTopColor: '#00A3FF', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}></div>
+                                    <p style={{ color: '#00A3FF', fontSize: '0.9rem', fontWeight: '900', letterSpacing: '1px' }}>INICIALIZANDO MOTOR...</p>
                                 </div>
                             ) : (
                                 <>
@@ -594,7 +594,7 @@ export default function Store() {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '15px 20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                         <button
                                             onClick={togglePreviewPlayback}
-                                            style={{ background: '#8B5CF6', border: 'none', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', cursor: 'pointer', boxShadow: '0 0 20px rgba(139,92,246,0.3)', transition: 'transform 0.2s' }}
+                                            style={{ background: '#00A3FF', border: 'none', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', cursor: 'pointer', boxShadow: '0 0 20px rgba(139,92,246,0.3)', transition: 'transform 0.2s' }}
                                         >
                                             {isPreviewPlaying ? <X size={24} color="black" /> : <Play size={24} fill="black" color="black" style={{ marginLeft: '3px' }} />}
                                         </button>
@@ -602,10 +602,10 @@ export default function Store() {
                                         <div style={{ flex: 1 }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                                 <span style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: '900', letterSpacing: '0.5px' }}>PLAYBACK (20s-40s)</span>
-                                                <span style={{ color: '#8B5CF6', fontSize: '1rem', fontWeight: '900', fontFamily: 'monospace' }}>{previewProgress.toFixed(1)}s</span>
+                                                <span style={{ color: '#00A3FF', fontSize: '1rem', fontWeight: '900', fontFamily: 'monospace' }}>{previewProgress.toFixed(1)}s</span>
                                             </div>
                                             <div style={{ height: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                <div style={{ width: `${Math.max(0, Math.min(100, ((previewProgress - 20) / 20) * 100))}%`, height: '100%', background: 'linear-gradient(to right, #8B5CF6, #C084FC)', boxShadow: '0 0 10px rgba(139,92,246,0.4)', transition: 'width 0.1s linear' }}></div>
+                                                <div style={{ width: `${Math.max(0, Math.min(100, ((previewProgress - 20) / 20) * 100))}%`, height: '100%', background: 'linear-gradient(to right, #00A3FF, #C084FC)', boxShadow: '0 0 10px rgba(139,92,246,0.4)', transition: 'width 0.1s linear' }}></div>
                                             </div>
                                         </div>
 
