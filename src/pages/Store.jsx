@@ -152,6 +152,11 @@ export default function Store() {
     const [selectedSongForOptions, setSelectedSongForOptions] = useState(null);
     const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00 });
     const previewEngineRef = React.useRef(null);
+    const [previewSong, setPreviewSong] = useState(null);
+    const [previewLoading, setPreviewLoading] = useState(false);
+    const [previewTracks, setPreviewTracks] = useState([]);
+    const [previewProgress, setPreviewProgress] = useState(0);
+    const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
 
     const openPreview = async (song) => {
         setPreviewSong(song);
