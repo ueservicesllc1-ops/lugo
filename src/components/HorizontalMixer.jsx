@@ -118,7 +118,7 @@ const Led = ({ active, color }) => (
 );
 
 // ── Main exported component ───────────────────────────────────────────────────
-export const HorizontalMixer = ({ tracks, onVolumeChange, onMuteToggle, onSoloToggle, onPanChange, progress }) => (
+export const HorizontalMixer = ({ tracks, onVolumeChange, onMuteToggle, onSoloToggle, onPanChange, progress, onSelectToggle, selectable = false }) => (
     <div style={{
         display: 'flex',
         flexDirection: 'column',
@@ -138,13 +138,15 @@ export const HorizontalMixer = ({ tracks, onVolumeChange, onMuteToggle, onSoloTo
                 onSoloToggle={onSoloToggle}
                 onPanChange={onPanChange}
                 progress={progress}
+                onSelectToggle={onSelectToggle}
+                selectable={selectable}
             />
         ))}
     </div>
 );
 
 // ── Single track row ──────────────────────────────────────────────────────────
-const HorizontalTrack = ({ track, onVolumeChange, onMuteToggle, onSoloToggle, onPanChange, progress }) => {
+const HorizontalTrack = ({ track, onVolumeChange, onMuteToggle, onSoloToggle, onPanChange, progress, onSelectToggle, selectable }) => {
     const getIcon = (name) => {
         const n = (name || '').toLowerCase();
         if (n.includes('vox') || n.includes('voz') || n.includes('vocal')) return <Mic2 size={14} />;
@@ -176,7 +178,7 @@ const HorizontalTrack = ({ track, onVolumeChange, onMuteToggle, onSoloToggle, on
     return (
         <div style={{
             display: 'grid',
-            gridTemplateColumns: '160px 60px 1fr 40px 70px',
+            gridTemplateColumns: selectable ? '40px 160px 60px 1fr 40px 70px' : '160px 60px 1fr 40px 70px',
             alignItems: 'center',
             padding: '7px 16px',
             gap: '12px',
@@ -184,6 +186,22 @@ const HorizontalTrack = ({ track, onVolumeChange, onMuteToggle, onSoloToggle, on
             borderBottom: '1px solid rgba(255,255,255,0.03)',
             minHeight: '58px',
         }}>
+            {/* Selection Checkbox (Solo si selectable) */}
+            {selectable && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <input 
+                        type="checkbox" 
+                        checked={track.selected !== false} 
+                        onChange={() => onSelectToggle && onSelectToggle(track.id)}
+                        style={{ 
+                            width: '18px', 
+                            height: '18px', 
+                            cursor: 'pointer',
+                            accentColor: '#00A3FF'
+                        }} 
+                    />
+                </div>
+            )}
             {/* LED + Icon + Name */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                 <Led active={isActive} color={color} />

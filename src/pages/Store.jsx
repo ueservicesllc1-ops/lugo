@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
-import { Search, ShoppingCart, Play, X, ArrowLeft, Music2, Music, Layers, Globe, LogOut } from 'lucide-react';
+import { Search, ShoppingCart, Play, X, ArrowLeft, Music2, Music, Layers, Disc, Globe, LogOut } from 'lucide-react';
 import { useTranslation } from '../context/LanguageContext';
 import Footer from '../components/Footer';
 import { HorizontalMixer } from '../components/HorizontalMixer';
@@ -157,6 +157,7 @@ export default function Store() {
     const [previewTracks, setPreviewTracks] = useState([]);
     const [previewProgress, setPreviewProgress] = useState(0);
     const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
+    const [selectedMixOption, setSelectedMixOption] = useState('wav'); // wav | stems | custom | wav_track | mp3
 
     const openPreview = async (song) => {
         setPreviewSong(song);
@@ -190,7 +191,7 @@ export default function Store() {
             };
 
             const tracksToLoad = rawTracks.map(t => ({ ...t, proxyUrl: getProxyUrl(t.url) }));
-            setPreviewTracks(tracksToLoad.map(t => ({ id: t.id, name: t.name, muted: false, solo: false, volume: 0.8, pan: 0 })));
+            setPreviewTracks(tracksToLoad.map(t => ({ id: t.id, name: t.name, muted: false, solo: false, volume: 0.8, pan: 0, selected: true })));
 
             const batch = [];
             for (const t of tracksToLoad) {
@@ -280,6 +281,10 @@ export default function Store() {
         previewEngineRef.current?.setTrackPan(id, pan);
     };
 
+    const handleTrackSelectToggle = (id) => {
+        setPreviewTracks(prev => prev.map(t => t.id === id ? { ...t, selected: !t.selected } : t));
+    };
+
     useEffect(() => {
         const savedCart = localStorage.getItem('lugo_cart');
         if (savedCart) {
@@ -289,8 +294,9 @@ export default function Store() {
 
     const addToCart = (song, variant = null) => {
         setCart(prev => {
-            const variantId = variant ? `${song.id}_${variant.id}` : song.id;
-            if (prev.some(item => item.cartId === variantId)) return prev;
+            const variantId = variant?.id 
+                ? `${song.id}_${variant.id}` 
+                : `${song.id}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
             
             const itemToAdd = {
                 cartId: variantId,
@@ -298,9 +304,10 @@ export default function Store() {
                 name: song.name,
                 artist: song.artist,
                 coverUrl: song.coverUrl,
-                price: variant ? variant.price : (song.price || 9.99),
-                variantName: variant ? variant.name : (song.isMultitrack ? 'Secuencia' : 'Pista Instrumental'),
-                format: variant ? variant.format : (song.isMultitrack ? 'WAV/ZIP' : 'MP3')
+                price: variant ? variant.price : (song.price || 49.00),
+                variantName: variant ? variant.name : (song.isMultitrack ? 'Multitrack (Secuencia)' : 'Pista Instrumental'),
+                format: variant ? variant.format : (song.isMultitrack ? 'WAV/ZIP' : 'MP3'),
+                meta: variant?.meta || null
             };
 
             const newCart = [...prev, itemToAdd];
@@ -309,8 +316,8 @@ export default function Store() {
         });
 
         const msg = variant 
-            ? `¡${song.name} (${variant.name}) agregada!` 
-            : `¡${song.name} agregada con éxito!`;
+            ? `¡${song.name} (${variant.name}) añadida!` 
+            : `¡${song.name} añadida con éxito!`;
 
         setToast({ 
             message: msg, 
@@ -606,55 +613,110 @@ export default function Store() {
                             <button onClick={closePreview} style={{ background: '#1e293b', border: 'none', width: '32px', height: '32px', borderRadius: '50%', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}><X size={16} /></button>
                         </div>
 
-                        <div style={{ padding: '20px 25px' }}>
-                            {previewLoading ? (
-                                <div style={{ textAlign: 'center', padding: '50px 0' }}>
-                                    <div style={{ width: '40px', height: '40px', border: '3px solid rgba(139,92,246,0.1)', borderTopColor: '#00A3FF', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}></div>
-                                    <p style={{ color: '#00A3FF', fontSize: '0.9rem', fontWeight: '900', letterSpacing: '1px' }}>INICIALIZANDO MOTOR...</p>
-                                </div>
-                            ) : (
-                                <>
-                                    <div style={{ marginBottom: '20px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
-                                        <HorizontalMixer
-                                            tracks={previewTracks}
-                                            onVolumeChange={handleVolumeChange}
-                                            onMuteToggle={handleMuteToggle}
-                                            onSoloToggle={handleSoloToggle}
-                                            onPanChange={handlePanChange}
-                                            progress={previewProgress}
-                                        />
+                        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                            {/* COLUMNA IZQUIERDA: MEZCLADOR */}
+                            <div style={{ flex: 1, padding: '25px', borderRight: '1px solid rgba(255,255,255,0.05)', overflowY: 'auto' }}>
+                                {previewLoading ? (
+                                    <div style={{ textAlign: 'center', padding: '50px 0' }}>
+                                        <div style={{ width: '40px', height: '40px', border: '3px solid rgba(139,92,246,0.1)', borderTopColor: '#00A3FF', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}></div>
+                                        <p style={{ color: '#00A3FF', fontSize: '0.9rem', fontWeight: '900', letterSpacing: '1px' }}>INICIALIZANDO MOTOR...</p>
                                     </div>
-
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '15px 20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <button
-                                            onClick={togglePreviewPlayback}
-                                            style={{ background: '#00A3FF', border: 'none', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', cursor: 'pointer', boxShadow: '0 0 20px rgba(139,92,246,0.3)', transition: 'transform 0.2s' }}
-                                        >
-                                            {isPreviewPlaying ? <X size={24} color="black" /> : <Play size={24} fill="black" color="black" style={{ marginLeft: '3px' }} />}
-                                        </button>
-
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                                <span style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: '900', letterSpacing: '0.5px' }}>PLAYBACK (20s-40s)</span>
-                                                <span style={{ color: '#00A3FF', fontSize: '1rem', fontWeight: '900', fontFamily: 'monospace' }}>{previewProgress.toFixed(1)}s</span>
-                                            </div>
-                                            <div style={{ height: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                <div style={{ width: `${Math.max(0, Math.min(100, ((previewProgress - 20) / 20) * 100))}%`, height: '100%', background: 'linear-gradient(to right, #00A3FF, #C084FC)', boxShadow: '0 0 10px rgba(139,92,246,0.4)', transition: 'width 0.1s linear' }}></div>
-                                            </div>
+                                ) : (
+                                    <>
+                                        <div style={{ marginBottom: '25px' }}>
+                                            <HorizontalMixer
+                                                tracks={previewTracks}
+                                                onVolumeChange={handleVolumeChange}
+                                                onMuteToggle={handleMuteToggle}
+                                                onSoloToggle={handleSoloToggle}
+                                                onPanChange={handlePanChange}
+                                                progress={previewProgress}
+                                                selectable={selectedMixOption === 'custom'}
+                                                onSelectToggle={handleTrackSelectToggle}
+                                            />
                                         </div>
 
-                                        <button
-                                            onClick={() => {
-                                                handleBuyClick(previewSong);
-                                                closePreview();
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '15px 20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <button
+                                                onClick={togglePreviewPlayback}
+                                                style={{ background: '#00A3FF', border: 'none', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', cursor: 'pointer', boxShadow: '0 0 20px rgba(0,163,255,0.3)', transition: 'transform 0.2s' }}
+                                            >
+                                                {isPreviewPlaying ? <X size={24} color="black" /> : <Play size={24} fill="black" color="black" style={{ marginLeft: '3px' }} />}
+                                            </button>
+
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                                    <span style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: '900', letterSpacing: '0.5px' }}>PLAYBACK (20s-40s)</span>
+                                                    <span style={{ color: '#00A3FF', fontSize: '1rem', fontWeight: '900', fontFamily: 'monospace' }}>{previewProgress.toFixed(1)}s</span>
+                                                </div>
+                                                <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                                                    <div style={{ height: '100%', width: `${Math.max(0, Math.min(100, ((previewProgress - 20) / 20) * 100))}%`, background: '#00A3FF', boxShadow: '0 0 10px #00A3FF', transition: 'width 0.1s linear' }}></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* COLUMNA DERECHA: OPCIONES DE DESCARGA/COMPRA */}
+                            <div style={{ width: '400px', padding: '25px', display: 'flex', flexDirection: 'column', gap: '20px', background: 'rgba(255,255,255,0.01)' }}>
+                                <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#64748b', letterSpacing: '2px' }}>OPCIONES DE COMPRA:</div>
+                                
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    {[
+                                        { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales para Zion Stage o DAW.', price: pricing.wavPrice, icon: <Layers size={18} /> },
+                                        { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, etc).', price: pricing.stemsPrice, icon: <Music2 size={18} /> },
+                                        { id: 'custom', name: 'Personalizado (Custom Mix)', desc: 'Elige qué pistas quieres incluir en tu WAV.', price: pricing.stemsPrice, icon: <Disc size={18} /> },
+                                        { id: 'wav_track', name: 'Pista de Acompañamiento (WAV)', desc: 'Alta fidelidad sin voz principal.', price: pricing.wavTrackPrice || 15.00, icon: <Music size={18} /> },
+                                        { id: 'mp3', name: 'Pista de Acompañamiento (MP3)', desc: 'Versión MP3 lista para cantar.', price: pricing.mp3Price, icon: <Music size={18} /> }
+                                    ].map(opt => (
+                                        <div 
+                                            key={opt.id}
+                                            onClick={() => setSelectedMixOption(opt.id)}
+                                            style={{ 
+                                                padding: '16px', borderRadius: '15px', border: '1px solid',
+                                                borderColor: selectedMixOption === opt.id ? '#00A3FF' : 'rgba(255,255,255,0.08)',
+                                                background: selectedMixOption === opt.id ? 'rgba(0,163,255,0.05)' : 'rgba(255,255,255,0.02)',
+                                                cursor: 'pointer', transition: 'all 0.2s', position: 'relative'
                                             }}
-                                            style={{ background: '#f1c40f', color: 'black', border: 'none', padding: '10px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                                         >
-                                            <ShoppingCart size={16} /> COMPRAR
-                                        </button>
-                                    </div>
-                                </>
-                            )}
+                                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                                <div style={{ color: selectedMixOption === opt.id ? '#00A3FF' : '#64748b' }}>{opt.icon}</div>
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>{opt.name}</div>
+                                                    <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{opt.desc}</div>
+                                                </div>
+                                                <div style={{ fontWeight: '900', fontSize: '1rem', color: selectedMixOption === opt.id ? 'white' : '#64748b' }}>${opt.price.toFixed(2)}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div style={{ marginTop: 'auto', padding: '20px', background: 'rgba(0,163,255,0.05)', borderRadius: '20px', border: '1px dashed rgba(0,163,255,0.2)' }}>
+                                    <button 
+                                        onClick={() => {
+                                            const opt = [
+                                                { id: 'wav', name: 'Multitrack (Secuencia)', price: pricing.wavPrice, format: 'WAV/ZIP' },
+                                                { id: 'stems', name: 'CustomMix (Stems)', price: pricing.stemsPrice, format: 'WAV Stems' },
+                                                { id: 'custom', name: 'Mezcla Personalizada', price: pricing.stemsPrice, format: 'Custom WAV' },
+                                                { id: 'wav_track', name: 'Acompañamiento (WAV)', price: pricing.wavTrackPrice || 15, format: 'WAV' },
+                                                { id: 'mp3', name: 'Acompañamiento (MP3)', price: pricing.mp3Price, format: 'MP3' }
+                                            ].find(o => o.id === selectedMixOption);
+                                            
+                                            const meta = selectedMixOption === 'custom' 
+                                                ? { selectedTracks: previewTracks.filter(t => t.selected).map(t => t.name) }
+                                                : null;
+                                            
+                                            addToCart(previewSong, { ...opt, meta });
+                                            closePreview();
+                                        }}
+                                        style={{ width: '100%', padding: '15px', borderRadius: '12px', background: '#00A3FF', border: 'none', color: 'black', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                                    >
+                                        <ShoppingCart size={18} /> AGREGAR AL CARRITO
+                                    </button>
+                                    <p style={{ margin: '12px 0 0', fontSize: '0.65rem', textAlign: 'center', color: '#445a7c' }}>Licencia de uso perpetuo incluida para directos.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

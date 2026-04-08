@@ -471,6 +471,78 @@ class AudioEngine {
         };
         this._updater = requestAnimationFrame(update);
     }
+    async renderMix(selectedTrackIds = null) {
+        if (IS_NATIVE) return null; // No export en Nativo por ahora
+        
+        const tracksToMix = Array.from(this.tracks.entries())
+            .filter(([id]) => !selectedTrackIds || selectedTrackIds.includes(id))
+            .map(([, t]) => t);
+
+        if (tracksToMix.length === 0) return null;
+
+        // Determinar duración máxima
+        let maxDuration = 0;
+        tracksToMix.forEach(t => { if (t.buffer.duration > maxDuration) maxDuration = t.buffer.duration; });
+
+        const offlineCtx = new OfflineAudioContext(2, maxDuration * 44100, 44100);
+        
+        for (const t of tracksToMix) {
+            const src = offlineCtx.createBufferSource();
+            src.buffer = t.buffer;
+            
+            const gain = offlineCtx.createGain();
+            gain.gain.value = t.muted ? 0 : t.volume;
+            
+            const panner = offlineCtx.createStereoPanner();
+            panner.pan.value = t.panner?.pan.value || 0;
+
+            src.connect(panner);
+            panner.connect(gain);
+            gain.connect(offlineCtx.destination);
+            src.start(0);
+        }
+
+        const renderedBuffer = await offlineCtx.startRendering();
+        return this.bufferToWav(renderedBuffer);
+    }
+
+    bufferToWav(abuffer) {
+        const numOfChan = abuffer.numberOfChannels;
+        const length = abuffer.length * numOfChan * 2 + 44;
+        const buffer = new ArrayBuffer(length);
+        const view = new DataView(buffer);
+        let channels = [], i, sample, offset = 0, pos = 0;
+
+        function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
+        function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
+
+        setUint32(0x46464952); // "RIFF"
+        setUint32(length - 8); // file length - 8
+        setUint32(0x45564157); // "WAVE"
+        setUint32(0x20746d66); // "fmt " chunk
+        setUint32(16); // length = 16
+        setUint16(1); // PCM (uncompressed)
+        setUint16(numOfChan);
+        setUint32(abuffer.sampleRate);
+        setUint32(abuffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
+        setUint16(numOfChan * 2); // block-align
+        setUint16(16); // 16-bit (hardcoded)
+        setUint32(0x61746164); // "data" - chunk
+        setUint32(length - pos - 4); // chunk length
+
+        for (i = 0; i < abuffer.numberOfChannels; i++) channels.push(abuffer.getChannelData(i));
+
+        while (pos < length) {
+            for (i = 0; i < numOfChan; i++) {
+                sample = Math.max(-1, Math.min(1, channels[i][offset]));
+                sample = (sample < 0 ? sample * 0x8000 : sample * 0x7FFF) | 0;
+                view.setInt16(pos, sample, true);
+                pos += 2;
+            }
+            offset++;
+        }
+        return new Blob([buffer], { type: "audio/wav" });
+    }
 }
 
 export const audioEngine = new AudioEngine();

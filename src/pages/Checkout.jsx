@@ -138,12 +138,21 @@ export default function Checkout() {
     const handlePaymentSuccess = async () => {
         try {
             const songIds = cart.map(i => i.id);
-            const fetchedData = [];
-            for (const sid of songIds) {
-                const sDoc = await getDoc(doc(db, 'songs', sid));
-                if (sDoc.exists()) fetchedData.push({ id: sDoc.id, ...sDoc.data() });
+            const purchasedWithMeta = [];
+            for (const item of cart) {
+                const sDoc = await getDoc(doc(db, 'songs', item.id));
+                if (sDoc.exists()) {
+                    purchasedWithMeta.push({ 
+                        ...sDoc.data(), 
+                        id: sDoc.id,
+                        purchaseVariant: item.variantName,
+                        purchaseMeta: item.meta,
+                        purchaseFormat: item.format,
+                        cartId: item.cartId // Para Key
+                    });
+                }
             }
-            setPurchasedSongs(fetchedData);
+            setPurchasedSongs(purchasedWithMeta);
 
             // Guardamos con setDoc {merge: true} para crear el doc si no existe
             await setDoc(doc(db, 'users', currentUser.uid), {
@@ -190,43 +199,72 @@ export default function Checkout() {
         if (isDownloading) return;
         setIsDownloading(true);
         const zip = new JSZip();
-        let mainTracks = (song.tracks || []).filter(t => t.name !== '__PreviewMix');
         
-        if (mainTracks.length === 0 && song.audioUrl) {
-            mainTracks = [{ name: song.name.replace(/[^\w\s-]/g, ''), url: song.audioUrl }];
+        // 1. Obtener todas las pistas de la canción
+        let allTracks = (song.tracks || []).filter(t => t.name !== '__PreviewMix');
+        if (allTracks.length === 0 && song.audioUrl) {
+            allTracks = [{ name: song.name, url: song.audioUrl }];
         }
 
-        if (mainTracks.length === 0) {
-            showToast('Error: No se encontraron archivos para descargar.', 'error');
-            setIsDownloading(false);
-            return;
-        }
-        
-        setDownloadProgress({ current: 0, total: mainTracks.length });
+        const isCustom = song.purchaseVariant?.toLowerCase().includes('personalizado') || song.purchaseVariant?.toLowerCase().includes('custom');
+        const isTrackOnly = song.purchaseVariant?.toLowerCase().includes('pista') || song.purchaseVariant?.toLowerCase().includes('acompañamiento');
 
         const devProxy = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
 
         try {
-            for (let i = 0; i < mainTracks.length; i++) {
-                const track = mainTracks[i];
-                const res = await fetch(`${devProxy}/api/download?url=${encodeURIComponent(track.url)}`);
-                if (!res.ok) throw new Error(`Fallo al descargar ${track.name}`);
-                const blob = await res.blob();
-                const ext = track.url.split('.').pop().split('?')[0] || 'wav';
-                zip.file(`${track.name}.${ext}`, blob);
-                setDownloadProgress(p => ({ ...p, current: i + 1 }));
+            if (isCustom || isTrackOnly) {
+                // Caso: MEZCLA (Custom o Pista)
+                showToast(`Generando ${isCustom ? 'Mezcla Personalizada' : 'Pista'}...`, 'info');
+                
+                // Necesitamos cargar los buffers en el motor offline
+                await audioEngine.init();
+                await audioEngine.clear();
+                
+                const selectedNames = isCustom ? (song.purchaseMeta?.selectedTracks || []) : null;
+                
+                for (let i = 0; i < allTracks.length; i++) {
+                    const track = allTracks[i];
+                    // Si es custom y no está en la lista, saltamos
+                    if (isCustom && selectedNames.length > 0 && !selectedNames.includes(track.name)) continue;
+                    
+                    setDownloadProgress({ current: i + 1, total: allTracks.length });
+                    const res = await fetch(`${devProxy}/api/download?url=${encodeURIComponent(track.url)}`);
+                    const blob = await res.blob();
+                    await audioEngine.addTrack(track.name, null, blob);
+                }
+
+                const renderedBlob = await audioEngine.renderMix();
+                if (renderedBlob) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(renderedBlob);
+                    link.download = `${song.name} - ${isCustom ? 'Custom Mix' : 'Pista'}.wav`;
+                    link.click();
+                }
+            } else {
+                // Caso: MULTITRACK / STEMS (ZIP de archivos individuales)
+                setDownloadProgress({ current: 0, total: allTracks.length });
+                for (let i = 0; i < allTracks.length; i++) {
+                    const track = allTracks[i];
+                    const res = await fetch(`${devProxy}/api/download?url=${encodeURIComponent(track.url)}`);
+                    if (!res.ok) throw new Error(`Fallo al descargar ${track.name}`);
+                    const blob = await res.blob();
+                    const ext = track.url.split('.').pop().split('?')[0] || 'wav';
+                    zip.file(`${track.name}.${ext}`, blob);
+                    setDownloadProgress(p => ({ ...p, current: i + 1 }));
+                }
+                const content = await zip.generateAsync({ type: 'blob' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = `${song.name} - ${song.purchaseVariant || 'Multitrack'}.zip`;
+                link.click();
             }
-            const content = await zip.generateAsync({ type: 'blob' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = `${song.name} - Multitrack.zip`;
-            link.click();
         } catch (err) {
-            console.error('Error en descarga ZIP:', err);
-            showToast('Error al generar el ZIP: ' + err.message, 'error');
+            console.error('Error en descarga:', err);
+            showToast('Error al generar archivos: ' + err.message, 'error');
         } finally {
             setIsDownloading(false);
+            setDownloadProgress({ current: 0, total: 0 });
         }
     };
 
@@ -389,9 +427,14 @@ export default function Checkout() {
                                 <div style={{ flex: 1 }}>
                                     <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800' }}>{item.name}</h4>
                                     <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.85rem' }}>{item.artist}</p>
-                                    <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+                                    <div style={{ marginTop: '8px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                         <span style={{ fontSize: '0.65rem', background: '#f1f5f9', color: '#0000FF', padding: '2px 8px', borderRadius: '4px', fontWeight: '900', textTransform: 'uppercase' }}>{item.variantName || 'Secuencia'}</span>
                                         <span style={{ fontSize: '0.65rem', background: '#f1f5f9', color: '#64748b', padding: '2px 8px', borderRadius: '4px', fontWeight: '700' }}>{item.format || 'ZIP'}</span>
+                                        {item.meta?.selectedTracks && (
+                                            <div style={{ width: '100%', marginTop: '4px', fontSize: '0.7rem', color: '#64748b', fontStyle: 'italic' }}>
+                                                Pistas: {item.meta.selectedTracks.join(', ')}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
