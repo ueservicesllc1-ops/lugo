@@ -16,7 +16,7 @@ const PartiturasPro = () => {
             {/* HEADER / NAV */}
             <header style={{ position: 'fixed', top: 0, width: '100%', padding: '20px 40px', background: 'rgba(2, 6, 23, 0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <div onClick={() => navigate('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', color: 'white' }}>JUNIOR<span style={{ color: '#8B5CF6' }}>LUGO</span></h1>
+                    <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', color: 'white' }}>JUNIOR<span style={{ color: '#00A3FF' }}>LUGO</span></h1>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <button 
@@ -39,18 +39,18 @@ const PartiturasPro = () => {
             {/* HERO SECTION */}
             <section style={{ paddingTop: '160px', paddingBottom: '100px', textAlign: 'center', background: 'radial-gradient(circle at top, rgba(16,185,129,0.1) 0%, transparent 60%)' }}>
                 <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '8px 20px', borderRadius: '50px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', color: '#8B5CF6', fontSize: '0.8rem', fontWeight: '800', marginBottom: '30px', textTransform: 'uppercase', letterSpacing: '2px' }}>
-                        <ScrollText size={14} fill="#8B5CF6" /> {t('precisionDocumentation')}
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '8px 20px', borderRadius: '50px', background: 'rgba(0,163,255,0.1)', border: '1px solid rgba(0,163,255,0.2)', color: '#00A3FF', fontSize: '0.8rem', fontWeight: '800', marginBottom: '30px', textTransform: 'uppercase', letterSpacing: '2px' }}>
+                        <ScrollText size={14} fill="#00A3FF" /> {t('precisionDocumentation')}
                     </div>
                     <h1 style={{ fontSize: '4.5rem', fontWeight: '900', marginBottom: '24px', letterSpacing: '-2.5px', lineHeight: '1' }}>
-                        {t('sheetMusicHeroTitle')} <span style={{ background: 'linear-gradient(to right, #8B5CF6, #D946EF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{t('sheetMusicHeroTitle2')}</span>
+                        {t('sheetMusicHeroTitle')} <span style={{ background: 'linear-gradient(to right, #00A3FF, #00d2d3)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{t('sheetMusicHeroTitle2')}</span>
                     </h1>
                     <p style={{ fontSize: '1.4rem', color: '#94a3b8', lineHeight: '1.6', maxWidth: '750px', margin: '0 auto 40px' }}>
                         {t('sheetMusicSubtitle')}
                     </p>
                     <button 
                         onClick={() => window.open('https://wa.me/5215519805954', '_blank')}
-                        style={{ padding: '18px 40px', background: '#8B5CF6', color: 'white', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: '900', cursor: 'pointer', boxShadow: '0 10px 30px rgba(139,92,246,0.3)', transition: 'transform 0.2s' }}
+                        style={{ padding: '18px 40px', background: '#00A3FF', color: 'white', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: '900', cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,163,255,0.3)', transition: 'transform 0.2s' }}
                         onMouseOver={e => e.currentTarget.style.transform = 'translateY(-3px)'}
                         onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
                     >
@@ -65,19 +65,19 @@ const PartiturasPro = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px' }}>
                         {[
                             {
-                                icon: <Printer size={32} color="#8B5CF6" />,
+                                icon: <Printer size={32} color="#00A3FF" />,
                                 title: t('readableCharts'),
                                 desc: t('readableChartsDesc'),
                                 items: ["PDFs Optimizados", "Layout Limpio", "Símbolos Estándar"]
                             },
                             {
-                                icon: <Music2 size={32} color="#8B5CF6" />,
+                                icon: <Music size={32} color="#00A3FF" />,
                                 title: t('fullOrchestration'),
                                 desc: t('fullOrchestrationDesc'),
                                 items: ["Audio a Papel", "Arreglo Original", "Múltiples Claves"]
                             },
                             {
-                                icon: <CheckCircle2 size={32} color="#8B5CF6" />,
+                                icon: <CheckCircle2 size={32} color="#00A3FF" />,
                                 title: t('livePerformance'),
                                 desc: t('livePerformanceDesc'),
                                 items: ["Letra e Acordes", "Guía de Estructura", "Entrega Digital"]

@@ -44,7 +44,7 @@ export default function Landing() {
     const [multitracksForSale, setMultitracksForSale] = useState([]);
     const [showOptionsModal, setShowOptionsModal] = useState(false);
     const [selectedSongForOptions, setSelectedSongForOptions] = useState(null);
-    const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00, wavTrackPrice: 15.00 });
+    const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00, wavTrackPrice: 9.00 });
     const [selectedMixOption, setSelectedMixOption] = useState('wav'); // wav | stems | custom | wav_track | mp3
 
     const scrollGallery = (direction) => {
@@ -1431,7 +1431,7 @@ export default function Landing() {
             {
                 previewSong && (
                     <div key="preview-modal" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(12px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
-                        <div style={{ background: '#020617', width: '100%', maxWidth: '1300px', maxHeight: '95vh', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', overflowY: 'auto', boxShadow: '0 40px 80px rgba(0,0,0,0.8)', color: 'white', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ background: '#020617', width: '100%', maxWidth: '1300px', height: '90vh', maxHeight: '95vh', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', boxShadow: '0 40px 80px rgba(0,0,0,0.8)', color: 'white', display: 'flex', flexDirection: 'column' }}>
 
                             <div style={{ padding: '14px 25px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -1454,30 +1454,18 @@ export default function Landing() {
                                 <button onClick={closePreview} style={{ background: '#1e293b', border: 'none', width: '32px', height: '32px', borderRadius: '50%', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }} onMouseEnter={e => e.target.style.background = '#ef4444'} onMouseLeave={e => e.target.style.background = '#1e293b'}><X size={16} /></button>
                             </div>
 
-                        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
                             {/* COLUMNA IZQUIERDA: MEZCLADOR */}
-                            <div style={{ flex: 1, padding: '25px', borderRight: '1px solid rgba(255,255,255,0.05)', overflowY: 'auto' }}>
+                            <div style={{ flex: 1, padding: '25px', borderRight: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                                 {previewLoading ? (
                                     <div style={{ textAlign: 'center', padding: '50px 0' }}>
                                         <div style={{ width: '40px', height: '40px', border: '3px solid rgba(0,163,255,0.1)', borderTopColor: '#00A3FF', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}></div>
                                         <p style={{ color: '#00A3FF', fontSize: '0.9rem', fontWeight: '900', letterSpacing: '1px' }}>INICIALIZANDO MOTOR...</p>
                                     </div>
                                 ) : (
-                                    <>
-                                        <div style={{ marginBottom: '25px' }}>
-                                            <HorizontalMixer
-                                                tracks={previewTracks}
-                                                onVolumeChange={handleVolumeChange}
-                                                onMuteToggle={handleMuteToggle}
-                                                onSoloToggle={handleSoloToggle}
-                                                onPanChange={handlePanChange}
-                                                progress={previewProgress}
-                                                selectable={selectedMixOption === 'custom'}
-                                                onSelectToggle={handleTrackSelectToggle}
-                                            />
-                                        </div>
-
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '15px 20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+                                        {/* Sticky Playback Controls */}
+                                        <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '15px 20px', border: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
                                             <button
                                                 onClick={togglePreviewPlayback}
                                                 style={{ background: '#00A3FF', border: 'none', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', cursor: 'pointer', boxShadow: '0 0 20px rgba(0,163,255,0.3)', transition: 'transform 0.2s' }}
@@ -1495,7 +1483,21 @@ export default function Landing() {
                                                 </div>
                                             </div>
                                         </div>
-                                    </>
+
+                                        {/* Scrollable Tracks */}
+                                        <div style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
+                                            <HorizontalMixer
+                                                tracks={previewTracks}
+                                                onVolumeChange={handleVolumeChange}
+                                                onMuteToggle={handleMuteToggle}
+                                                onSoloToggle={handleSoloToggle}
+                                                onPanChange={handlePanChange}
+                                                progress={previewProgress}
+                                                selectable={selectedMixOption === 'custom'}
+                                                onSelectToggle={handleTrackSelectToggle}
+                                            />
+                                        </div>
+                                    </div>
                                 )}
                             </div>
 
@@ -1505,11 +1507,9 @@ export default function Landing() {
                                 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     {[
-                                        { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales de alta calidad.', price: pricing.wavPrice, icon: <Layers size={18} /> },
-                                        { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, etc).', price: pricing.stemsPrice, icon: <Music2 size={18} /> },
-                                        { id: 'custom', name: 'Personalizado (Custom Mix)', desc: 'Elige qué pistas quieres incluir en tu WAV.', price: pricing.stemsPrice, icon: <Disc size={18} /> },
-                                        { id: 'wav_track', name: 'Acompañamiento (WAV)', desc: 'Alta fidelidad sin voz principal.', price: pricing.wavTrackPrice || 15.00, icon: <Music size={18} /> },
-                                        { id: 'mp3', name: 'Acompañamiento (MP3)', desc: 'Versión MP3 lista para cantar.', price: pricing.mp3Price, icon: <Music size={18} /> }
+                                        { id: 'wav', name: 'Secuencia (Multitrack)', desc: 'Sesión completa con tracks individuales en formato WAV.', price: pricing.wavPrice, icon: <Layers size={18} /> },
+                                        { id: 'custom', name: 'CustomMix (Mezcla WAV)', desc: 'Crea tu propia mezcla personalizada exportada en WAV.', price: pricing.stemsPrice, icon: <Disc size={18} /> },
+                                        { id: 'wav_track', name: 'Pista Instrumental (WAV)', desc: 'Pista de acompañamiento con coros de fondo en alta calidad.', price: pricing.wavTrackPrice || 9.00, icon: <Music size={18} /> }
                                     ].map(opt => (
                                         <div 
                                             key={opt.id}
@@ -1537,11 +1537,9 @@ export default function Landing() {
                                     <button 
                                         onClick={() => {
                                             const opt = [
-                                                { id: 'wav', name: 'Multitrack (Secuencia)', price: pricing.wavPrice, format: 'WAV/ZIP' },
-                                                { id: 'stems', name: 'CustomMix (Stems)', price: pricing.stemsPrice, format: 'WAV Stems' },
-                                                { id: 'custom', name: 'Mezcla Personalizada', price: pricing.stemsPrice, format: 'Custom WAV' },
-                                                { id: 'wav_track', name: 'Acompañamiento (WAV)', price: pricing.wavTrackPrice || 15, format: 'WAV' },
-                                                { id: 'mp3', name: 'Acompañamiento (MP3)', price: pricing.mp3Price, format: 'MP3' }
+                                                { id: 'wav', name: 'Secuencia (Multitrack)', price: pricing.wavPrice, format: 'WAV/ZIP' },
+                                                { id: 'custom', name: 'CustomMix (Mezcla WAV)', price: pricing.stemsPrice, format: 'Custom WAV' },
+                                                { id: 'wav_track', name: 'Pista Instrumental (WAV)', price: pricing.wavTrackPrice || 9.00, format: 'WAV' }
                                             ].find(o => o.id === selectedMixOption);
                                             
                                             const meta = selectedMixOption === 'custom' 

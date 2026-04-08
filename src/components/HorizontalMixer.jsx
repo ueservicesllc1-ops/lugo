@@ -122,8 +122,8 @@ export const HorizontalMixer = ({ tracks, onVolumeChange, onMuteToggle, onSoloTo
     <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '2px',
-        background: 'rgba(255,255,255,0.02)',
+        gap: '1px',
+        background: 'rgba(255,255,255,0.01)',
         borderRadius: '12px',
         overflow: 'hidden',
         border: '1px solid rgba(255,255,255,0.05)',
@@ -180,11 +180,11 @@ const HorizontalTrack = ({ track, onVolumeChange, onMuteToggle, onSoloToggle, on
             display: 'grid',
             gridTemplateColumns: selectable ? '40px 160px 60px 1fr 40px 70px' : '160px 60px 1fr 40px 70px',
             alignItems: 'center',
-            padding: '7px 16px',
-            gap: '12px',
+            padding: '4px 16px',
+            gap: '10px',
             background: 'rgba(15,23,42,0.5)',
-            borderBottom: '1px solid rgba(255,255,255,0.03)',
-            minHeight: '58px',
+            borderBottom: '1px solid rgba(255,255,255,0.02)',
+            minHeight: '48px',
         }}>
             {/* Selection Checkbox (Solo si selectable) */}
             {selectable && (
@@ -237,7 +237,7 @@ const HorizontalTrack = ({ track, onVolumeChange, onMuteToggle, onSoloToggle, on
             </div>
 
             {/* Waveform + Volume overlay */}
-            <div style={{ position: 'relative', height: '34px', borderRadius: '6px', overflow: 'hidden', background: 'rgba(0,0,0,0.3)' }}>
+            <div style={{ position: 'relative', height: '28px', borderRadius: '4px', overflow: 'hidden', background: 'rgba(0,0,0,0.3)' }}>
                 <TrackWaveform
                     trackId={track.id}
                     color={color}

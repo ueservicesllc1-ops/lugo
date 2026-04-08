@@ -102,8 +102,11 @@ export default function Admin() {
     const [gallery, setGallery] = useState([]);
     const [videos, setVideos] = useState([]);
     const [socials, setSocials] = useState({ instagram: '', youtube: '', tiktok: '', spotify: '' });
-    const [salesSearch, setSalesSearch] = useState('');
     const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00, wavTrackPrice: 15.00 });
+    const [users, setUsers] = useState([]);
+    const [usersSearch, setUsersSearch] = useState('');
+    const [userSortField, setUserSortField] = useState('createdAt'); // 'createdAt' | 'mtCount'
+    const [userSortOrder, setUserSortOrder] = useState('desc'); // 'asc' | 'desc'
 
     // Derived: split catalog into MTs vs simple songs
     const mtProducts = products.filter(p => Array.isArray(p.tracks) && p.tracks.length > 0);
@@ -177,10 +180,13 @@ export default function Admin() {
         const unsubS = onSnapshot(query(collection(db, 'sales'), orderBy('createdAt', 'desc')), (snap) => {
             setSales(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         });
+        const unsubU = onSnapshot(query(collection(db, 'users'), orderBy('createdAt', 'desc')), (snap) => {
+            setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
         getDoc(doc(db, 'settings', 'multitrack_pricing')).then(snap => { 
             if (snap.exists()) setPricing(snap.data()); 
         });
-        return () => { unsubP(); unsubG(); unsubV(); unsubS(); };
+        return () => { unsubP(); unsubG(); unsubV(); unsubS(); unsubU(); };
     }, [isAdmin]);
 
     const handleLogout = () => { auth.signOut(); navigate('/'); };
@@ -492,7 +498,8 @@ export default function Admin() {
                     <h2 style={{ fontSize: '1.1rem', fontWeight: '900', margin: 0 }}>LUGO ADMIN</h2>
                 </div>
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
-                    <button onClick={() => { setActiveTab('mt'); resetMtWizard(); }} style={S.sideBtn(activeTab === 'mt')}><Upload size={18} /> Subir MT</button>
+                    <button onClick={() => setActiveTab(activeTab === 'mt' ? 'mt' : 'mt')} style={S.sideBtn(activeTab === 'mt')}><Upload size={18} /> Subir MT</button>
+                    <button onClick={() => setActiveTab('users')} style={S.sideBtn(activeTab === 'users')}><Users size={18} /> Usuarios</button>
                     <button onClick={() => setActiveTab('catalogoMT')} style={S.sideBtn(activeTab === 'catalogoMT')}><Music size={18} /> Catálogo MT</button>
                     <button onClick={() => setActiveTab('products')} style={S.sideBtn(activeTab === 'products')}><Music size={18} /> Catálogo Simple</button>
                     <button onClick={() => setActiveTab('gallery')} style={S.sideBtn(activeTab === 'gallery')}><ImageIcon size={18} /> Galería</button>
@@ -519,10 +526,34 @@ export default function Admin() {
                                 <header style={{ marginBottom: '40px' }}>
                                     <h1 style={{ margin: '0 0 8px', textTransform: 'uppercase' }}>Subir Multitrack</h1>
                                     <p style={{ color: '#64748b', margin: '0 0 20px' }}>Carga un ZIP con las pistas y publícalo en el marketplace.</p>
-                                    <div style={{ background: 'rgba(0,188,212,0.08)', borderLeft: '4px solid #00bcd4', padding: '14px 20px', borderRadius: '12px', fontSize: '0.85rem' }}>
-                                        <span style={{ fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '4px' }}>FORMATO DEL ARCHIVO ZIP</span>
-                                        <div style={{ color: '#94a3b8' }}>Nombre del archivo: <strong>NOMBRE - ARTISTA - NOTA - TEMPO.zip</strong></div>
-                                        <div style={{ fontSize: '0.75rem', color: '#64748b', fontStyle: 'italic', marginTop: '4px' }}>Ej: Celebra victorioso - Juan Carlos - Am - 98BPM.zip</div>
+                                    
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+                                        <div style={{ background: 'rgba(0,188,212,0.08)', borderLeft: '4px solid #00bcd4', padding: '20px', borderRadius: '16px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                                                <FileText size={20} color="#00bcd4" />
+                                                <span style={{ fontWeight: '900', color: '#00bcd4', textTransform: 'uppercase', fontSize: '0.9rem' }}>Instrucciones del ZIP</span>
+                                            </div>
+                                            <ul style={{ margin: 0, paddingLeft: '20px', color: '#94a3b8', fontSize: '0.85rem', lineHeight: '1.6' }}>
+                                                <li>El archivo debe estar en formato <strong>.ZIP</strong></li>
+                                                <li>Solo se admiten audios <strong>.WAV</strong> o <strong>.MP3</strong></li>
+                                                <li>Incluye todas las pistas individuales (stems).</li>
+                                                <li>No incluyas carpetas anidadas dentro del ZIP.</li>
+                                            </ul>
+                                        </div>
+
+                                        <div style={{ background: 'rgba(139, 92, 246, 0.08)', borderLeft: '4px solid #8B5CF6', padding: '20px', borderRadius: '16px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                                                <ShieldCheck size={20} color="#8B5CF6" />
+                                                <span style={{ fontWeight: '900', color: '#8B5CF6', textTransform: 'uppercase', fontSize: '0.9rem' }}>Convención de Nombres</span>
+                                            </div>
+                                            <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '8px' }}>
+                                                Nombre del archivo:<br/>
+                                                <strong style={{ color: 'white' }}>NOMBRE - ARTISTA - NOTA - TEMPO.zip</strong>
+                                            </div>
+                                            <div style={{ fontSize: '0.75rem', color: '#64748b', fontStyle: 'italic' }}>
+                                                Ejemplo: Celebra victorioso - Juan Carlos - Am - 98BPM.zip
+                                            </div>
+                                        </div>
                                     </div>
                                 </header>
                                 <button onClick={() => fileInputRef.current.click()} style={{ ...S.btnTeal, padding: '16px 40px', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -677,6 +708,119 @@ export default function Admin() {
                     </div>
                 )}
 
+                {/* ── TAB: USUARIOS ── */}
+                {activeTab === 'users' && (
+                    <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
+                        <header style={{ marginBottom: '40px' }}>
+                            <h1 style={{ margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Gestión de Usuarios</h1>
+                            <p style={{ color: '#64748b', margin: 0 }}>Administra los usuarios registrados y sus estadísticas.</p>
+                        </header>
+
+                        {/* Search & Sort Bar */}
+                        <div style={{ background: '#080d1a', padding: '24px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+                            <div style={{ position: 'relative', width: '350px' }}>
+                                <Search style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#475569' }} size={18} />
+                                <input 
+                                    style={{ ...S.input, paddingLeft: '48px', margin: 0, height: '48px' }} 
+                                    placeholder="Buscar por nombre o correo..." 
+                                    value={usersSearch}
+                                    onChange={e => setUsersSearch(e.target.value)}
+                                />
+                            </div>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                <span style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: '700' }}>ORDENAR POR:</span>
+                                <select 
+                                    style={{ ...S.input, width: '180px', height: '48px', cursor: 'pointer' }}
+                                    value={userSortField}
+                                    onChange={e => setUserSortField(e.target.value)}
+                                >
+                                    <option value="createdAt">Fecha Registro</option>
+                                    <option value="mtCount">Subidas (MT)</option>
+                                </select>
+                                <button 
+                                    onClick={() => setUserSortOrder(userSortOrder === 'asc' ? 'desc' : 'asc')}
+                                    style={{ ...S.btnGhost, padding: '12px' }}
+                                >
+                                    {userSortOrder === 'asc' ? <TrendingUp size={20} /> : <TrendingUp size={20} style={{ transform: 'rotate(180deg)' }} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Users Table */}
+                        <div style={{ background: '#080d1a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', overflow: 'hidden' }}>
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                    <thead style={{ background: 'rgba(255,255,255,0.02)' }}>
+                                        <tr>
+                                            <th style={{ padding: '20px 24px', fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>Usuario</th>
+                                            <th style={{ padding: '20px 24px', fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>Registro</th>
+                                            <th style={{ padding: '20px 24px', fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>Rol</th>
+                                            <th style={{ padding: '20px 24px', fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', textAlign: 'center' }}>MT Subidos</th>
+                                            <th style={{ padding: '20px 24px', fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', textAlign: 'right' }}>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {users
+                                            .map(u => {
+                                                const count = products.filter(p => p.userId === u.id).length;
+                                                return { ...u, mtCount: count };
+                                            })
+                                            .filter(u => {
+                                                const s = usersSearch.toLowerCase();
+                                                return !usersSearch || u.email?.toLowerCase().includes(s) || u.displayName?.toLowerCase().includes(s);
+                                            })
+                                            .sort((a, b) => {
+                                                let valA = userSortField === 'createdAt' ? (a.createdAt?.toMillis() || 0) : a.mtCount;
+                                                let valB = userSortField === 'createdAt' ? (b.createdAt?.toMillis() || 0) : b.mtCount;
+                                                return userSortOrder === 'asc' ? valA - valB : valB - valA;
+                                            })
+                                            .map(user => (
+                                                <tr key={user.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s' }}>
+                                                    <td style={{ padding: '20px 24px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#00A3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem' }}>
+                                                                {user.displayName?.[0] || user.email?.[0]?.toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <div style={{ fontWeight: '800', fontSize: '0.95rem' }}>{user.displayName || 'Sin Nombre'}</div>
+                                                                <div style={{ fontSize: '0.8rem', color: '#475569' }}>{user.email}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px', color: '#94a3b8', fontSize: '0.85rem' }}>
+                                                        {user.createdAt?.toDate().toLocaleDateString() || 'N/A'}
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px' }}>
+                                                        {user.isSeller ? (
+                                                            <span style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '6px 14px', borderRadius: '30px', fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase' }}>Vendedor</span>
+                                                        ) : (
+                                                            <span style={{ background: 'rgba(148,163,184,0.1)', color: '#94a3b8', padding: '6px 14px', borderRadius: '30px', fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase' }}>Usuario</span>
+                                                        )}
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px', textAlign: 'center' }}>
+                                                        <div style={{ padding: '10px', background: 'rgba(0, 163, 255, 0.05)', borderRadius: '12px', display: 'inline-block', minWidth: '40px', fontWeight: '900', color: '#00A3FF' }}>
+                                                            {user.mtCount}
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px', textAlign: 'right' }}>
+                                                        <button 
+                                                            onClick={() => navigate(`/seller-profile/${user.id}`)}
+                                                            style={{ padding: '10px', background: 'rgba(255,255,255,0.05)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: '0.2s' }}
+                                                            title="Ver Perfil"
+                                                        >
+                                                            <ExternalLink size={16} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* ── TAB: CATÁLOGO MT ── */}
                 {activeTab === 'catalogoMT' && (
                     <>
@@ -693,7 +837,7 @@ export default function Admin() {
                                             <div style={{ fontWeight: '800', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                                             <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '6px' }}>{p.artist} · ${p.price}</div>
                                             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                                {p.key && <span style={{ background: 'rgba(139,92,246,0.15)', color: '#a78bfa', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700' }}>{p.key}</span>}
+                                                {p.key && <span style={{ background: 'rgba(0,163,255,0.15)', color: '#00A3FF', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700' }}>{p.key}</span>}
                                                 {p.tempo && <span style={{ background: 'rgba(0,188,212,0.1)', color: '#00bcd4', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700' }}>{p.tempo} BPM</span>}
                                                 <span style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700' }}>{(p.tracks || []).length} pistas</span>
                                             </div>
