@@ -103,7 +103,7 @@ export default function Admin() {
     const [videos, setVideos] = useState([]);
     const [socials, setSocials] = useState({ instagram: '', youtube: '', tiktok: '', spotify: '' });
     const [salesSearch, setSalesSearch] = useState('');
-    const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00 });
+    const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00, wavTrackPrice: 15.00 });
 
     // Derived: split catalog into MTs vs simple songs
     const mtProducts = products.filter(p => Array.isArray(p.tracks) && p.tracks.length > 0);
@@ -832,51 +832,65 @@ export default function Admin() {
                         </header>
                         
                         <div style={{ background: '#080d1a', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', maxWidth: '650px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
-                            <form onSubmit={handleUpdatePricing} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                            <form onSubmit={handleUpdatePricing} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(139, 92, 246, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(139, 92, 246, 0.1)' }}>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                                        <div style={{ element: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', display: 'flex' }}>
                                             <Upload size={18} color="#8B5CF6" />
                                             <label style={{ fontWeight: '900', fontSize: '1rem' }}>Multitrack (WAV/ZIP)</label>
                                         </div>
                                         <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Paquete completo de pistas individuales.</p>
                                     </div>
-                                    <div style={{ position: 'relative', width: '140px' }}>
-                                        <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#8B5CF6' }}>$</span>
-                                        <input type="number" step="0.01" value={pricing.wavPrice} onChange={e => setPricing({ ...pricing, wavPrice: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '30px', textAlign: 'right', fontWeight: '900', fontSize: '1.2rem' }} />
+                                    <div style={{ position: 'relative', width: '130px' }}>
+                                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#8B5CF6' }}>$</span>
+                                        <input type="number" step="0.01" value={pricing.wavPrice} onChange={e => setPricing({ ...pricing, wavPrice: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '25px', textAlign: 'right', fontWeight: '900' }} />
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0, 188, 212, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(0, 188, 212, 0.1)' }}>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                                        <div style={{ element: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', display: 'flex' }}>
                                             <Music2 size={18} color="#00bcd4" />
                                             <label style={{ fontWeight: '900', fontSize: '1rem' }}>CustomMix (Stems)</label>
                                         </div>
-                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Sesión por grupos de instrumentos.</p>
+                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Grupos de instrumentos (Drums, Bass, etc).</p>
                                     </div>
-                                    <div style={{ position: 'relative', width: '140px' }}>
-                                        <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#00bcd4' }}>$</span>
-                                        <input type="number" step="0.01" value={pricing.stemsPrice} onChange={e => setPricing({ ...pricing, stemsPrice: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '30px', textAlign: 'right', fontWeight: '900', fontSize: '1.2rem' }} />
+                                    <div style={{ position: 'relative', width: '130px' }}>
+                                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#00bcd4' }}>$</span>
+                                        <input type="number" step="0.01" value={pricing.stemsPrice} onChange={e => setPricing({ ...pricing, stemsPrice: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '25px', textAlign: 'right', fontWeight: '900' }} />
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(16, 185, 129, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                                        <div style={{ element: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', display: 'flex' }}>
                                             <Music size={18} color="#10b981" />
                                             <label style={{ fontWeight: '900', fontSize: '1rem' }}>Acompañamiento (MP3)</label>
                                         </div>
-                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Versión estéreo sin voz principal.</p>
+                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Archivo MP3 de alta calidad sin voz.</p>
                                     </div>
-                                    <div style={{ position: 'relative', width: '140px' }}>
-                                        <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#10b981' }}>$</span>
-                                        <input type="number" step="0.01" value={pricing.mp3Price} onChange={e => setPricing({ ...pricing, mp3Price: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '30px', textAlign: 'right', fontWeight: '900', fontSize: '1.2rem' }} />
+                                    <div style={{ position: 'relative', width: '130px' }}>
+                                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#10b981' }}>$</span>
+                                        <input type="number" step="0.01" value={pricing.mp3Price} onChange={e => setPricing({ ...pricing, mp3Price: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '25px', textAlign: 'right', fontWeight: '900' }} />
                                     </div>
                                 </div>
 
-                                <button type="submit" disabled={uploading} style={{ ...S.btnPurple, padding: '18px', marginTop: '10px', fontSize: '1.1rem', boxShadow: '0 10px 20px rgba(139,92,246,0.3)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(241, 196, 15, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(241, 196, 15, 0.1)' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ element: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', display: 'flex' }}>
+                                            <Music size={18} color="#f1c40f" />
+                                            <label style={{ fontWeight: '900', fontSize: '1rem' }}>Acompañamiento (WAV)</label>
+                                        </div>
+                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Archivo WAV de alta fidelidad sin voz.</p>
+                                    </div>
+                                    <div style={{ position: 'relative', width: '130px' }}>
+                                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#f1c40f' }}>$</span>
+                                        <input type="number" step="0.01" value={pricing.wavTrackPrice || 15.00} onChange={e => setPricing({ ...pricing, wavTrackPrice: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '25px', textAlign: 'right', fontWeight: '900' }} />
+                                    </div>
+                                </div>
+
+                                <button type="submit" disabled={uploading} style={{ ...S.btnPurple, padding: '16px', marginTop: '10px', fontSize: '1.1rem', fontWeight: '900' }}>
                                     {uploading ? 'GUARDANDO...' : 'ACTUALIZAR PRECIOS GLOBALES'}
                                 </button>
                             </form>

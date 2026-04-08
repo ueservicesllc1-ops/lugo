@@ -682,7 +682,8 @@ export default function Store() {
                                 {[
                                     { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales para Zion Stage o DAW.', price: pricing.wavPrice, format: 'WAV/ZIP', icon: <Layers size={18} /> },
                                     { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, etc).', price: pricing.stemsPrice, format: 'WAV Stems', icon: <Music2 size={18} /> },
-                                    { id: 'mp3', name: 'Pista de Acompañamiento', desc: 'Archivo MP3 de alta calidad sin voz principal.', price: pricing.mp3Price, format: 'MP3 High Quality', icon: <Music size={18} /> }
+                                    { id: 'wav_track', name: 'Acompañamiento (WAV)', desc: 'Archivo WAV de alta fidelidad sin voz principal.', price: pricing.wavTrackPrice || 15.00, format: 'WAV High Quality', icon: <Music size={18} /> },
+                                    { id: 'mp3', name: 'Acompañamiento (MP3)', desc: 'Archivo MP3 de alta calidad sin voz principal.', price: pricing.mp3Price, format: 'MP3 High Quality', icon: <Music size={18} /> }
                                 ].map((option) => (
                                     <div 
                                         key={option.id}
