@@ -102,8 +102,8 @@ export default function Admin() {
     const [gallery, setGallery] = useState([]);
     const [videos, setVideos] = useState([]);
     const [socials, setSocials] = useState({ instagram: '', youtube: '', tiktok: '', spotify: '' });
-    const [sales, setSales] = useState([]);
     const [salesSearch, setSalesSearch] = useState('');
+    const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00 });
 
     // Derived: split catalog into MTs vs simple songs
     const mtProducts = products.filter(p => Array.isArray(p.tracks) && p.tracks.length > 0);
@@ -176,6 +176,9 @@ export default function Admin() {
         getDoc(doc(db, 'settings', 'socials')).then(snap => { if (snap.exists()) setSocials(snap.data()); });
         const unsubS = onSnapshot(query(collection(db, 'sales'), orderBy('createdAt', 'desc')), (snap) => {
             setSales(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+        getDoc(doc(db, 'settings', 'multitrack_pricing')).then(snap => { 
+            if (snap.exists()) setPricing(snap.data()); 
         });
         return () => { unsubP(); unsubG(); unsubV(); unsubS(); };
     }, [isAdmin]);
@@ -380,6 +383,15 @@ export default function Admin() {
         catch (err) { alert(err.message); } finally { setUploading(false); }
     };
 
+    const handleUpdatePricing = async (e) => {
+        e.preventDefault(); setUploading(true);
+        try { 
+            await setDoc(doc(db, 'settings', 'multitrack_pricing'), pricing); 
+            alert('Precios actualizados globalmente.'); 
+        }
+        catch (err) { alert(err.message); } finally { setUploading(false); }
+    };
+
     const startEditVideo = (v) => {
         setEditingVideo(v); setNewVideo({ title: v.title, genre: v.genre, youtubeUrl: `https://youtube.com/watch?v=${v.videoId}` }); setIsEditingVideo(true);
     };
@@ -486,6 +498,7 @@ export default function Admin() {
                     <button onClick={() => setActiveTab('gallery')} style={S.sideBtn(activeTab === 'gallery')}><ImageIcon size={18} /> Galería</button>
                     <button onClick={() => setActiveTab('portfolio')} style={S.sideBtn(activeTab === 'portfolio')}><Video size={18} /> Portafolio</button>
                     <button onClick={() => setActiveTab('sales')} style={S.sideBtn(activeTab === 'sales')}><DollarSign size={18} /> Ventas</button>
+                    <button onClick={() => setActiveTab('pricing')} style={S.sideBtn(activeTab === 'pricing')}><CreditCard size={18} /> Precios MT</button>
                     <button onClick={() => setActiveTab('socials')} style={S.sideBtn(activeTab === 'socials')}><Share2 size={18} /> Redes</button>
                 </nav>
                 <button onClick={handleLogout} style={{ marginTop: 'auto', padding: '12px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', gap: '10px', fontWeight: '700' }}><LogOut size={18} /> Salir</button>
@@ -808,6 +821,67 @@ export default function Admin() {
                             </form>
                         </div>
                     </>
+                )}
+
+                {/* ── TAB: CONFIGURACIÓN DE PRECIOS ── */}
+                {activeTab === 'pricing' && (
+                    <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                        <header style={{ marginBottom: '30px' }}>
+                            <h1 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>Precios de Multitracks</h1>
+                            <p style={{ color: '#64748b', margin: 0 }}>Define los precios globales para las opciones de compra de multitracks.</p>
+                        </header>
+                        
+                        <div style={{ background: '#080d1a', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', maxWidth: '650px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+                            <form onSubmit={handleUpdatePricing} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                                
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(139, 92, 246, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(139, 92, 246, 0.1)' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                                            <Upload size={18} color="#8B5CF6" />
+                                            <label style={{ fontWeight: '900', fontSize: '1rem' }}>Multitrack (WAV/ZIP)</label>
+                                        </div>
+                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Paquete completo de pistas individuales.</p>
+                                    </div>
+                                    <div style={{ position: 'relative', width: '140px' }}>
+                                        <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#8B5CF6' }}>$</span>
+                                        <input type="number" step="0.01" value={pricing.wavPrice} onChange={e => setPricing({ ...pricing, wavPrice: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '30px', textAlign: 'right', fontWeight: '900', fontSize: '1.2rem' }} />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0, 188, 212, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(0, 188, 212, 0.1)' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                                            <Music2 size={18} color="#00bcd4" />
+                                            <label style={{ fontWeight: '900', fontSize: '1rem' }}>CustomMix (Stems)</label>
+                                        </div>
+                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Sesión por grupos de instrumentos.</p>
+                                    </div>
+                                    <div style={{ position: 'relative', width: '140px' }}>
+                                        <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#00bcd4' }}>$</span>
+                                        <input type="number" step="0.01" value={pricing.stemsPrice} onChange={e => setPricing({ ...pricing, stemsPrice: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '30px', textAlign: 'right', fontWeight: '900', fontSize: '1.2rem' }} />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(16, 185, 129, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                                            <Music size={18} color="#10b981" />
+                                            <label style={{ fontWeight: '900', fontSize: '1rem' }}>Acompañamiento (MP3)</label>
+                                        </div>
+                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Versión estéreo sin voz principal.</p>
+                                    </div>
+                                    <div style={{ position: 'relative', width: '140px' }}>
+                                        <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#10b981' }}>$</span>
+                                        <input type="number" step="0.01" value={pricing.mp3Price} onChange={e => setPricing({ ...pricing, mp3Price: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '30px', textAlign: 'right', fontWeight: '900', fontSize: '1.2rem' }} />
+                                    </div>
+                                </div>
+
+                                <button type="submit" disabled={uploading} style={{ ...S.btnPurple, padding: '18px', marginTop: '10px', fontSize: '1.1rem', boxShadow: '0 10px 20px rgba(139,92,246,0.3)' }}>
+                                    {uploading ? 'GUARDANDO...' : 'ACTUALIZAR PRECIOS GLOBALES'}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 )}
 
                 {/* ── TAB: VENTAS ── */}

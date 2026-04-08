@@ -42,6 +42,9 @@ export default function Landing() {
     const [portfolioVideos, setPortfolioVideos] = useState([]);
     const [socials, setSocials] = useState({ instagram: '', youtube: '', tiktok: '', spotify: '' });
     const [multitracksForSale, setMultitracksForSale] = useState([]);
+    const [showOptionsModal, setShowOptionsModal] = useState(false);
+    const [selectedSongForOptions, setSelectedSongForOptions] = useState(null);
+    const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00 });
 
     const scrollGallery = (direction) => {
         if (carouselRef.current) {
@@ -82,15 +85,43 @@ export default function Landing() {
         }
     }, []);
 
-    const addToCart = (song) => {
+    const addToCart = (song, variant = null) => {
         setCart(prev => {
-            if (prev.some(item => item.id === song.id)) return prev;
-            const newCart = [...prev, { id: song.id, name: song.name, artist: song.artist, price: song.price || 9.99, coverUrl: song.coverUrl }];
+            const variantId = variant ? `${song.id}_${variant.id}` : song.id;
+            if (prev.some(item => item.cartId === variantId)) return prev;
+
+            const itemToAdd = {
+                cartId: variantId,
+                id: song.id,
+                name: song.name,
+                artist: song.artist,
+                coverUrl: song.coverUrl,
+                price: variant ? variant.price : (song.price || 9.99),
+                variantName: variant ? variant.name : (song.isMultitrack ? 'Secuencia' : 'Pista Instrumental'),
+                format: variant ? variant.format : (song.isMultitrack ? 'WAV/ZIP' : 'MP3')
+            };
+
+            const newCart = [...prev, itemToAdd];
             localStorage.setItem('lugo_cart', JSON.stringify(newCart));
             return newCart;
         });
-        setToast(`"${song.name}" añadida al carrito`);
+
+        const msg = variant 
+            ? `¡${song.name} (${variant.name}) agregada!` 
+            : `¡${song.name} añadida al carrito!`;
+
+        setToast(msg);
         setTimeout(() => setToast(null), 3000);
+        setShowOptionsModal(false);
+    };
+
+    const handleBuyClick = (song) => {
+        if (song.isMultitrack) {
+            setSelectedSongForOptions(song);
+            setShowOptionsModal(true);
+        } else {
+            addToCart(song);
+        }
     };
 
     useEffect(() => {
@@ -101,6 +132,10 @@ export default function Landing() {
 
         const unsubscribe = onAuthStateChanged(auth, user => {
             setCurrentUser(user);
+        });
+
+        getDoc(doc(db, 'settings', 'multitrack_pricing')).then(snap => {
+            if (snap.exists()) setPricing(snap.data());
         });
 
         const fetchSongs = async () => {
@@ -741,7 +776,7 @@ export default function Landing() {
                 <div style={{ maxWidth: '1300px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
                     <div style={{ textAlign: 'center', marginBottom: '60px' }}>
                         <h2 style={{ fontSize: '1.5rem', fontWeight: '900', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '10px', color: 'white' }}>CATÁLOGO DE PRODUCTOS</h2>
-                        <p style={{ color: '#8892a4', fontSize: '0.85rem', letterSpacing: '3px', textTransform: 'uppercase' }}>INSTRUMENTALES EXCLUSIVOS Y BEATS EN VENTA</p>
+                        <p style={{ color: '#8892a4', fontSize: '0.85rem', letterSpacing: '3px', textTransform: 'uppercase' }}>INSTRUMENTALES EXCLUSIVOS</p>
                     </div>
 
                     {/* Beat Cards Grid */}
@@ -931,7 +966,7 @@ export default function Landing() {
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <span style={{ fontSize: '1.2rem', fontWeight: '900', color: '#FFFFFF' }}>${track.price || '99.00'}</span>
                                         <button 
-                                            onClick={() => addToCart(track)}
+                                            onClick={() => handleBuyClick(track)}
                                             style={{ background: 'transparent', border: '1px solid #FFFFFF', color: '#FFFFFF', padding: '6px 15px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s' }}
                                             onMouseEnter={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#000000'; }}
                                             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}
@@ -1683,6 +1718,70 @@ export default function Landing() {
                 </div>
             </section>
             <Footer />
-        </div >
+
+            {/* MODAL DE OPCIONES DE COMPRA (Estilo Secuencias.com) */}
+            {showOptionsModal && selectedSongForOptions && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                    <div style={{ background: '#020617', width: '100%', maxWidth: '550px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)', animation: 'slideUp 0.3s ease-out' }}>
+                        <div style={{ padding: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+                            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                <img src={selectedSongForOptions.coverUrl || '/studio_placeholder.png'} style={{ width: '55px', height: '55px', borderRadius: '10px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.2)' }} onError={e => e.target.src='/hero_banner_studio.png'} />
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', color: 'white' }}>{selectedSongForOptions.name}</h3>
+                                    <p style={{ margin: '2px 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>{selectedSongForOptions.artist}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowOptionsModal(false)} style={{ background: '#1e293b', border: 'none', width: '36px', height: '36px', borderRadius: '50%', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} /></button>
+                        </div>
+
+                        <div style={{ padding: '30px' }}>
+                            <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '20px', fontWeight: '800', letterSpacing: '2px', textTransform: 'uppercase' }}>Formatos Disponibles:</p>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                {[
+                                    { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales de alta calidad.', price: pricing.wavPrice, format: 'WAV/ZIP', icon: <Layers size={20} /> },
+                                    { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, Guitarras, etc).', price: pricing.stemsPrice, format: 'WAV Stems', icon: <Music2 size={20} /> },
+                                    { id: 'mp3', name: 'Pista de Acompañamiento', desc: 'Versión MP3 lista para cantar sin voz principal.', price: pricing.mp3Price, format: 'MP3 High Quality', icon: <Music size={20} /> }
+                                ].map((option) => (
+                                    <div 
+                                        key={option.id}
+                                        onClick={() => addToCart(selectedSongForOptions, option)}
+                                        style={{ 
+                                            background: 'rgba(255,255,255,0.03)', 
+                                            padding: '20px', 
+                                            borderRadius: '18px', 
+                                            border: '1px solid rgba(255,255,255,0.08)', 
+                                            display: 'flex', 
+                                            justifyContent: 'space-between', 
+                                            alignItems: 'center',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s'
+                                        }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'scale(1.02)'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                    >
+                                        <div style={{ display: 'flex', gap: '18px', alignItems: 'center' }}>
+                                            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', boxShadow: '0 4px 12px rgba(255,255,255,0.1)' }}>{option.icon}</div>
+                                            <div>
+                                                <div style={{ fontWeight: '900', fontSize: '1rem', color: 'white' }}>{option.name}</div>
+                                                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px', fontWeight: '500' }}>{option.desc}</div>
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <div style={{ fontSize: '1.3rem', fontWeight: '900', color: 'white' }}>${option.price.toFixed(2)}</div>
+                                            <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: '800', letterSpacing: '1px' }}>USD</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div style={{ padding: '25px', background: 'rgba(255,255,255,0.02)', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                            <p style={{ margin: 0, fontSize: '0.75rem', color: '#475569', fontWeight: '600' }}>Acceso instantáneo después del pago mediante PayPal.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }

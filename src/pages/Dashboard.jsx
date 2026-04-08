@@ -7,15 +7,7 @@ import { Search, ShoppingCart, Play, Music2, CreditCard, User, LogOut, Home, Key
 import { useTranslation } from '../context/LanguageContext';
 
 
-const STORAGE_PLANS = [
-    { id: 'free', name: 'Gratis', type: 'Gratis', storageGB: 0.3, storageMB: 300, price: 0, annualPrice: 0, originalAnnualPrice: 0, isVIP: false },
-    { id: 'std1', name: 'Básico', type: 'Estándar', storageGB: 2, storageMB: 2000, price: 4.99, annualPrice: 41.92, originalAnnualPrice: 59.88, isVIP: false },
-    { id: 'std2', name: 'Estándar', type: 'Estándar', storageGB: 5, storageMB: 5000, price: 6.99, annualPrice: 58.72, originalAnnualPrice: 83.88, isVIP: false },
-    { id: 'std3', name: 'Plus', type: 'Estándar', storageGB: 10, storageMB: 10000, price: 9.99, annualPrice: 83.92, originalAnnualPrice: 119.88, isVIP: false },
-    { id: 'vip1', name: 'Básico VIP', type: 'VIP', storageGB: 2, storageMB: 2000, price: 7.99, annualPrice: 67.12, originalAnnualPrice: 95.88, isVIP: true },
-    { id: 'vip2', name: 'Estándar VIP', type: 'VIP', storageGB: 5, storageMB: 5000, price: 9.99, annualPrice: 83.92, originalAnnualPrice: 119.88, isVIP: true },
-    { id: 'vip3', name: 'Plus VIP', type: 'VIP', storageGB: 10, storageMB: 10000, price: 12.99, annualPrice: 109.12, originalAnnualPrice: 155.88, isVIP: true }
-];
+
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -23,21 +15,11 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState('purchases');
     const [currentUser, setCurrentUser] = useState(null);
     const [userSongs, setUserSongs] = useState([]);
-    const [userPlan, setUserPlan] = useState(STORAGE_PLANS[0]);
-    const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
 
     useEffect(() => {
         const unsubAuth = auth.onAuthStateChanged((user) => {
             if (user) {
                 setCurrentUser(user);
-                // User details & Plan
-                onSnapshot(doc(db, 'users', user.uid), (snap) => {
-                    if (snap.exists()) {
-                        const data = snap.data();
-                        const plan = STORAGE_PLANS.find(p => p.id === data.planId) || STORAGE_PLANS[0];
-                        setUserPlan(plan);
-                    }
-                });
 
                 // Purchased Songs
                 onSnapshot(doc(db, 'users', user.uid), (userSnap) => {
@@ -60,10 +42,7 @@ export default function Dashboard() {
         return () => unsubAuth();
     }, [navigate]);
 
-    const handleUpgradePlan = () => {
-        // Plan upgrades handled via PayPal on the checkout page
-        navigate('/checkout');
-    };
+
 
 
     const displayName = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Usuario';
@@ -147,18 +126,8 @@ export default function Dashboard() {
                         <div style={{ background: '#1e293b', padding: '30px', borderRadius: '12px', maxWidth: '600px' }}>
                             <h3 style={{ marginBottom: '20px' }}>Métodos de Pago</h3>
                             <div style={{ border: '1px dashed rgba(255,255,255,0.1)', padding: '30px', textAlign: 'center', borderRadius: '10px', marginBottom: '30px' }}>
-                                <p style={{ color: '#64748b' }}>No tienes tarjetas guardadas.</p>
-                                <button className="btn-teal" style={{ background: '#8B5CF6', marginTop: '15px' }}>+ Agregar Tarjeta</button>
-                            </div>
-                            <div>
-                                <h4 style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '10px' }}>PLAN ACTUAL</h4>
-                                <div style={{ background: 'rgba(139,92,246,0.1)', padding: '20px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <div style={{ fontWeight: 'bold' }}>{userPlan?.name}</div>
-                                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{userPlan?.price === 0 ? 'Gratis' : `$${userPlan?.price}/mes`}</div>
-                                    </div>
-                                    <button onClick={() => setIsPricingModalOpen(true)} style={{ background: 'transparent', border: '1px solid #8B5CF6', color: '#8B5CF6', padding: '8px 15px', borderRadius: '8px', cursor: 'pointer' }}>Cambiar</button>
-                                </div>
+                                <p style={{ color: '#64748b' }}>No tienes métodos de pago guardados.</p>
+                                <button className="btn-teal" style={{ background: '#8B5CF6', marginTop: '15px' }}>Administrar en Checkout</button>
                             </div>
                         </div>
                     )}
@@ -184,27 +153,6 @@ export default function Dashboard() {
                 </div>
             </main>
 
-            {/* MODAL PLANES (Mismo que el anterior pero limpio) */}
-            {isPricingModalOpen && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 5000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-                    <div style={{ background: '#0f172a', padding: '40px', borderRadius: '20px', width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-                            <h2>Elegir un Plan</h2>
-                            <button onClick={() => setIsPricingModalOpen(false)} style={{ color: 'white', background: 'transparent', border: 'none', cursor: 'pointer' }}><X /></button>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-                            {STORAGE_PLANS.map(p => (
-                                <div key={p.id} style={{ padding: '20px', background: '#1e293b', borderRadius: '12px', border: userPlan.id === p.id ? '2px solid #8B5CF6' : '1px solid rgba(255,255,255,0.1)' }}>
-                                    <h4 style={{ margin: '0 0 10px', color: p.isVIP ? '#f1c40f' : 'white' }}>{p.name}</h4>
-                                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${p.price}</div>
-                                    <p style={{ fontSize: '0.8rem', color: '#64748b' }}>{p.storageGB} GB Storage</p>
-                                    <button onClick={() => handleUpgradePlan(p)} style={{ width: '100%', marginTop: '15px', padding: '10px', borderRadius: '8px', border: 'none', background: p.isVIP ? '#f1c40f' : '#8B5CF6', color: p.isVIP ? 'black' : 'white', fontWeight: 'bold', cursor: 'pointer' }}>Elegir</button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

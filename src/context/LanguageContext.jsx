@@ -34,7 +34,7 @@ const translations = {
 
     // Landing
     catalogTitle: 'CATÁLOGO DE PRODUCTOS',
-    catalogSubtitle: 'INSTRUMENTALES EXCLUSIVOS Y BEATS EN VENTA',
+    catalogSubtitle: 'INSTRUMENTALES EXCLUSIVOS',
     listenBtn: 'ESCUCHAR',
     buyBtn: 'COMPRAR',
     viewFullCatalog: 'VER CATÁLOGO COMPLETO +',
@@ -168,7 +168,7 @@ const translations = {
 
     // Landing
     catalogTitle: 'PRODUCT CATALOG',
-    catalogSubtitle: 'EXCLUSIVE INSTRUMENTALS AND BEATS FOR SALE',
+    catalogSubtitle: 'EXCLUSIVE INSTRUMENTALS',
     listenBtn: 'LISTEN',
     buyBtn: 'BUY',
     viewFullCatalog: 'VIEW FULL CATALOG +',

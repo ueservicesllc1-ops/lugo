@@ -148,11 +148,9 @@ export default function Store() {
     const [cart, setCart] = useState([]);
     const [toast, setToast] = useState(null); 
     
-    const [previewSong, setPreviewSong] = useState(null);
-    const [previewTracks, setPreviewTracks] = useState([]);
-    const [previewLoading, setPreviewLoading] = useState(false);
-    const [previewProgress, setPreviewProgress] = useState(0);
-    const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
+    const [showOptionsModal, setShowOptionsModal] = useState(false);
+    const [selectedSongForOptions, setSelectedSongForOptions] = useState(null);
+    const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00 });
     const previewEngineRef = React.useRef(null);
 
     const openPreview = async (song) => {
@@ -284,25 +282,56 @@ export default function Store() {
         }
     }, []);
 
-    const addToCart = (song) => {
+    const addToCart = (song, variant = null) => {
         setCart(prev => {
-            if (prev.some(item => item.id === song.id)) return prev;
-            const newCart = [...prev, { id: song.id, name: song.name, artist: song.artist, price: song.price || 9.99, coverUrl: song.coverUrl }];
+            const variantId = variant ? `${song.id}_${variant.id}` : song.id;
+            if (prev.some(item => item.cartId === variantId)) return prev;
+            
+            const itemToAdd = {
+                cartId: variantId,
+                id: song.id,
+                name: song.name,
+                artist: song.artist,
+                coverUrl: song.coverUrl,
+                price: variant ? variant.price : (song.price || 9.99),
+                variantName: variant ? variant.name : (song.isMultitrack ? 'Secuencia' : 'Pista Instrumental'),
+                format: variant ? variant.format : (song.isMultitrack ? 'WAV/ZIP' : 'MP3')
+            };
+
+            const newCart = [...prev, itemToAdd];
             localStorage.setItem('lugo_cart', JSON.stringify(newCart));
             return newCart;
         });
 
+        const msg = variant 
+            ? `¡${song.name} (${variant.name}) agregada!` 
+            : `¡${song.name} agregada con éxito!`;
+
         setToast({ 
-            message: `¡${song.name} agregada con éxito!`, 
+            message: msg, 
             song,
             type: 'success' 
         });
         setTimeout(() => setToast(null), 6000);
+        setShowOptionsModal(false);
+    };
+
+    const handleBuyClick = (song) => {
+        if (song.isMultitrack) {
+            setSelectedSongForOptions(song);
+            setShowOptionsModal(true);
+        } else {
+            addToCart(song);
+        }
     };
 
     useEffect(() => {
         const unsubAuth = auth.onAuthStateChanged((user) => {
             setCurrentUser(user);
+        });
+
+        getDoc(doc(db, 'settings', 'multitrack_pricing')).then(snap => {
+            if (snap.exists()) setPricing(snap.data());
         });
 
         const q = query(
@@ -536,7 +565,7 @@ export default function Store() {
                                     key={song.id} 
                                     song={song} 
                                     onPreview={() => openPreview(song)}
-                                    onBuy={() => addToCart(song)} 
+                                    onBuy={() => handleBuyClick(song)} 
                                     navigate={navigate} 
                                 />
                             ))}
@@ -611,16 +640,80 @@ export default function Store() {
 
                                         <button
                                             onClick={() => {
-                                                addToCart(previewSong);
+                                                handleBuyClick(previewSong);
                                                 closePreview();
                                             }}
                                             style={{ background: '#f1c40f', color: 'black', border: 'none', padding: '10px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                                         >
-                                            <ShoppingCart size={16} /> ADD TO CART
+                                            <ShoppingCart size={16} /> COMPRAR
                                         </button>
                                     </div>
                                 </>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL DE OPCIONES DE COMPRA (Estilo Secuencias.com) */}
+            {showOptionsModal && selectedSongForOptions && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                    <div style={{ background: '#111827', width: '100%', maxWidth: '550px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+                        <div style={{ padding: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                <img src={selectedSongForOptions.coverUrl} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800' }}>{selectedSongForOptions.name}</h3>
+                                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>{selectedSongForOptions.artist}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowOptionsModal(false)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', width: '36px', height: '36px', borderRadius: '50%', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} /></button>
+                        </div>
+
+                        <div style={{ padding: '25px' }}>
+                            <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '20px', fontWeight: '600', letterSpacing: '0.5px' }}>SELECCIONA EL TIPO PRODUCTO:</p>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {[
+                                    { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales para Zion Stage o DAW.', price: pricing.wavPrice, format: 'WAV/ZIP', icon: <Layers size={18} /> },
+                                    { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, etc).', price: pricing.stemsPrice, format: 'WAV Stems', icon: <Music2 size={18} /> },
+                                    { id: 'mp3', name: 'Pista de Acompañamiento', desc: 'Archivo MP3 de alta calidad sin voz principal.', price: pricing.mp3Price, format: 'MP3 High Quality', icon: <Music size={18} /> }
+                                ].map((option) => (
+                                    <div 
+                                        key={option.id}
+                                        onClick={() => addToCart(selectedSongForOptions, option)}
+                                        style={{ 
+                                            background: 'rgba(255,255,255,0.03)', 
+                                            padding: '18px 20px', 
+                                            borderRadius: '16px', 
+                                            border: '1px solid rgba(255,255,255,0.08)', 
+                                            display: 'flex', 
+                                            justifyContent: 'space-between', 
+                                            alignItems: 'center',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,163,255,0.08)'; e.currentTarget.style.borderColor = '#00A3FF'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+                                    >
+                                        <div style={{ display: 'flex', gap: '15px' }}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00A3FF' }}>{option.icon}</div>
+                                            <div>
+                                                <div style={{ fontWeight: '800', fontSize: '0.95rem' }}>{option.name}</div>
+                                                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>{option.desc}</div>
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <div style={{ fontSize: '1.2rem', fontWeight: '900', color: 'white' }}>${option.price.toFixed(2)}</div>
+                                            <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: '700' }}>USD</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div style={{ padding: '25px', background: 'rgba(255,255,255,0.02)', textAlign: 'center' }}>
+                            <p style={{ margin: 0, fontSize: '0.75rem', color: '#4b5563' }}>Todas las compras incluyen licencia de uso para presentaciones en vivo.</p>
                         </div>
                     </div>
                 </div>

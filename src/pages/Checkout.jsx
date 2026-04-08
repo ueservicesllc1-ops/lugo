@@ -128,8 +128,8 @@ export default function Checkout() {
         }
     };
 
-    const removeFromCart = (id) => {
-        const newCart = cart.filter(item => item.id !== id);
+    const removeFromCart = (cartId) => {
+        const newCart = cart.filter(item => item.cartId !== cartId);
         setCart(newCart);
         localStorage.setItem('lugo_cart', JSON.stringify(newCart));
         if (newCart.length === 0) navigate('/store');
@@ -156,11 +156,12 @@ export default function Checkout() {
                     userEmail: currentUser.email,
                     userName: currentUser.displayName || 'Usuario',
                     songIds,
-                    songs: fetchedData.map(s => ({
-                        id: s.id,
-                        name: s.name,
-                        price: s.price || 9.99,
-                        category: s.category || 'Multitrack'
+                    songs: cart.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        variant: item.variantName || 'Secuencia',
+                        format: item.format || 'ZIP'
                     })),
                     total: parseFloat(cartTotal),
                     createdAt: serverTimestamp(),
@@ -387,12 +388,16 @@ export default function Checkout() {
                                 </div>
                                 <div style={{ flex: 1 }}>
                                     <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800' }}>{item.name}</h4>
-                                    <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.9rem' }}>{item.artist}</p>
+                                    <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.85rem' }}>{item.artist}</p>
+                                    <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+                                        <span style={{ fontSize: '0.65rem', background: '#f1f5f9', color: '#0000FF', padding: '2px 8px', borderRadius: '4px', fontWeight: '900', textTransform: 'uppercase' }}>{item.variantName || 'Secuencia'}</span>
+                                        <span style={{ fontSize: '0.65rem', background: '#f1f5f9', color: '#64748b', padding: '2px 8px', borderRadius: '4px', fontWeight: '700' }}>{item.format || 'ZIP'}</span>
+                                    </div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
                                     <div style={{ fontWeight: '900', fontSize: '1.2rem', color: '#0f172a' }}>${item.price}</div>
                                     <button 
-                                        onClick={() => removeFromCart(item.id)} 
+                                        onClick={() => removeFromCart(item.cartId)} 
                                         style={{ 
                                             background: 'rgba(239,68,68,0.1)', 
                                             border: 'none', 
