@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
-import { Search, ShoppingCart, Play, X, ArrowLeft, Music2, Globe, LogOut } from 'lucide-react';
+import { Search, ShoppingCart, Play, X, ArrowLeft, Music2, Music, Layers, Globe, LogOut } from 'lucide-react';
 import { useTranslation } from '../context/LanguageContext';
 import Footer from '../components/Footer';
 import { HorizontalMixer } from '../components/HorizontalMixer';
