@@ -899,7 +899,7 @@ export default function Landing() {
                     {/* Ver catálogo completo */}
                     <div style={{ textAlign: 'center' }}>
                         <button
-                            onClick={() => navigate('/store')}
+                            onClick={() => navigate('/store?type=single')}
                             style={{
                                 padding: '12px 36px',
                                 background: 'transparent',
@@ -980,6 +980,28 @@ export default function Landing() {
                                 <p>Próximos lanzamientos de multitracks...</p>
                             </div>
                         )}
+                    </div>
+
+                    {/* Ver todos los multitracks */}
+                    <div style={{ textAlign: 'center', marginTop: '60px' }}>
+                        <button
+                            onClick={() => navigate('/store?type=multitrack')}
+                            style={{
+                                padding: '12px 36px',
+                                background: 'transparent',
+                                border: '1px solid rgba(255,255,255,0.25)',
+                                borderRadius: '4px',
+                                color: 'rgba(255,255,255,0.7)',
+                                fontSize: '0.8rem',
+                                fontWeight: '700',
+                                letterSpacing: '2px',
+                                cursor: 'pointer',
+                                textTransform: 'uppercase',
+                                transition: 'all 0.3s'
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'white'; e.currentTarget.style.color = 'white'; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+                        >VER TODOS LOS MULTITRACKS</button>
                     </div>
                 </div>
             </section>
