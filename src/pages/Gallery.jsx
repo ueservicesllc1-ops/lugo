@@ -11,6 +11,15 @@ export default function Gallery() {
     const [loading, setLoading] = useState(true);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
 
+    const getProxyUrl = (url) => {
+        if (!url) return '';
+        const cleanUrl = String(url).split(',')[0].trim();
+        if (cleanUrl.startsWith('/') || cleanUrl.includes('localhost')) return cleanUrl;
+        
+        const baseProxy = 'https://mixernew-production.up.railway.app';
+        return `${baseProxy}/api/download?url=${encodeURIComponent(cleanUrl)}`;
+    };
+
     useEffect(() => {
         const q = query(collection(db, 'gallery'), orderBy('createdAt', 'desc'));
         const unsubscribe = onSnapshot(q, (snap) => {
@@ -72,7 +81,7 @@ export default function Gallery() {
                                 className="gallery-grid-item"
                             >
                                 <img 
-                                    src={photo.url} 
+                                    src={getProxyUrl(photo.url)} 
                                     alt={photo.caption} 
                                     style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s ease' }} 
                                 />
@@ -111,7 +120,7 @@ export default function Gallery() {
                     </button>
                     <div style={{ maxWidth: '1200px', maxHeight: '80%', textAlign: 'center' }}>
                         <img 
-                            src={selectedPhoto.url} 
+                            src={getProxyUrl(selectedPhoto.url)} 
                             alt={selectedPhoto.caption} 
                             style={{ 
                                 maxWidth: '100%', 

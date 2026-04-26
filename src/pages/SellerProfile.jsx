@@ -12,6 +12,15 @@ export default function SellerProfile() {
     const [songs, setSongs] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const getProxyUrl = (url) => {
+        if (!url) return '';
+        const cleanUrl = String(url).split(',')[0].trim();
+        if (cleanUrl.startsWith('/') || cleanUrl.includes('localhost')) return cleanUrl;
+        
+        const baseProxy = 'https://mixernew-production.up.railway.app';
+        return `${baseProxy}/api/download?url=${encodeURIComponent(cleanUrl)}`;
+    };
+
     useEffect(() => {
         const fetchSellerData = async () => {
             try {
@@ -85,7 +94,7 @@ export default function SellerProfile() {
                         <div key={song.id} style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden', transition: 'transform 0.2s', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                             <div style={{ height: '180px', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                                 {song.coverUrl ? (
-                                    <img src={song.coverUrl} alt={song.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img src={getProxyUrl(song.coverUrl)} alt={song.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
                                     <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #13b5b6, #9b59b6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <Music2 size={48} color="rgba(255,255,255,0.3)" />

@@ -177,6 +177,37 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
         const finalUrl = `https://f005.backblazeb2.com/file/${B2_BUCKET_NAME}/${encodeURI(b2Filename)}`;
 
         let previewUrl = null;
+        let mp3Url = null;
+
+        // Auto-generate MP3 for WAV files
+        if (isWav) {
+            try {
+                console.log("🔄 Generando versión MP3 del WAV...");
+                if (!fs.existsSync(tempInputPath)) fs.writeFileSync(tempInputPath, file.buffer);
+                const tempFullMp3Path = path.join(os.tmpdir(), `full_${Date.now()}.mp3`);
+                await new Promise((resolve, reject) => {
+                    ffmpeg().input(tempInputPath).audioCodec('libmp3lame').audioBitrate('192k').output(tempFullMp3Path).on('end', resolve).on('error', reject).run();
+                });
+                const fullMp3Buffer = fs.readFileSync(tempFullMp3Path);
+                const fullMp3Sha1 = crypto.createHash('sha1').update(fullMp3Buffer).digest('hex');
+                const mp3Filename = b2Filename.replace(/\.wav$/i, '.mp3');
+
+                const mp3B2Resp = await fetch(uploadNode.uploadUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': uploadNode.authorizationToken,
+                        'X-Bz-File-Name': encodeURIComponent(mp3Filename),
+                        'Content-Type': 'audio/mpeg',
+                        'X-Bz-Content-Sha1': fullMp3Sha1,
+                        'Content-Length': fullMp3Buffer.length
+                    },
+                    body: fullMp3Buffer
+                });
+                if (mp3B2Resp.ok) mp3Url = `https://f005.backblazeb2.com/file/${B2_BUCKET_NAME}/${encodeURI(mp3Filename)}`;
+                if (fs.existsSync(tempFullMp3Path)) fs.unlinkSync(tempFullMp3Path);
+            } catch (err) { console.warn("⚠️ MP3 generation fail:", err.message); }
+        }
+
         if (generatePreview && !isImage) {
             try {
                 if (!fs.existsSync(tempInputPath)) fs.writeFileSync(tempInputPath, file.buffer);
@@ -185,7 +216,7 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
                 });
                 const previewBuffer = fs.readFileSync(tempPreviewPath);
                 const previewSha1 = crypto.createHash('sha1').update(previewBuffer).digest('hex');
-                const previewFilename = b2Filename.replace('.mp3', '_preview.mp3');
+                const previewFilename = b2Filename.replace(/\.(mp3|wav)$/i, '_preview.mp3');
 
                 const pB2Resp = await fetch(uploadNode.uploadUrl, {
                     method: 'POST',
@@ -202,7 +233,7 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
             } catch (prevErr) { console.warn("⚠️ Preview fail:", prevErr.message); }
         }
 
-        res.json({ success: true, url: finalUrl, previewUrl, fileId: b2Data.fileId });
+        res.json({ success: true, url: finalUrl, previewUrl, mp3Url, fileId: b2Data.fileId });
     } catch (error) {
         console.error("Upload error:", error);
         res.status(500).json({ error: error.message });

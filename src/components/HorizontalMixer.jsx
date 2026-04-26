@@ -39,12 +39,9 @@ const TrackWaveform = ({ trackId, color, muted, progress }) => {
                 peaksRef.current = peaks;
                 drawWaveform(peaks, progress, color, muted);
             } catch {
-                // No buffer yet — draw placeholder
+                // No buffer yet or error — draw flat line
                 const W = canvasRef.current?.offsetWidth || 300;
-                const peaks = new Float32Array(W);
-                for (let i = 0; i < W; i++) {
-                    peaks[i] = 0.08 + Math.abs(Math.sin((i / W) * Math.PI * 12)) * 0.3 + Math.random() * 0.05;
-                }
+                const peaks = new Float32Array(W).fill(0.02); // Tiny baseline for flat line
                 peaksRef.current = peaks;
                 drawWaveform(peaks, progress, color, muted);
             }

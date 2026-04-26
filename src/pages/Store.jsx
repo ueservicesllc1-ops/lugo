@@ -10,6 +10,15 @@ import { HorizontalMixer } from '../components/HorizontalMixer';
 const SongCard = ({ song, onPreview, onBuy, navigate }) => {
     const [realSellerName, setRealSellerName] = useState(song.sellerName || 'Vendedor Lugo');
 
+    const getProxyUrl = (url) => {
+        if (!url) return '';
+        const cleanUrl = String(url).split(',')[0].trim();
+        if (cleanUrl.startsWith('/') || cleanUrl.includes('localhost')) return cleanUrl;
+        
+        const baseProxy = 'https://mixernew-production.up.railway.app';
+        return `${baseProxy}/api/download?url=${encodeURIComponent(cleanUrl)}`;
+    };
+
     useEffect(() => {
         let isMounted = true;
         if (!song || !song.userId) {
@@ -56,7 +65,7 @@ const SongCard = ({ song, onPreview, onBuy, navigate }) => {
         <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden', transition: 'transform 0.2s', cursor: 'pointer', height: '100%', position: 'relative' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
             <div style={{ height: '140px', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }} className="group">
                 {song.coverUrl ? (
-                    <img src={song.coverUrl} alt={song.name} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'filter 0.3s' }} className="song-cover" />
+                    <img src={getProxyUrl(song.coverUrl)} alt={song.name} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'filter 0.3s' }} className="song-cover" />
                 ) : (
                     <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
                         <img src="/generic_cover.png" alt="Generic Cover" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
@@ -159,10 +168,22 @@ export default function Store() {
     const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
     const [selectedMixOption, setSelectedMixOption] = useState('wav'); // wav | stems | custom | wav_track | mp3
 
+    const getProxyUrl = (url) => {
+        if (!url) return '';
+        const cleanUrl = String(url).split(',')[0].trim();
+        if (cleanUrl.startsWith('/') || cleanUrl.includes('localhost')) return cleanUrl;
+        
+        // Forzamos el uso del proxy de producción (Railway) incluso en local,
+        // ya que el internet local del usuario bloquea Backblaze B2.
+        const baseProxy = 'https://mixernew-production.up.railway.app';
+        return `${baseProxy}/api/download?url=${encodeURIComponent(cleanUrl)}`;
+    };
+
     const openPreview = async (song) => {
         setPreviewSong(song);
         setPreviewLoading(true);
         setPreviewProgress(20);
+        setSelectedMixOption(song.isSingle ? 'single_wav' : 'wav');
 
         try {
             const { audioEngine } = await import('../AudioEngine');
@@ -181,14 +202,6 @@ export default function Store() {
                     ? song.tracks?.filter(t => t.name === '__PreviewMix').map(t => ({ id: 'preview', name: 'DEMO CLIP', url: t.url || t.previewUrl }))
                     : (song.audioUrl ? [{ id: 'single', name: 'PISTA FULL', url: song.audioUrl }] : [])
                 );
-
-            const getProxyUrl = (url) => {
-                if (!url) return '';
-                if (url.startsWith('/') || url.includes('localhost')) return url;
-                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                const baseProxy = isLocal ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
-                return `${baseProxy}/api/download?url=${encodeURIComponent(url)}`;
-            };
 
             const tracksToLoad = rawTracks.map(t => ({ ...t, proxyUrl: getProxyUrl(t.url) }));
             setPreviewTracks(tracksToLoad.map(t => ({ id: t.id, name: t.name, muted: false, solo: false, volume: 0.8, pan: 0, selected: true })));
@@ -215,7 +228,9 @@ export default function Store() {
             audioEngine.onProgress = (p) => {
                 const displayTime = useClips ? (20 + p) : p;
                 setPreviewProgress(displayTime);
-                if (displayTime >= 40) {
+
+                const stopTime = useClips ? 45 : 45; // 25s limit from start at 20s
+                if (displayTime >= stopTime) {
                     audioEngine.pause();
                     audioEngine.seek(useClips ? 0 : 20);
                     setPreviewProgress(20);
@@ -601,7 +616,7 @@ export default function Store() {
                         <div style={{ padding: '14px 25px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                 <div style={{ width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(139,92,246,0.3)' }}>
-                                    <img src={previewSong.coverUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img src={getProxyUrl(previewSong.coverUrl)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 </div>
                                 <div>
                                     <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900', color: '#00A3FF' }}>{previewSong.name}</h3>
@@ -665,11 +680,14 @@ export default function Store() {
                                 <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#64748b', letterSpacing: '2px' }}>OPCIONES DE COMPRA:</div>
                                 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    {[
+                                    {(previewSong.isSingle ? [
+                                        { id: 'single_wav', name: 'Licencia Premium (WAV)', desc: 'Versión WAV de alta fidelidad para uso profesional.', price: previewSong.priceWav || previewSong.price || 0, icon: <Music size={18} /> },
+                                        { id: 'single_mp3', name: 'Licencia Básica (MP3)', desc: 'Versión MP3 lista para maquetar o uso personal.', price: previewSong.priceMp3 || 0, icon: <Music size={18} /> }
+                                    ] : [
                                         { id: 'wav', name: 'Secuencia (Multitrack)', desc: 'Sesión completa con tracks individuales en formato WAV.', price: pricing.wavPrice, icon: <Layers size={18} /> },
                                         { id: 'custom', name: 'CustomMix (Mezcla WAV)', desc: 'Crea tu propia mezcla personalizada exportada en WAV.', price: pricing.stemsPrice, icon: <Disc size={18} /> },
                                         { id: 'wav_track', name: 'Pista Instrumental (WAV)', desc: 'Pista de acompañamiento con coros de fondo en alta calidad.', price: pricing.wavTrackPrice || 9.00, icon: <Music size={18} /> }
-                                    ].map(opt => (
+                                    ]).map(opt => (
                                         <div 
                                             key={opt.id}
                                             onClick={() => setSelectedMixOption(opt.id)}
@@ -695,11 +713,14 @@ export default function Store() {
                                 <div style={{ marginTop: 'auto', padding: '20px', background: 'rgba(0,163,255,0.05)', borderRadius: '20px', border: '1px dashed rgba(0,163,255,0.2)' }}>
                                     <button 
                                         onClick={() => {
-                                            const opt = [
+                                            const opt = (previewSong.isSingle ? [
+                                                { id: 'single_wav', name: 'Licencia Premium (WAV)', price: previewSong.priceWav || previewSong.price || 0, format: 'WAV' },
+                                                { id: 'single_mp3', name: 'Licencia Básica (MP3)', price: previewSong.priceMp3 || 0, format: 'MP3' }
+                                            ] : [
                                                 { id: 'wav', name: 'Secuencia (Multitrack)', price: pricing.wavPrice, format: 'WAV/ZIP' },
                                                 { id: 'custom', name: 'CustomMix (Mezcla WAV)', price: pricing.stemsPrice, format: 'Custom WAV' },
                                                 { id: 'wav_track', name: 'Pista Instrumental (WAV)', price: pricing.wavTrackPrice || 9.00, format: 'WAV' }
-                                            ].find(o => o.id === selectedMixOption);
+                                            ]).find(o => o.id === selectedMixOption);
                                             
                                             const meta = selectedMixOption === 'custom' 
                                                 ? { selectedTracks: previewTracks.filter(t => t.selected).map(t => t.name) }
@@ -726,7 +747,7 @@ export default function Store() {
                     <div style={{ background: '#111827', width: '100%', maxWidth: '550px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
                         <div style={{ padding: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                             <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                <img src={selectedSongForOptions.coverUrl} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
+                                <img src={getProxyUrl(selectedSongForOptions.coverUrl)} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
                                 <div>
                                     <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800' }}>{selectedSongForOptions.name}</h3>
                                     <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>{selectedSongForOptions.artist}</p>
@@ -739,12 +760,15 @@ export default function Store() {
                             <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '20px', fontWeight: '600', letterSpacing: '0.5px' }}>SELECCIONA EL TIPO PRODUCTO:</p>
                             
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {[
+                                {((selectedSongForOptions.isSingle) ? [
+                                    { id: 'single_wav', name: 'Licencia Premium (WAV)', desc: 'Versión WAV de alta fidelidad para uso profesional.', price: selectedSongForOptions.priceWav || selectedSongForOptions.price || 0, format: 'WAV', icon: <Music size={18} /> },
+                                    { id: 'single_mp3', name: 'Licencia Básica (MP3)', desc: 'Versión MP3 lista para maquetar o uso personal.', price: selectedSongForOptions.priceMp3 || 0, format: 'MP3', icon: <Music size={18} /> }
+                                ] : [
                                     { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales para Zion Stage o DAW.', price: pricing.wavPrice, format: 'WAV/ZIP', icon: <Layers size={18} /> },
                                     { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, etc).', price: pricing.stemsPrice, format: 'WAV Stems', icon: <Music2 size={18} /> },
                                     { id: 'wav_track', name: 'Acompañamiento (WAV)', desc: 'Archivo WAV de alta fidelidad sin voz principal.', price: pricing.wavTrackPrice || 15.00, format: 'WAV High Quality', icon: <Music size={18} /> },
                                     { id: 'mp3', name: 'Acompañamiento (MP3)', desc: 'Archivo MP3 de alta calidad sin voz principal.', price: pricing.mp3Price, format: 'MP3 High Quality', icon: <Music size={18} /> }
-                                ].map((option) => (
+                                ]).map((option) => (
                                     <div 
                                         key={option.id}
                                         onClick={() => addToCart(selectedSongForOptions, option)}

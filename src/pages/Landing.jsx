@@ -45,7 +45,9 @@ export default function Landing() {
     const [showOptionsModal, setShowOptionsModal] = useState(false);
     const [selectedSongForOptions, setSelectedSongForOptions] = useState(null);
     const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00, wavTrackPrice: 9.00 });
-    const [selectedMixOption, setSelectedMixOption] = useState('wav'); // wav | stems | custom | wav_track | mp3
+    const [selectedMixOption, setSelectedMixOption] = useState('wav'); // wav | stems | custom | wav_track | mp3 | single_wav | single_mp3
+    const [playingSimpleTrack, setPlayingSimpleTrack] = useState(null);
+    const simpleAudioRef = React.useRef(null);
 
     const scrollGallery = (direction) => {
         if (carouselRef.current) {
@@ -119,11 +121,21 @@ export default function Landing() {
     };
 
     const handleBuyClick = (song) => {
-        if (song.isMultitrack) {
-            setSelectedSongForOptions(song);
-            setShowOptionsModal(true);
+        setSelectedSongForOptions(song);
+        setShowOptionsModal(true);
+    };
+
+    const toggleSimplePlay = (song) => {
+        if (playingSimpleTrack?.id === song.id) {
+            simpleAudioRef.current.pause();
+            setPlayingSimpleTrack(null);
         } else {
-            addToCart(song);
+            setPlayingSimpleTrack(song);
+            setTimeout(() => {
+                if (simpleAudioRef.current) {
+                    simpleAudioRef.current.play().catch(e => console.error("Playback error", e));
+                }
+            }, 50);
         }
     };
 
@@ -250,6 +262,17 @@ export default function Landing() {
         });
     };
 
+    const getProxyUrl = (url) => {
+        if (!url) return '';
+        const cleanUrl = String(url).split(',')[0].trim();
+        if (cleanUrl.startsWith('/') || cleanUrl.includes('localhost') || cleanUrl.startsWith('blob:')) return cleanUrl;
+        
+        // Forzamos el uso del proxy de producción (Railway) incluso en local,
+        // ya que el internet local del usuario bloquea Backblaze B2.
+        const baseProxy = 'https://mixernew-production.up.railway.app';
+        return `${baseProxy}/api/download?url=${encodeURIComponent(cleanUrl)}`;
+    };
+
     const openPreview = async (song) => {
         setPreviewSong(song);
         setPreviewLoading(true);
@@ -275,16 +298,7 @@ export default function Landing() {
                     { id: 'full_demo', name: 'FULL MIX DEMO', url: song.audioUrl || song.demoUrl || '/pads/E.mp3' }
                 ];
 
-            const getProxyUrl = (url) => {
-                if (!url) return '';
-                // Limpiar URLs duplicadas por comas (Legacy fix)
-                const cleanUrl = String(url).split(',')[0].trim();
-                if (cleanUrl.startsWith('/') || cleanUrl.includes('localhost')) return cleanUrl;
-                
-                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                const baseProxy = isLocal ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
-                return `${baseProxy}/api/download?url=${encodeURIComponent(cleanUrl)}`;
-            };
+
 
             const tracksToLoad = rawTracks.map(t => ({ ...t, proxyUrl: getProxyUrl(t.url) }));
             setPreviewTracks(tracksToLoad.map(t => ({ id: t.id, name: t.name, muted: false, solo: false, volume: 0.8, pan: 0, selected: true })));
@@ -319,7 +333,7 @@ export default function Landing() {
                 const displayTime = useClips ? (20 + p) : p;
                 setPreviewProgress(displayTime);
 
-                const stopTime = useClips ? 40 : 40; // En ambos casos queremos llegar al 40 total
+                const stopTime = useClips ? 45 : 45; // 25s limit from start at 20s
                 if (displayTime >= stopTime) {
                     audioEngine.pause();
                     audioEngine.seek(useClips ? 0 : 20);
@@ -484,10 +498,88 @@ export default function Landing() {
                 </div>
             )}
 
+            {/* MODAL DE REPRODUCTOR SIMPLE */}
+            {playingSimpleTrack && (
+                <div style={{
+                    position: 'fixed', inset: 0,
+                    background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+                    zIndex: 5000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '20px', animation: 'fadeIn 0.3s ease-out'
+                }} onClick={() => setPlayingSimpleTrack(null)}>
+                    <div 
+                        style={{
+                            background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '24px', padding: '30px', width: '100%', maxWidth: '400px',
+                            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px',
+                            position: 'relative'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <button 
+                            onClick={() => setPlayingSimpleTrack(null)} 
+                            style={{ position: 'absolute', top: '15px', right: '15px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                            <X size={18}/>
+                        </button>
+
+                        <div style={{ position: 'relative', width: '200px', height: '200px', marginBottom: '10px' }}>
+                            <img 
+                                src={getProxyUrl(playingSimpleTrack.coverUrl) || 'https://juniorlugoproducciones.my.canva.site/_assets/media/86c9224aafa4cc886d9b45995298444f.jpg'} 
+                                style={{ width: '100%', height: '100%', borderRadius: '20px', objectFit: 'cover', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} 
+                            />
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15,23,42,0.8), transparent)', borderRadius: '20px' }}></div>
+                        </div>
+
+                        <div style={{ textAlign: 'center' }}>
+                            <h3 style={{ fontSize: '1.4rem', fontWeight: '900', margin: '0 0 5px' }}>{playingSimpleTrack.name}</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0, fontWeight: '600' }}>{playingSimpleTrack.artist}</p>
+                        </div>
+
+                        <audio 
+                            ref={simpleAudioRef} 
+                            src={getProxyUrl(playingSimpleTrack.mp3Url || playingSimpleTrack.demoUrl || playingSimpleTrack.audioUrl)} 
+                            controls 
+                            autoPlay 
+                            style={{ width: '100%', height: '40px', marginTop: '10px' }} 
+                            onTimeUpdate={(e) => {
+                                if (e.target.currentTime >= 25) {
+                                    e.target.pause();
+                                    e.target.currentTime = 0;
+                                }
+                            }}
+                            onEnded={(e) => {
+                                e.target.currentTime = 0;
+                            }}
+                        />
+
+                        <p style={{ color: '#00bcd4', fontSize: '0.75rem', fontWeight: '800', textAlign: 'center', margin: '5px 0 0 0' }}>
+                            Nota: La muestra de audio dura 25 segundos.
+                        </p>
+
+                        <button 
+                            onClick={() => { handleBuyClick(playingSimpleTrack); setPlayingSimpleTrack(null); }}
+                            style={{ 
+                                width: '100%', padding: '14px', borderRadius: '12px', background: '#00A3FF', 
+                                border: 'none', color: 'black', fontWeight: '900', fontSize: '0.9rem', 
+                                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                marginTop: '10px'
+                            }}
+                        >
+                            <ShoppingCart size={18} /> COMPRAR ESTE BEAT
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <style key="local-styles">{`
                 @keyframes slideUp {
                     from { transform: translate(-50%, 50px); opacity: 0; }
                     to { transform: translate(-50%, 0); opacity: 1; }
+                }
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
                 }
             `}</style>
 
@@ -788,12 +880,7 @@ export default function Landing() {
 
                     {/* Beat Cards Grid */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '24px', marginBottom: '40px' }}>
-                        {(songsForSale.length > 0 ? songsForSale.slice(0, 8) : [
-                            { id: 'p1', name: 'Love Trap', artist: 'Junior Lugo', price: '79.00', coverUrl: null },
-                            { id: 'p2', name: 'Dark Drill', artist: 'Junior Lugo', price: '59.00', coverUrl: null },
-                            { id: 'p3', name: 'Afro Pop', artist: 'Junior Lugo', price: '49.00', coverUrl: null },
-                            { id: 'p4', name: 'Trap Melodic', artist: 'Junior Lugo', price: '59.00', coverUrl: null },
-                        ]).map((track, i) => (
+                        {songsForSale.length > 0 ? songsForSale.slice(0, 8).map((track, i) => (
                             <div
                                 key={track.id || i}
                                 className="beat-card"
@@ -810,7 +897,7 @@ export default function Landing() {
                                 {/* Cover art */}
                                 <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden', background: '#0d1428' }}>
                                     <img
-                                        src={track.coverUrl || `https://picsum.photos/seed/${track.id || i}/300/300`}
+                                        src={getProxyUrl(track.coverUrl) || `https://picsum.photos/seed/${track.id || i}/300/300`}
                                         alt={track.name}
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         onError={e => { e.target.src = 'https://juniorlugoproducciones.my.canva.site/_assets/media/86c9224aafa4cc886d9b45995298444f.jpg'; }}
@@ -826,7 +913,7 @@ export default function Landing() {
                                         justifyContent: 'center'
                                     }}>
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); openPreview(track); }}
+                                            onClick={(e) => { e.stopPropagation(); toggleSimplePlay(track); }}
                                             style={{ background: 'white', border: 'none', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                                         >
                                             <Play size={20} fill="black" color="black" style={{ marginLeft: '3px' }} />
@@ -854,7 +941,7 @@ export default function Landing() {
                                     </div>
                                     <div style={{ display: 'flex', gap: '8px' }}>
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); openPreview(track); }}
+                                            onClick={(e) => { e.stopPropagation(); toggleSimplePlay(track); }}
                                             style={{
                                                 flex: 1,
                                                 padding: '8px',
@@ -879,7 +966,7 @@ export default function Landing() {
                                             <Play size={11} fill="currentColor" /> ESCUCHAR
                                         </button>
                                         <button
-                                            onClick={() => { addToCart(track); navigate('/checkout'); }}
+                                            onClick={(e) => { e.stopPropagation(); handleBuyClick(track); }}
                                             style={{
                                                 flex: 1,
                                                 padding: '8px',
@@ -900,7 +987,11 @@ export default function Landing() {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        )) : (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                                Aún no hay instrumentales exclusivos publicados.
+                            </div>
+                        )}
                     </div>
 
                     {/* Ver catálogo completo */}
@@ -951,7 +1042,7 @@ export default function Landing() {
                             >
                                 <div style={{ position: 'relative', aspectRatio: '1/1' }}>
                                     <img 
-                                        src={track.coverUrl || '/studio_placeholder.png'} 
+                                        src={getProxyUrl(track.coverUrl) || '/studio_placeholder.png'} 
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                                         onError={e => {e.target.src = '/hero_banner_studio.png'}}
                                     />
@@ -1186,7 +1277,7 @@ export default function Landing() {
                                 }}
                             >
                                 <img
-                                    src={photo.url}
+                                    src={getProxyUrl(photo.url)}
                                     alt={photo.caption}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.8s ease' }}
                                     onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
@@ -1252,7 +1343,7 @@ export default function Landing() {
                         </button>
                         <div style={{ maxWidth: '90%', maxHeight: '80%', textAlign: 'center' }}>
                             <img 
-                                src={selectedGalleryPhoto.url} 
+                                src={getProxyUrl(selectedGalleryPhoto.url)} 
                                 alt={selectedGalleryPhoto.caption} 
                                 style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: '12px', boxShadow: '0 40px 100px rgba(0,0,0,0.8)' }} 
                             />
@@ -1390,11 +1481,11 @@ export default function Landing() {
                                         <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{s.artist}</div>
                                     </div>
                                     <button 
-                                        onClick={() => openPreview(s)}
+                                        onClick={() => s.isSingle ? toggleSimplePlay(s) : openPreview(s)}
                                         className="btn-ghost" 
                                         style={{ marginLeft: 'auto', padding: '6px 16px', fontSize: '0.8rem', border: '1px solid rgba(0,210,211,0.3)', color: '#00d2d3' }}
                                     >
-                                        Ver Pistas
+                                        {s.isSingle ? 'Escuchar' : 'Ver Pistas'}
                                     </button>
                                 </div>
                             ))}
@@ -1437,7 +1528,7 @@ export default function Landing() {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                     <div style={{ width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(0,210,211,0.3)', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         {previewSong.coverUrl ? (
-                                            <img src="/src/assets/studio.png" alt="Junior Lugo Studio" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <img src={getProxyUrl(previewSong.coverUrl)} alt={previewSong.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                         ) : (
                                             <Music2 size={20} color="#00d2d3" />
                                         )}
@@ -1804,7 +1895,7 @@ export default function Landing() {
                     <div style={{ background: '#020617', width: '100%', maxWidth: '550px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)', animation: 'slideUp 0.3s ease-out' }}>
                         <div style={{ padding: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
                             <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                <img src={selectedSongForOptions.coverUrl || '/studio_placeholder.png'} style={{ width: '55px', height: '55px', borderRadius: '10px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.2)' }} onError={e => e.target.src='/hero_banner_studio.png'} />
+                                <img src={getProxyUrl(selectedSongForOptions.coverUrl) || '/studio_placeholder.png'} style={{ width: '55px', height: '55px', borderRadius: '10px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.2)' }} onError={e => e.target.src='/hero_banner_studio.png'} />
                                 <div>
                                     <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', color: 'white' }}>{selectedSongForOptions.name}</h3>
                                     <p style={{ margin: '2px 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>{selectedSongForOptions.artist}</p>
@@ -1817,12 +1908,15 @@ export default function Landing() {
                             <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '20px', fontWeight: '800', letterSpacing: '2px', textTransform: 'uppercase' }}>Formatos Disponibles:</p>
                             
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                {[
+                                {((selectedSongForOptions.isSingle) ? [
+                                    { id: 'single_wav', name: 'Licencia Premium (WAV)', desc: 'Versión WAV de alta fidelidad para uso profesional.', price: selectedSongForOptions.priceWav || selectedSongForOptions.price || 0, format: 'WAV', icon: <Music size={20} /> },
+                                    { id: 'single_mp3', name: 'Licencia Básica (MP3)', desc: 'Versión MP3 lista para maquetar o uso personal.', price: selectedSongForOptions.priceMp3 || 0, format: 'MP3', icon: <Music size={20} /> }
+                                ] : [
                                     { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales de alta calidad.', price: pricing.wavPrice, format: 'WAV/ZIP', icon: <Layers size={20} /> },
                                     { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, Guitarras, etc).', price: pricing.stemsPrice, format: 'WAV Stems', icon: <Music2 size={20} /> },
                                     { id: 'wav_track', name: 'Acompañamiento (WAV)', desc: 'Versión WAV de alta fidelidad sin voz principal.', price: pricing.wavTrackPrice || 15.00, format: 'WAV High Quality', icon: <Music size={20} /> },
                                     { id: 'mp3', name: 'Acompañamiento (MP3)', desc: 'Versión MP3 lista para cantar sin voz principal.', price: pricing.mp3Price, format: 'MP3 High Quality', icon: <Music size={20} /> }
-                                ].map((option) => (
+                                ]).map((option) => (
                                     <div 
                                         key={option.id}
                                         onClick={() => addToCart(selectedSongForOptions, option)}
@@ -1848,7 +1942,7 @@ export default function Landing() {
                                             </div>
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
-                                            <div style={{ fontSize: '1.3rem', fontWeight: '900', color: 'white' }}>${option.price.toFixed(2)}</div>
+                                            <div style={{ fontSize: '1.3rem', fontWeight: '900', color: 'white' }}>${Number(option.price).toFixed(2)}</div>
                                             <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: '800', letterSpacing: '1px' }}>USD</div>
                                         </div>
                                     </div>

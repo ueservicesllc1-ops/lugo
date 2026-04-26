@@ -107,6 +107,8 @@ export default function Admin() {
     const [usersSearch, setUsersSearch] = useState('');
     const [userSortField, setUserSortField] = useState('createdAt'); // 'createdAt' | 'mtCount'
     const [userSortOrder, setUserSortOrder] = useState('desc'); // 'asc' | 'desc'
+    const [sales, setSales] = useState([]);
+    const [salesSearch, setSalesSearch] = useState('');
 
     // Derived: split catalog into MTs vs simple songs
     const mtProducts = products.filter(p => Array.isArray(p.tracks) && p.tracks.length > 0);
@@ -117,7 +119,7 @@ export default function Admin() {
     const [isAddingPhoto, setIsAddingPhoto] = useState(false);
     const [isAddingVideo, setIsAddingVideo] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [newProduct, setNewProduct] = useState({ name: '', artist: '', price: '', coverFile: null, audioFile: null });
+    const [newProduct, setNewProduct] = useState({ name: '', artist: '', priceWav: '', priceMp3: '', coverFile: null, audioFile: null });
     const [newPhoto, setNewPhoto] = useState({ caption: '', file: null });
     const [newVideo, setNewVideo] = useState({ title: '', genre: 'POP', youtubeUrl: '' });
     const [editingVideo, setEditingVideo] = useState(null);
@@ -141,6 +143,15 @@ export default function Admin() {
 
     const devProxy = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
+
+    const getProxyUrl = (url) => {
+        if (!url) return '';
+        const cleanUrl = String(url).split(',')[0].trim();
+        if (cleanUrl.startsWith('/') || cleanUrl.includes('localhost') || cleanUrl.startsWith('blob:')) return cleanUrl;
+        
+        const baseProxy = 'https://mixernew-production.up.railway.app';
+        return `${baseProxy}/api/download?url=${encodeURIComponent(cleanUrl)}`;
+    };
 
     // Auth Check
     useEffect(() => {
@@ -324,25 +335,47 @@ export default function Admin() {
     };
 
     // ── Catálogo handlers ────────────────────────────────────────────────────
-    const uploadToB2 = async (file) => {
+    const uploadToB2 = async (file, generatePreview = false) => {
         if (!file) return null;
         const formData = new FormData();
         const b2FileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
         formData.append('audioFile', file);
         formData.append('fileName', b2FileName);
+        if (generatePreview) formData.append('generatePreview', 'true');
         const res = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
         if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error subiendo'); }
-        return (await res.json()).url;
+        return await res.json();
     };
 
     const handleAddProduct = async (e) => {
         e.preventDefault(); setUploading(true);
         try {
-            const coverUrl2 = newProduct.coverFile ? await uploadToB2(newProduct.coverFile) : '';
-            const audioUrl = newProduct.audioFile ? await uploadToB2(newProduct.audioFile) : '';
-            await addDoc(collection(db, 'songs'), { name: newProduct.name, artist: newProduct.artist, price: parseFloat(newProduct.price) || 0, coverUrl: coverUrl2, audioUrl, forSale: true, status: 'active', createdAt: serverTimestamp() });
+            const coverRes = newProduct.coverFile ? await uploadToB2(newProduct.coverFile) : null;
+            const coverUrl2 = coverRes ? coverRes.url : '';
+            
+            const audioRes = newProduct.audioFile ? await uploadToB2(newProduct.audioFile, true) : null;
+            const audioUrl = audioRes ? audioRes.url : '';
+            const mp3Url = audioRes && audioRes.mp3Url ? audioRes.mp3Url : '';
+            const previewUrl = audioRes && audioRes.previewUrl ? audioRes.previewUrl : '';
+
+            await addDoc(collection(db, 'songs'), { 
+                name: newProduct.name, 
+                artist: newProduct.artist, 
+                priceWav: parseFloat(newProduct.priceWav) || 0,
+                priceMp3: parseFloat(newProduct.priceMp3) || 0,
+                // Mantener 'price' por retrocompatibilidad con la lista si es necesario
+                price: parseFloat(newProduct.priceWav) || 0,
+                coverUrl: coverUrl2, 
+                audioUrl, 
+                mp3Url,
+                previewUrl,
+                isSingle: true,
+                forSale: true, 
+                status: 'active', 
+                createdAt: serverTimestamp() 
+            });
             setIsAddingProduct(false);
-            setNewProduct({ name: '', artist: '', price: '', coverFile: null, audioFile: null });
+            setNewProduct({ name: '', artist: '', priceWav: '', priceMp3: '', coverFile: null, audioFile: null });
             setPreviews({ ...previews, cover: null });
         } catch (err) { alert(err.message); } finally { setUploading(false); }
     };
@@ -350,7 +383,8 @@ export default function Admin() {
     const handleAddPhoto = async (e) => {
         e.preventDefault(); if (!newPhoto.file) return; setUploading(true);
         try {
-            const url = await uploadToB2(newPhoto.file);
+            const res = await uploadToB2(newPhoto.file);
+            const url = res ? res.url : '';
             await addDoc(collection(db, 'gallery'), { url, caption: newPhoto.caption, createdAt: serverTimestamp() });
             setIsAddingPhoto(false); setNewPhoto({ caption: '', file: null }); setPreviews({ ...previews, photo: null });
         } catch (err) { alert(err.message); } finally { setUploading(false); }
@@ -438,7 +472,16 @@ export default function Admin() {
                         <form onSubmit={handleAddProduct} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <input style={S.input} type="text" placeholder="Nombre" required value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} />
                             <input style={S.input} type="text" placeholder="Artista" required value={newProduct.artist} onChange={e => setNewProduct({ ...newProduct, artist: e.target.value })} />
-                            <input style={S.input} type="number" placeholder="Precio ($)" required value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: e.target.value })} />
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <div style={{ flex: 1 }}>
+                                    <label style={{ fontSize: '0.7rem', color: '#64748b', display: 'block', marginBottom: '4px' }}>Precio WAV ($):</label>
+                                    <input style={S.input} type="number" placeholder="Precio WAV" required value={newProduct.priceWav} onChange={e => setNewProduct({ ...newProduct, priceWav: e.target.value })} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <label style={{ fontSize: '0.7rem', color: '#64748b', display: 'block', marginBottom: '4px' }}>Precio MP3 ($):</label>
+                                    <input style={S.input} type="number" placeholder="Precio MP3" required value={newProduct.priceMp3} onChange={e => setNewProduct({ ...newProduct, priceMp3: e.target.value })} />
+                                </div>
+                            </div>
                             <label style={{ fontSize: '0.8rem', color: '#64748b' }}>Carátula:</label>
                             <input type="file" accept="image/*" onChange={e => { const f = e.target.files[0]; setNewProduct({ ...newProduct, coverFile: f }); if (f) setPreviews({ ...previews, cover: URL.createObjectURL(f) }); }} />
                             {previews.cover && <img src={previews.cover} style={{ height: '80px', width: '80px', objectFit: 'cover', borderRadius: '8px' }} />}
@@ -641,7 +684,7 @@ export default function Admin() {
                                                 <Loader2 size={32} style={{ margin: '0 auto', color: '#00bcd4', animation: 'spin 1s linear infinite' }} />
                                             ) : coverUrl ? (
                                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                                                    <img src={coverUrl} alt="Cover" style={{ width: '80px', height: '80px', borderRadius: '12px', objectFit: 'cover' }} />
+                                                    <img src={getProxyUrl(coverUrl)} alt="Cover" style={{ width: '80px', height: '80px', borderRadius: '12px', objectFit: 'cover' }} />
                                                     <span style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: '700' }}>✓ Portada lista</span>
                                                 </div>
                                             ) : (
@@ -832,7 +875,7 @@ export default function Admin() {
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
                                 {mtProducts.map(p => (
                                     <div key={p.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '14px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '14px', alignItems: 'center' }}>
-                                        <img src={p.coverUrl || '/logo.png'} style={{ width: '60px', height: '60px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }} />
+                                        <img src={getProxyUrl(p.coverUrl || '/logo.png')} style={{ width: '60px', height: '60px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ fontWeight: '800', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                                             <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '6px' }}>{p.artist} · ${p.price}</div>
@@ -865,7 +908,7 @@ export default function Admin() {
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                                 {simpleProducts.map(p => (
                                     <div key={p.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '14px', padding: '14px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '14px', alignItems: 'center' }}>
-                                        <img src={p.coverUrl || '/logo.png'} style={{ width: '54px', height: '54px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
+                                        <img src={getProxyUrl(p.coverUrl || '/logo.png')} style={{ width: '54px', height: '54px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ fontWeight: '800', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                                             <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{p.artist} · ${p.price}</div>
@@ -893,7 +936,7 @@ export default function Admin() {
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
                                 {gallery.map(g => (
                                     <div key={g.id} style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', aspectRatio: '1/1' }}>
-                                        <img src={g.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <img src={getProxyUrl(g.url)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                         <button onClick={() => deleteItem('gallery', g.id)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239,68,68,0.9)', color: 'white', border: 'none', padding: '6px', borderRadius: '8px', cursor: 'pointer' }}><Trash2 size={14} /></button>
                                     </div>
                                 ))}
