@@ -94,6 +94,8 @@ export default function Admin() {
     const coverInputRef = useRef();
 
     const [isAdmin, setIsAdmin] = useState(false);
+    /** Coincide con Firestore rules `isAdmin()` (email en lista). El PIN de sesión no otorga token Firebase. */
+    const [firebaseAdmin, setFirebaseAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('mt');
 
@@ -165,6 +167,7 @@ export default function Admin() {
             const isAdminEmail = user && adminEmails.includes(user.email);
             const hasPinAccess = sessionStorage.getItem('admin_authenticated') === 'true';
 
+            setFirebaseAdmin(!!isAdminEmail);
             if (isAdminEmail || hasPinAccess) {
                 setIsAdmin(true);
             } else {
@@ -175,9 +178,9 @@ export default function Admin() {
         return () => unsub();
     }, []);
 
-    // Fetch Data
+    // Listeners que exigen token admin en Firestore (ventas / usuarios); PIN solo no basta
     useEffect(() => {
-        if (!isAdmin) return;
+        if (!firebaseAdmin) return;
         const unsubP = onSnapshot(query(collection(db, 'songs'), orderBy('createdAt', 'desc')), (snap) => {
             setProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         });
@@ -198,7 +201,7 @@ export default function Admin() {
             if (snap.exists()) setPricing(snap.data()); 
         });
         return () => { unsubP(); unsubG(); unsubV(); unsubS(); unsubU(); };
-    }, [isAdmin]);
+    }, [firebaseAdmin]);
 
     const handleLogout = () => { auth.signOut(); navigate('/'); };
 

@@ -4,10 +4,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAdmin() {
-      return request.auth != null && 
-             request.auth.token.email != null && 
-             (request.auth.token.email.lower() == 'ueservicesllc1@gmail.com' || 
-              request.auth.token.email.lower() == 'juniorlugo@admin.com');
+      return request.auth != null &&
+             request.auth.token.email != null &&
+             (request.auth.token.email.lower() == 'ueservicesllc1@gmail.com' ||
+              request.auth.token.email.lower() == 'juniorlugo@admin.com' ||
+              request.auth.token.email.lower() == 'juniorlugokey@gmail.com');
     }
 
     // -- GALLERY: public can read; write admin

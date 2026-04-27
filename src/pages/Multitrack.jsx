@@ -1118,9 +1118,14 @@ export default function Multitrack() {
     const [activeChords, setActiveChords] = useState('loading'); // 'loading', null, or string
     const chordsScrollRef = useRef(null);
 
-    // Fetch partituras for active song
+    // Fetch partituras for active song (Firestore rules: read requires request.auth)
     useEffect(() => {
         if (!activeSongId) {
+            setActivePartituras([]);
+            setSelectedPartitura(null);
+            return;
+        }
+        if (!currentUser) {
             setActivePartituras([]);
             setSelectedPartitura(null);
             return;
@@ -1140,7 +1145,7 @@ export default function Multitrack() {
             console.error('[PARTITURAS] Error cargando:', err);
         });
         return () => unsub();
-    }, [activeSongId]);
+    }, [activeSongId, currentUser]);
 
     // Fetch lyrics and chords with offline-first + live sync hybrid approach
     useEffect(() => {
@@ -1164,6 +1169,13 @@ export default function Multitrack() {
 
             if (offlineLyrics) setActiveLyrics(offlineLyrics);
             if (offlineChords) setActiveChords(offlineChords);
+
+            // Firestore rules require auth for lyrics/chords collections — skip listeners if signed out
+            if (!currentUser) {
+                if (!offlineLyrics) setActiveLyrics(activeSong?.lyrics || null);
+                if (!offlineChords) setActiveChords(activeSong?.chords || null);
+                return;
+            }
 
             // 2. SINCRONIZACI├ôN EN VIVO DESDE FIRESTORE (si hay internet)
             // Lyrics sync
@@ -1203,7 +1215,7 @@ export default function Multitrack() {
             unsubLyrics();
             unsubChords();
         };
-    }, [activeSongId, activeSong?.lyrics, activeSong?.chords]);
+    }, [activeSongId, currentUser, activeSong?.lyrics, activeSong?.chords]);
 
     const handleRetryLyrics = () => {
         const id = activeSongId;
