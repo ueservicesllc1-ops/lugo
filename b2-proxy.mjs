@@ -48,6 +48,8 @@ console.log("🔧 B2 Config:", {
 let b2AuthToken = null;
 let b2ApiUrl = null;
 let b2DownloadUrl = null;
+let b2AccountId = null;
+let b2ResolvedBucketName = null;
 
 const REQUIRED_ENV = ['B2_KEY_ID', 'B2_APPLICATION_KEY', 'B2_BUCKET_ID', 'B2_BUCKET_NAME'];
 const missingEnv = REQUIRED_ENV.filter((k) => !process.env[k]);
@@ -62,10 +64,11 @@ function normalizeB2BucketUrl(rawUrl) {
         // Expected: /file/<bucketName>/<filePath...>
         if (parts.length >= 4 && parts[1] === 'file') {
             const currentBucket = parts[2];
-            if (currentBucket && currentBucket !== B2_BUCKET_NAME) {
-                parts[2] = B2_BUCKET_NAME;
+            const targetBucket = b2ResolvedBucketName || B2_BUCKET_NAME;
+            if (currentBucket && currentBucket !== targetBucket) {
+                parts[2] = targetBucket;
                 u.pathname = parts.join('/');
-                console.warn(`[B2 URL FIX] Bucket corregido: ${currentBucket} -> ${B2_BUCKET_NAME}`);
+                console.warn(`[B2 URL FIX] Bucket corregido: ${currentBucket} -> ${targetBucket}`);
             }
         }
         return u.toString();
@@ -75,8 +78,8 @@ function normalizeB2BucketUrl(rawUrl) {
 }
 
 async function getB2Auth() {
-    if (b2AuthToken && b2ApiUrl && b2DownloadUrl) {
-        return { apiUrl: b2ApiUrl, token: b2AuthToken, downloadUrl: b2DownloadUrl };
+    if (b2AuthToken && b2ApiUrl && b2DownloadUrl && b2AccountId) {
+        return { apiUrl: b2ApiUrl, token: b2AuthToken, downloadUrl: b2DownloadUrl, accountId: b2AccountId };
     }
     const credentials = Buffer.from(`${B2_KEY_ID}:${B2_APPLICATION_KEY}`).toString('base64');
     const res = await fetch('https://api.backblazeb2.com/b2api/v2/b2_authorize_account', {
@@ -86,7 +89,36 @@ async function getB2Auth() {
     b2AuthToken = data.authorizationToken;
     b2ApiUrl = data.apiUrl;
     b2DownloadUrl = data.downloadUrl;
-    return { apiUrl: b2ApiUrl, token: b2AuthToken, downloadUrl: b2DownloadUrl };
+    b2AccountId = data.accountId;
+    return { apiUrl: b2ApiUrl, token: b2AuthToken, downloadUrl: b2DownloadUrl, accountId: b2AccountId };
+}
+
+async function getEffectiveBucketName() {
+    if (b2ResolvedBucketName) return b2ResolvedBucketName;
+
+    try {
+        const { apiUrl, token, accountId } = await getB2Auth();
+        const res = await fetch(`${apiUrl}/b2api/v2/b2_list_buckets`, {
+            method: 'POST',
+            headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accountId })
+        });
+
+        if (!res.ok) throw new Error(`b2_list_buckets ${res.status}`);
+        const data = await res.json();
+        const buckets = Array.isArray(data?.buckets) ? data.buckets : [];
+        const matched = buckets.find((b) => b.bucketId === B2_BUCKET_ID);
+        b2ResolvedBucketName = matched?.bucketName || B2_BUCKET_NAME;
+
+        if (matched?.bucketName && matched.bucketName !== B2_BUCKET_NAME) {
+            console.warn(`[B2 CONFIG] bucketName env (${B2_BUCKET_NAME}) no coincide con bucketId (${matched.bucketName}). Se usará ${matched.bucketName}.`);
+        }
+    } catch (e) {
+        console.warn(`[B2 CONFIG] No se pudo resolver bucket por ID, usando env (${B2_BUCKET_NAME}): ${e.message}`);
+        b2ResolvedBucketName = B2_BUCKET_NAME;
+    }
+
+    return b2ResolvedBucketName;
 }
 
 async function getUploadNode() {
@@ -108,13 +140,15 @@ app.get('/api/health', (req, res) => res.json({
     service: 'B2 Proxy (PayPal Era)',
     distExists: fs.existsSync(distPath),
     port: PORT,
-    bucketName: B2_BUCKET_NAME,
+    bucketName: b2ResolvedBucketName || B2_BUCKET_NAME,
+    bucketNameEnv: B2_BUCKET_NAME,
     buildStamp: BUILD_STAMP
 }));
 
 app.get('/api/config-check', (req, res) => res.json({
     status: 'ok',
-    bucketName: B2_BUCKET_NAME,
+    bucketName: b2ResolvedBucketName || B2_BUCKET_NAME,
+    bucketNameEnv: B2_BUCKET_NAME,
     bucketIdSuffix: String(B2_BUCKET_ID).slice(-6),
     hasKeyId: !!B2_KEY_ID,
     hasAppKey: !!B2_APPLICATION_KEY,
@@ -161,128 +195,117 @@ app.get('/download', handleDownload);
 
 app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
     let tempInputPath = '';
-    let tempOutputPath = '';
     let tempPreviewPath = '';
-    try {
-        const file = req.file;
-        const b2Filename = req.body.fileName;
-        const generatePreview = req.body.generatePreview === 'true';
 
-        if (!file || !b2Filename) return res.status(400).json({ error: 'Falta archivo' });
-
-        const uploadNode = await getUploadNode();
-        const tempId = crypto.randomBytes(8).toString('hex');
-        const tmpDir = os.tmpdir();
-        tempInputPath = path.join(tmpDir, `in_${tempId}`);
-        tempOutputPath = path.join(tmpDir, `out_${tempId}.mp3`);
-        tempPreviewPath = path.join(tmpDir, `prev_${tempId}.mp3`);
-
-        const isMp3 = file.mimetype === 'audio/mpeg' || file.mimetype === 'audio/mp3' || file.originalname.toLowerCase().endsWith('.mp3');
-        const isImage = file.mimetype?.startsWith('image/') || /\.(png|jpe?g|gif|webp)$/i.test(file.originalname);
-        const isApk = file.mimetype === 'application/vnd.android.package-archive' || file.originalname.toLowerCase().endsWith('.apk');
-        const isPdf = file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf');
-        const isWav = file.mimetype === 'audio/wav' || file.mimetype === 'audio/x-wav' || file.originalname.toLowerCase().endsWith('.wav');
-
-        let dataBuffer = file.buffer;
-
-        if (!(isMp3 || isWav || isImage || isApk || isPdf)) {
-            console.log("🔄 Transcodificando a MP3...");
-            fs.writeFileSync(tempInputPath, file.buffer);
-            await new Promise((resolve, reject) => {
-                ffmpeg().input(tempInputPath).audioCodec('libmp3lame').audioBitrate('128k').output(tempOutputPath).on('end', resolve).on('error', reject).run();
-            });
-            dataBuffer = fs.readFileSync(tempOutputPath);
-        }
-
-        const sha1 = crypto.createHash('sha1').update(dataBuffer).digest('hex');
-        let contentType = 'audio/mpeg';
-        if (isImage) contentType = file.mimetype || 'image/jpeg';
-        else if (isApk) contentType = 'application/vnd.android.package-archive';
-        else if (isPdf) contentType = 'application/pdf';
-        else if (isWav) contentType = 'audio/wav';
-
-        const b2Response = await fetch(uploadNode.uploadUrl, {
+    const isImageFile = (file) => file.mimetype?.startsWith('image/') || /\.(png|jpe?g|gif|webp)$/i.test(file.originalname || '');
+    const isApkFile = (file) => file.mimetype === 'application/vnd.android.package-archive' || /\.apk$/i.test(file.originalname || '');
+    const isPdfFile = (file) => file.mimetype === 'application/pdf' || /\.pdf$/i.test(file.originalname || '');
+    const isWavFile = (file) => file.mimetype === 'audio/wav' || file.mimetype === 'audio/x-wav' || /\.wav$/i.test(file.originalname || '');
+    const isMp3File = (file) => file.mimetype === 'audio/mpeg' || file.mimetype === 'audio/mp3' || /\.mp3$/i.test(file.originalname || '');
+    const sha1 = (buffer) => crypto.createHash('sha1').update(buffer).digest('hex');
+    const inferContentType = (file) => {
+        if (isImageFile(file)) return file.mimetype || 'image/jpeg';
+        if (isApkFile(file)) return 'application/vnd.android.package-archive';
+        if (isPdfFile(file)) return 'application/pdf';
+        if (isWavFile(file)) return 'audio/wav';
+        if (isMp3File(file)) return 'audio/mpeg';
+        return 'application/octet-stream';
+    };
+    const buildPublicUrl = async (fileName) => {
+        const { downloadUrl } = await getB2Auth();
+        return `${downloadUrl}/file/${B2_BUCKET_NAME}/${encodeURI(fileName)}`;
+    };
+    const uploadBufferToB2 = async ({ uploadNode, fileName, buffer, contentType }) => {
+        const response = await fetch(uploadNode.uploadUrl, {
             method: 'POST',
             headers: {
                 'Authorization': uploadNode.authorizationToken,
-                'X-Bz-File-Name': encodeURIComponent(b2Filename),
+                'X-Bz-File-Name': encodeURIComponent(fileName),
                 'Content-Type': contentType,
-                'X-Bz-Content-Sha1': sha1,
-                'Content-Length': dataBuffer.length
+                'X-Bz-Content-Sha1': sha1(buffer),
+                'Content-Length': buffer.length
             },
-            body: dataBuffer
+            body: buffer
         });
-        const b2Data = await b2Response.json();
-        if (!b2Response.ok) throw new Error(`B2 Upload Error: ${b2Data.message || b2Data.code}`);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(`B2 Upload Error: ${data.message || data.code || response.status}`);
+        return data;
+    };
 
-        const { downloadUrl } = await getB2Auth();
-        const finalUrl = `${downloadUrl}/file/${B2_BUCKET_NAME}/${encodeURI(b2Filename)}`;
+    try {
+        const file = req.file;
+        const b2Filename = String(req.body.fileName || '').trim();
+        const generatePreview = req.body.generatePreview === 'true';
 
-        let previewUrl = null;
+        if (!file || !b2Filename) {
+            return res.status(400).json({ error: 'Falta archivo o fileName.' });
+        }
+
+        const uploadNode = await getUploadNode();
+        const tmpId = crypto.randomBytes(8).toString('hex');
+        const tmpDir = os.tmpdir();
+        tempInputPath = path.join(tmpDir, `in_${tmpId}`);
+        tempPreviewPath = path.join(tmpDir, `preview_${tmpId}`);
+
+        // Main upload buffer (strict: keep original format, no transcode)
+        let mainBuffer = file.buffer;
+        const knownNonAudio = isImageFile(file) || isApkFile(file) || isPdfFile(file);
+        const knownAudio = isMp3File(file) || isWavFile(file);
+        if (!knownNonAudio && !knownAudio) {
+            return res.status(400).json({ error: 'Formato no permitido. Solo WAV, MP3, imagen, APK o PDF.' });
+        }
+
+        const mainUpload = await uploadBufferToB2({
+            uploadNode,
+            fileName: b2Filename,
+            buffer: mainBuffer,
+            contentType: inferContentType(file)
+        });
+        const url = await buildPublicUrl(b2Filename);
+
         let mp3Url = null;
+        let previewUrl = null;
 
-        // Auto-generate MP3 for WAV files
-        if (isWav) {
-            try {
-                console.log("🔄 Generando versión MP3 del WAV...");
-                if (!fs.existsSync(tempInputPath)) fs.writeFileSync(tempInputPath, file.buffer);
-                const tempFullMp3Path = path.join(os.tmpdir(), `full_${Date.now()}.mp3`);
-                await new Promise((resolve, reject) => {
-                    ffmpeg().input(tempInputPath).audioCodec('libmp3lame').audioBitrate('192k').output(tempFullMp3Path).on('end', resolve).on('error', reject).run();
-                });
-                const fullMp3Buffer = fs.readFileSync(tempFullMp3Path);
-                const fullMp3Sha1 = crypto.createHash('sha1').update(fullMp3Buffer).digest('hex');
-                const mp3Filename = b2Filename.replace(/\.wav$/i, '.mp3');
-
-                const mp3B2Resp = await fetch(uploadNode.uploadUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': uploadNode.authorizationToken,
-                        'X-Bz-File-Name': encodeURIComponent(mp3Filename),
-                        'Content-Type': 'audio/mpeg',
-                        'X-Bz-Content-Sha1': fullMp3Sha1,
-                        'Content-Length': fullMp3Buffer.length
-                    },
-                    body: fullMp3Buffer
-                });
-                if (mp3B2Resp.ok) mp3Url = `${downloadUrl}/file/${B2_BUCKET_NAME}/${encodeURI(mp3Filename)}`;
-                if (fs.existsSync(tempFullMp3Path)) fs.unlinkSync(tempFullMp3Path);
-            } catch (err) { console.warn("⚠️ MP3 generation fail:", err.message); }
+        // 20-second preview for audio assets (same source format)
+        const canPreview = !isImageFile(file) && !isApkFile(file) && !isPdfFile(file);
+        if (generatePreview && canPreview) {
+            fs.writeFileSync(tempInputPath, file.buffer);
+            const previewExt = isWavFile(file) ? 'wav' : 'mp3';
+            const previewOutputPath = `${tempPreviewPath}.${previewExt}`;
+            await new Promise((resolve, reject) => {
+                const cmd = ffmpeg().input(tempInputPath).setStartTime(20).setDuration(20);
+                if (isWavFile(file)) {
+                    cmd.audioCodec('pcm_s16le');
+                } else {
+                    cmd.audioCodec('libmp3lame').audioBitrate('64k');
+                }
+                cmd.output(previewOutputPath).on('end', resolve).on('error', reject).run();
+            });
+            const previewBuffer = fs.readFileSync(previewOutputPath);
+            const previewFilename = b2Filename.replace(/\.(mp3|wav)$/i, `_preview.${previewExt}`);
+            await uploadBufferToB2({
+                uploadNode,
+                fileName: previewFilename,
+                buffer: previewBuffer,
+                contentType: isWavFile(file) ? 'audio/wav' : 'audio/mpeg'
+            });
+            previewUrl = await buildPublicUrl(previewFilename);
         }
 
-        if (generatePreview && !isImage) {
-            try {
-                if (!fs.existsSync(tempInputPath)) fs.writeFileSync(tempInputPath, file.buffer);
-                await new Promise((resolve, reject) => {
-                    ffmpeg().input(tempInputPath).setStartTime(20).setDuration(20).audioCodec('libmp3lame').audioBitrate('64k').output(tempPreviewPath).on('end', resolve).on('error', reject).run();
-                });
-                const previewBuffer = fs.readFileSync(tempPreviewPath);
-                const previewSha1 = crypto.createHash('sha1').update(previewBuffer).digest('hex');
-                const previewFilename = b2Filename.replace(/\.(mp3|wav)$/i, '_preview.mp3');
-
-                const pB2Resp = await fetch(uploadNode.uploadUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': uploadNode.authorizationToken,
-                        'X-Bz-File-Name': encodeURIComponent(previewFilename),
-                        'Content-Type': 'audio/mpeg',
-                        'X-Bz-Content-Sha1': previewSha1,
-                        'Content-Length': previewBuffer.length
-                    },
-                    body: previewBuffer
-                });
-                if (pB2Resp.ok) previewUrl = `${downloadUrl}/file/${B2_BUCKET_NAME}/${encodeURI(previewFilename)}`;
-            } catch (prevErr) { console.warn("⚠️ Preview fail:", prevErr.message); }
-        }
-
-        res.json({ success: true, url: finalUrl, previewUrl, mp3Url, fileId: b2Data.fileId });
+        res.json({
+            success: true,
+            url,
+            previewUrl,
+            mp3Url,
+            fileId: mainUpload.fileId
+        });
     } catch (error) {
-        console.error("Upload error:", error);
-        res.status(500).json({ error: error.message });
+        console.error('[UPLOAD] Error:', error);
+        res.status(500).json({ error: error.message || 'Error interno subiendo archivo.' });
     } finally {
-        if (tempInputPath && fs.existsSync(tempInputPath)) fs.unlinkSync(tempInputPath);
-        if (tempOutputPath && fs.existsSync(tempOutputPath)) fs.unlinkSync(tempOutputPath);
-        if (tempPreviewPath && fs.existsSync(tempPreviewPath)) fs.unlinkSync(tempPreviewPath);
+        [tempInputPath, `${tempPreviewPath}.mp3`, `${tempPreviewPath}.wav`].forEach((p) => {
+            if (p && fs.existsSync(p)) fs.unlinkSync(p);
+        });
     }
 });
 
