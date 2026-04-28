@@ -71,20 +71,25 @@ async function initFileCache() {
 initFileCache();
 
 export const NativeEngine = {
+    getTrackFilename: (songId, trackName, extension = 'mp3') => {
+        const safeExt = String(extension || 'mp3').replace('.', '').toLowerCase();
+        return `${songId}_${trackName}.${safeExt}`;
+    },
+
     /**
      * Checks if a track is already in the phone storage.
      * Use this to avoid downloading again.
      */
-    isTrackDownloaded: async (songId, trackName) => {
-        const filename = `${songId}_${trackName}.mp3`;
+    isTrackDownloaded: async (songId, trackName, extension = 'mp3') => {
+        const filename = NativeEngine.getTrackFilename(songId, trackName, extension);
         return await fileExists(filename);
     },
 
     /**
      * Gets the direct path to a track for the C++ engine.
      */
-    getTrackPath: async (songId, trackName) => {
-        const filename = `${songId}_${trackName}.mp3`;
+    getTrackPath: async (songId, trackName, extension = 'mp3') => {
+        const filename = NativeEngine.getTrackFilename(songId, trackName, extension);
         return await getFilePath(filename);
     },
 

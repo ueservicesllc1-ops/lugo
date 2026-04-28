@@ -96,6 +96,15 @@ export default function Multitrack() {
     const [dynamicClick, setDynamicClick] = useState(false);
     const [debugLogs, setDebugLogs] = useState([]);
 
+    const getTrackExtension = useCallback((track) => {
+        const fromMeta = String(track?.extension || '').toLowerCase().replace('.', '');
+        if (fromMeta) return fromMeta;
+        const candidate = String(track?.previewUrl || track?.url || '').split('?')[0];
+        const match = candidate.match(/\.([a-z0-9]{2,5})$/i);
+        if (match?.[1]) return match[1].toLowerCase();
+        return 'mp3';
+    }, []);
+
 
     // Intercept console.log/error to show on-screen (for debugging without USB)
     useEffect(() => {
@@ -538,10 +547,12 @@ export default function Multitrack() {
                         if (isAppNative) {
                             let finalPath = '';
                             let blob = null;
-                            const alreadyHasFile = await NativeEngine.isTrackDownloaded(song.id, tr.name);
+                            const trackExtension = getTrackExtension(tr);
+                            const filename = NativeEngine.getTrackFilename(song.id, tr.name, trackExtension);
+                            const alreadyHasFile = await NativeEngine.isTrackDownloaded(song.id, tr.name, trackExtension);
 
                             if (alreadyHasFile) {
-                                finalPath = await NativeEngine.getTrackPath(song.id, tr.name);
+                                finalPath = await NativeEngine.getTrackPath(song.id, tr.name, trackExtension);
                                 if (tr.name === '__PreviewMix') {
                                     blob = await LocalFileManager.getTrackLocal(song.id, tr.name);
                                     if (!blob) {
@@ -552,13 +563,13 @@ export default function Multitrack() {
                             } else {
                                 let legacyRawBuf = await LocalFileManager.getTrackLocal(song.id, tr.name);
                                 if (legacyRawBuf) {
-                                    finalPath = await NativeEngine.saveTrackBlob(legacyRawBuf, `${song.id}_${tr.name}.mp3`);
+                                    finalPath = await NativeEngine.saveTrackBlob(legacyRawBuf, filename);
                                     blob = legacyRawBuf;
                                 } else {
                                     const res = await fetch(`${proxyUrl}/api/download?url=${encodeURIComponent(tr.url)}`);
                                     if (!res.ok) return;
                                     blob = await res.blob();
-                                    finalPath = await NativeEngine.saveTrackBlob(blob, `${song.id}_${tr.name}.mp3`);
+                                    finalPath = await NativeEngine.saveTrackBlob(blob, filename);
                                 }
                             }
 
@@ -678,7 +689,9 @@ export default function Multitrack() {
                 }
 
                 if (isAppNative) {
-                    const alreadyHasFile = await NativeEngine.isTrackDownloaded(song.id, tr.name);
+                    const trackExtension = getTrackExtension(tr);
+                    const filename = NativeEngine.getTrackFilename(song.id, tr.name, trackExtension);
+                    const alreadyHasFile = await NativeEngine.isTrackDownloaded(song.id, tr.name, trackExtension);
                     if (!alreadyHasFile) {
                         const res = await fetch(`${proxyUrl}/download?url=${encodeURIComponent(tr.url)}`);
                         if (!res.ok) {
@@ -687,7 +700,7 @@ export default function Multitrack() {
                             throw new Error(`Error en ${tr.name}: ${msg}`);
                         }
                         const blobData = await res.blob();
-                        await NativeEngine.saveTrackBlob(blobData, `${song.id}_${tr.name}.mp3`);
+                        await NativeEngine.saveTrackBlob(blobData, filename);
                     }
                 } else {
                     let rawBuf = await LocalFileManager.getTrackLocal(song.id, tr.name);
@@ -839,9 +852,11 @@ export default function Multitrack() {
                         let finalPath = '';
                         let blob = null;
                         try {
-                            const alreadyHasFile = await NativeEngine.isTrackDownloaded(song.id, tr.name);
+                            const trackExtension = getTrackExtension(tr);
+                            const filename = NativeEngine.getTrackFilename(song.id, tr.name, trackExtension);
+                            const alreadyHasFile = await NativeEngine.isTrackDownloaded(song.id, tr.name, trackExtension);
                             if (alreadyHasFile) {
-                                finalPath = await NativeEngine.getTrackPath(song.id, tr.name);
+                                finalPath = await NativeEngine.getTrackPath(song.id, tr.name, trackExtension);
                                 if (tr.name === '__PreviewMix') {
                                     blob = await LocalFileManager.getTrackLocal(song.id, tr.name);
                                 }
@@ -849,7 +864,7 @@ export default function Multitrack() {
                                 const res = await fetch(`${proxyUrl}/api/download?url=${encodeURIComponent(tr.url)}`);
                                 if (res.ok) {
                                     blob = await res.blob();
-                                    finalPath = await NativeEngine.saveTrackBlob(blob, `${song.id}_${tr.name}.mp3`);
+                                    finalPath = await NativeEngine.saveTrackBlob(blob, filename);
                                     await LocalFileManager.saveTrackLocal(song.id, tr.name, blob);
                                 }
                             }

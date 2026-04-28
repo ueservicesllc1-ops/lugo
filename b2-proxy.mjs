@@ -35,7 +35,7 @@ app.use(express.urlencoded({ limit: '5gb', extended: true }));
 const B2_KEY_ID = process.env.B2_KEY_ID;
 const B2_APPLICATION_KEY = process.env.B2_APPLICATION_KEY;
 const B2_BUCKET_ID = process.env.B2_BUCKET_ID;
-const B2_BUCKET_NAME = process.env.B2_BUCKET_NAME || 'mixercur';
+const B2_BUCKET_NAME = process.env.B2_BUCKET_NAME;
 
 console.log("🔧 B2 Config:", { 
     hasKeyId: !!B2_KEY_ID, 
@@ -46,9 +46,37 @@ console.log("🔧 B2 Config:", {
 
 let b2AuthToken = null;
 let b2ApiUrl = null;
+let b2DownloadUrl = null;
+
+const REQUIRED_ENV = ['B2_KEY_ID', 'B2_APPLICATION_KEY', 'B2_BUCKET_ID', 'B2_BUCKET_NAME'];
+const missingEnv = REQUIRED_ENV.filter((k) => !process.env[k]);
+if (missingEnv.length > 0) {
+    throw new Error(`[B2 CONFIG] Faltan variables requeridas: ${missingEnv.join(', ')}`);
+}
+
+function normalizeB2BucketUrl(rawUrl) {
+    try {
+        const u = new URL(rawUrl);
+        const parts = u.pathname.split('/');
+        // Expected: /file/<bucketName>/<filePath...>
+        if (parts.length >= 4 && parts[1] === 'file') {
+            const currentBucket = parts[2];
+            if (currentBucket && currentBucket !== B2_BUCKET_NAME) {
+                parts[2] = B2_BUCKET_NAME;
+                u.pathname = parts.join('/');
+                console.warn(`[B2 URL FIX] Bucket corregido: ${currentBucket} -> ${B2_BUCKET_NAME}`);
+            }
+        }
+        return u.toString();
+    } catch {
+        return rawUrl;
+    }
+}
 
 async function getB2Auth() {
-    if (b2AuthToken && b2ApiUrl) return { apiUrl: b2ApiUrl, token: b2AuthToken };
+    if (b2AuthToken && b2ApiUrl && b2DownloadUrl) {
+        return { apiUrl: b2ApiUrl, token: b2AuthToken, downloadUrl: b2DownloadUrl };
+    }
     const credentials = Buffer.from(`${B2_KEY_ID}:${B2_APPLICATION_KEY}`).toString('base64');
     const res = await fetch('https://api.backblazeb2.com/b2api/v2/b2_authorize_account', {
         headers: { 'Authorization': `Basic ${credentials}` }
@@ -56,7 +84,8 @@ async function getB2Auth() {
     const data = await res.json();
     b2AuthToken = data.authorizationToken;
     b2ApiUrl = data.apiUrl;
-    return { apiUrl: b2ApiUrl, token: b2AuthToken };
+    b2DownloadUrl = data.downloadUrl;
+    return { apiUrl: b2ApiUrl, token: b2AuthToken, downloadUrl: b2DownloadUrl };
 }
 
 async function getUploadNode() {
@@ -86,7 +115,7 @@ const handleDownload = async (req, res) => {
         if (!url || url === 'undefined' || url === 'null') {
             return res.status(400).json({ error: 'URL inválida' });
         }
-        url = url.trim();
+        url = normalizeB2BucketUrl(url.trim());
         console.log(`[PROXY] Descargando audio desde: ${url}`);
         
         const response = await fetch(url);
@@ -174,7 +203,8 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
         const b2Data = await b2Response.json();
         if (!b2Response.ok) throw new Error(`B2 Upload Error: ${b2Data.message || b2Data.code}`);
 
-        const finalUrl = `https://f005.backblazeb2.com/file/${B2_BUCKET_NAME}/${encodeURI(b2Filename)}`;
+        const { downloadUrl } = await getB2Auth();
+        const finalUrl = `${downloadUrl}/file/${B2_BUCKET_NAME}/${encodeURI(b2Filename)}`;
 
         let previewUrl = null;
         let mp3Url = null;
@@ -203,7 +233,7 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
                     },
                     body: fullMp3Buffer
                 });
-                if (mp3B2Resp.ok) mp3Url = `https://f005.backblazeb2.com/file/${B2_BUCKET_NAME}/${encodeURI(mp3Filename)}`;
+                if (mp3B2Resp.ok) mp3Url = `${downloadUrl}/file/${B2_BUCKET_NAME}/${encodeURI(mp3Filename)}`;
                 if (fs.existsSync(tempFullMp3Path)) fs.unlinkSync(tempFullMp3Path);
             } catch (err) { console.warn("⚠️ MP3 generation fail:", err.message); }
         }
@@ -229,7 +259,7 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
                     },
                     body: previewBuffer
                 });
-                if (pB2Resp.ok) previewUrl = `https://f005.backblazeb2.com/file/${B2_BUCKET_NAME}/${encodeURI(previewFilename)}`;
+                if (pB2Resp.ok) previewUrl = `${downloadUrl}/file/${B2_BUCKET_NAME}/${encodeURI(previewFilename)}`;
             } catch (prevErr) { console.warn("⚠️ Preview fail:", prevErr.message); }
         }
 
