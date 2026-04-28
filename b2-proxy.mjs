@@ -50,8 +50,9 @@ let b2ApiUrl = null;
 let b2DownloadUrl = null;
 let b2AccountId = null;
 let b2ResolvedBucketName = null;
+let b2ResolvedBucketId = null;
 
-const REQUIRED_ENV = ['B2_KEY_ID', 'B2_APPLICATION_KEY', 'B2_BUCKET_ID', 'B2_BUCKET_NAME'];
+const REQUIRED_ENV = ['B2_KEY_ID', 'B2_APPLICATION_KEY', 'B2_BUCKET_NAME'];
 const missingEnv = REQUIRED_ENV.filter((k) => !process.env[k]);
 if (missingEnv.length > 0) {
     throw new Error(`[B2 CONFIG] Faltan variables requeridas: ${missingEnv.join(', ')}`);
@@ -93,8 +94,10 @@ async function getB2Auth() {
     return { apiUrl: b2ApiUrl, token: b2AuthToken, downloadUrl: b2DownloadUrl, accountId: b2AccountId };
 }
 
-async function getEffectiveBucketName() {
-    if (b2ResolvedBucketName) return b2ResolvedBucketName;
+async function getEffectiveBucketConfig() {
+    if (b2ResolvedBucketName && b2ResolvedBucketId) {
+        return { bucketName: b2ResolvedBucketName, bucketId: b2ResolvedBucketId };
+    }
 
     try {
         const { apiUrl, token, accountId } = await getB2Auth();
@@ -107,26 +110,39 @@ async function getEffectiveBucketName() {
         if (!res.ok) throw new Error(`b2_list_buckets ${res.status}`);
         const data = await res.json();
         const buckets = Array.isArray(data?.buckets) ? data.buckets : [];
-        const matched = buckets.find((b) => b.bucketId === B2_BUCKET_ID);
-        b2ResolvedBucketName = matched?.bucketName || B2_BUCKET_NAME;
+        const byName = buckets.find((b) => b.bucketName === B2_BUCKET_NAME);
+        const byId = B2_BUCKET_ID ? buckets.find((b) => b.bucketId === B2_BUCKET_ID) : null;
+        const matched = byName || byId;
 
-        if (matched?.bucketName && matched.bucketName !== B2_BUCKET_NAME) {
-            console.warn(`[B2 CONFIG] bucketName env (${B2_BUCKET_NAME}) no coincide con bucketId (${matched.bucketName}). Se usará ${matched.bucketName}.`);
+        if (!matched) {
+            throw new Error(`No existe bucket con nombre "${B2_BUCKET_NAME}"${B2_BUCKET_ID ? ` ni con id ${B2_BUCKET_ID}` : ''}.`);
+        }
+
+        b2ResolvedBucketName = matched.bucketName;
+        b2ResolvedBucketId = matched.bucketId;
+
+        if (byName && byId && byName.bucketId !== byId.bucketId) {
+            console.warn(`[B2 CONFIG] bucketId env no coincide con bucketName env. Se prioriza bucketName "${B2_BUCKET_NAME}" (id ${byName.bucketId}).`);
         }
     } catch (e) {
-        console.warn(`[B2 CONFIG] No se pudo resolver bucket por ID, usando env (${B2_BUCKET_NAME}): ${e.message}`);
+        console.warn(`[B2 CONFIG] Error resolviendo bucket, usando env como fallback (${B2_BUCKET_NAME}): ${e.message}`);
         b2ResolvedBucketName = B2_BUCKET_NAME;
+        b2ResolvedBucketId = B2_BUCKET_ID || null;
     }
 
-    return b2ResolvedBucketName;
+    if (!b2ResolvedBucketId) {
+        throw new Error('[B2 CONFIG] No se pudo determinar bucketId efectivo para subidas.');
+    }
+    return { bucketName: b2ResolvedBucketName, bucketId: b2ResolvedBucketId };
 }
 
 async function getUploadNode() {
     const { apiUrl, token } = await getB2Auth();
+    const { bucketId } = await getEffectiveBucketConfig();
     const res = await fetch(`${apiUrl}/b2api/v2/b2_get_upload_url`, {
         method: 'POST',
         headers: { 'Authorization': token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bucketId: B2_BUCKET_ID })
+        body: JSON.stringify({ bucketId })
     });
     if (!res.ok) {
         b2AuthToken = null;
@@ -141,6 +157,7 @@ app.get('/api/health', (req, res) => res.json({
     distExists: fs.existsSync(distPath),
     port: PORT,
     bucketName: b2ResolvedBucketName || B2_BUCKET_NAME,
+    bucketId: b2ResolvedBucketId || B2_BUCKET_ID || null,
     bucketNameEnv: B2_BUCKET_NAME,
     buildStamp: BUILD_STAMP
 }));
@@ -148,8 +165,10 @@ app.get('/api/health', (req, res) => res.json({
 app.get('/api/config-check', (req, res) => res.json({
     status: 'ok',
     bucketName: b2ResolvedBucketName || B2_BUCKET_NAME,
+    bucketId: b2ResolvedBucketId || B2_BUCKET_ID || null,
     bucketNameEnv: B2_BUCKET_NAME,
-    bucketIdSuffix: String(B2_BUCKET_ID).slice(-6),
+    bucketIdSuffix: String(b2ResolvedBucketId || B2_BUCKET_ID || '').slice(-6),
+    bucketIdEnvSuffix: String(B2_BUCKET_ID || '').slice(-6),
     hasKeyId: !!B2_KEY_ID,
     hasAppKey: !!B2_APPLICATION_KEY,
     buildStamp: BUILD_STAMP
@@ -213,8 +232,8 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
     };
     const buildPublicUrl = async (fileName) => {
         const { downloadUrl } = await getB2Auth();
-        const effectiveBucketName = await getEffectiveBucketName();
-        return `${downloadUrl}/file/${effectiveBucketName}/${encodeURI(fileName)}`;
+        const { bucketName } = await getEffectiveBucketConfig();
+        return `${downloadUrl}/file/${bucketName}/${encodeURI(fileName)}`;
     };
     const uploadBufferToB2 = async ({ uploadNode, fileName, buffer, contentType }) => {
         const response = await fetch(uploadNode.uploadUrl, {
@@ -341,10 +360,11 @@ app.post('/api/delete-file', async (req, res) => {
 app.get('/api/list-files', async (req, res) => {
     try {
         const { apiUrl, token } = await getB2Auth();
+        const { bucketId } = await getEffectiveBucketConfig();
         const b2Response = await fetch(`${apiUrl}/b2api/v2/b2_list_file_names`, {
             method: 'POST',
             headers: { 'Authorization': token, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bucketId: B2_BUCKET_ID, maxFileCount: 1000 })
+            body: JSON.stringify({ bucketId, maxFileCount: 1000 })
         });
         const data = await b2Response.json();
         res.json(data.files);
