@@ -126,6 +126,7 @@ export default function Admin() {
     const [newVideo, setNewVideo] = useState({ title: '', genre: 'POP', youtubeUrl: '' });
     const [editingVideo, setEditingVideo] = useState(null);
     const [isEditingVideo, setIsEditingVideo] = useState(false);
+    const [routesModalSong, setRoutesModalSong] = useState(null);
     const [previews, setPreviews] = useState({ photo: null, cover: null });
 
     // ── MT Wizard States (igual que Vendedores) ──────────────────────────────
@@ -537,6 +538,49 @@ export default function Admin() {
                 </div>
             )}
 
+            {/* MODAL: RUTAS DE ARCHIVOS MT */}
+            {routesModalSong && (
+                <div style={S.overlay} onClick={() => setRoutesModalSong(null)}>
+                    <div
+                        style={{ ...S.modal, maxWidth: '780px', maxHeight: '80vh', overflowY: 'auto' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h2 style={{ marginBottom: '6px' }}>Rutas de archivos subidos</h2>
+                        <p style={{ color: '#94a3b8', marginTop: 0, marginBottom: '18px' }}>
+                            {routesModalSong.name} · {routesModalSong.artist}
+                        </p>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {routesModalSong.coverUrl && (
+                                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px' }}>
+                                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 700 }}>Portada</div>
+                                    <div style={{ fontSize: '0.85rem', wordBreak: 'break-all' }}>{routesModalSong.coverUrl}</div>
+                                </div>
+                            )}
+
+                            {(routesModalSong.tracks || []).map((track, idx) => (
+                                <div key={`${track.name || 'track'}_${idx}`} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px' }}>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: 800, marginBottom: '8px' }}>{track.name || `Track ${idx + 1}`}</div>
+                                    <div style={{ fontSize: '0.72rem', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700 }}>Archivo original</div>
+                                    <div style={{ fontSize: '0.85rem', marginBottom: '10px', wordBreak: 'break-all' }}>{track.url || 'Sin URL'}</div>
+
+                                    {track.previewUrl && track.previewUrl !== track.url && (
+                                        <>
+                                            <div style={{ fontSize: '0.72rem', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700 }}>Preview</div>
+                                            <div style={{ fontSize: '0.85rem', wordBreak: 'break-all' }}>{track.previewUrl}</div>
+                                        </>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button onClick={() => setRoutesModalSong(null)} style={S.btnGhost}>Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* SIDEBAR */}
             <aside style={{ width: '260px', background: '#030712', padding: '40px 20px', borderRight: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
@@ -882,6 +926,12 @@ export default function Admin() {
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ fontWeight: '800', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                                             <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '6px' }}>{p.artist} · ${p.price}</div>
+                                            <button
+                                                onClick={() => setRoutesModalSong(p)}
+                                                style={{ marginBottom: '8px', background: 'rgba(0,188,212,0.12)', color: '#00bcd4', border: '1px solid rgba(0,188,212,0.35)', borderRadius: '8px', padding: '4px 10px', fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }}
+                                            >
+                                                Ver rutas
+                                            </button>
                                             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                                 {p.key && <span style={{ background: 'rgba(0,163,255,0.15)', color: '#00A3FF', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700' }}>{p.key}</span>}
                                                 {p.tempo && <span style={{ background: 'rgba(0,188,212,0.1)', color: '#00bcd4', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700' }}>{p.tempo} BPM</span>}

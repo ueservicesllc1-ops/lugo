@@ -17,6 +17,7 @@ ffmpeg.setFfmpegPath(ffmpegStatic);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const distPath = path.join(__dirname, 'dist');
+const BUILD_STAMP = new Date().toISOString();
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -106,7 +107,18 @@ app.get('/api/health', (req, res) => res.json({
     status: 'ok',
     service: 'B2 Proxy (PayPal Era)',
     distExists: fs.existsSync(distPath),
-    port: PORT
+    port: PORT,
+    bucketName: B2_BUCKET_NAME,
+    buildStamp: BUILD_STAMP
+}));
+
+app.get('/api/config-check', (req, res) => res.json({
+    status: 'ok',
+    bucketName: B2_BUCKET_NAME,
+    bucketIdSuffix: String(B2_BUCKET_ID).slice(-6),
+    hasKeyId: !!B2_KEY_ID,
+    hasAppKey: !!B2_APPLICATION_KEY,
+    buildStamp: BUILD_STAMP
 }));
 
 const handleDownload = async (req, res) => {
