@@ -125,13 +125,12 @@ async function getEffectiveBucketConfig() {
             console.warn(`[B2 CONFIG] bucketId env no coincide con bucketName env. Se prioriza bucketName "${B2_BUCKET_NAME}" (id ${byName.bucketId}).`);
         }
     } catch (e) {
-        console.warn(`[B2 CONFIG] Error resolviendo bucket, usando env como fallback (${B2_BUCKET_NAME}): ${e.message}`);
-        b2ResolvedBucketName = B2_BUCKET_NAME;
-        b2ResolvedBucketId = B2_BUCKET_ID || null;
+        console.error(`[B2 CONFIG] Error resolviendo bucket "${B2_BUCKET_NAME}": ${e.message}`);
+        throw new Error(`[B2 CONFIG] No se pudo validar el bucket "${B2_BUCKET_NAME}". Revisa credenciales/capabilities y B2_BUCKET_ID en producción.`);
     }
 
-    if (!b2ResolvedBucketId) {
-        throw new Error('[B2 CONFIG] No se pudo determinar bucketId efectivo para subidas.');
+    if (!b2ResolvedBucketId || b2ResolvedBucketName !== B2_BUCKET_NAME) {
+        throw new Error(`[B2 CONFIG] Bucket efectivo inválido. Esperado: ${B2_BUCKET_NAME}. Obtenido: ${b2ResolvedBucketName || 'N/A'}.`);
     }
     return { bucketName: b2ResolvedBucketName, bucketId: b2ResolvedBucketId };
 }

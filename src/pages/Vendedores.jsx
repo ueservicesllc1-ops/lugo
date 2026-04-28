@@ -115,6 +115,7 @@ function Vendedores() {
     const [tempo, setTempo] = useState('');
     const [timeSignature, setTimeSignature] = useState('4/4');
     const [price, setPrice] = useState('9.99');
+    const [zipFolderName, setZipFolderName] = useState('');
     const [coverUrl, setCoverUrl] = useState('');
     const [coverFileId, setCoverFileId] = useState('');
     const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -147,6 +148,16 @@ function Vendedores() {
     ];
     const PV_LEVELS = ['Básica','Media','Pro'];
     const PV_LEVEL_COLORS = { 'Básica': '#10b981', 'Media': '#f59e0b', 'Pro': '#ef4444' };
+    const proxyBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:3001'
+        : window.location.origin;
+    const sanitizePathSegment = (value) => String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9_-]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .slice(0, 80);
 
     useEffect(() => {
         const unsubAuth = auth.onAuthStateChanged((user) => {
@@ -213,14 +224,11 @@ function Vendedores() {
         if (!file || !currentUser) return;
         setIsUploadingPhoto(true);
         try {
-            const devProxy = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
-
             const formData = new FormData();
             formData.append('audioFile', file);
             formData.append('fileName', `id_verify_${currentUser.uid}_${Date.now()}.${file.name.split('.').pop()}`);
 
-            const res = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
+            const res = await fetch(`${proxyBase}/api/upload`, { method: 'POST', body: formData });
             const data = await res.json();
             if (data.url) {
                 setRegForm(prev => ({ ...prev, idPhotoUrl: data.url, idPhotoFileId: data.fileId }));
@@ -237,14 +245,13 @@ function Vendedores() {
         if (!file || !currentUser) return;
         setIsUploadingCover(true);
         try {
-            const devProxy = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
-
             const formData = new FormData();
             formData.append('audioFile', file);
-            formData.append('fileName', `cover_${currentUser.uid}_${Date.now()}.${file.name.split('.').pop()}`);
+            const coverExt = String(file.name.split('.').pop() || 'jpg').toLowerCase();
+            const folder = zipFolderName || `seller_${currentUser.uid}_${Date.now()}`;
+            formData.append('fileName', `multitracks/sellers/${currentUser.uid}/${folder}/cover/cover.${coverExt}`);
 
-            const res = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
+            const res = await fetch(`${proxyBase}/api/upload`, { method: 'POST', body: formData });
             const data = await res.json();
             if (data.url) {
                 setCoverUrl(data.url);
@@ -304,9 +311,11 @@ function Vendedores() {
         const zip = new JSZip();
         try {
             const cleanName = file.name.replace(/\.zip$/i, '');
+            const safeZipFolder = sanitizePathSegment(cleanName) || `zip_${Date.now()}`;
             const parts = cleanName.split('-').map(p => p.trim());
             if (parts.length >= 1) setSongName(parts[0]);
             if (parts.length >= 2) setArtist(parts[1]);
+            setZipFolderName(safeZipFolder);
             const contents = await zip.loadAsync(file);
             const extractedFiles = [];
             const filesToExtract = Object.keys(contents.files).filter(f => f.endsWith('.wav') || f.endsWith('.mp3'));
@@ -340,23 +349,25 @@ function Vendedores() {
         if (!songName.trim()) return alert('Nombre requerido');
         if (!coverUrl) return alert('La portada es obligatoria para publicar una canción.');
         if (!currentUser) return;
+        if (!zipFolderName) return alert('Vuelve a cargar el ZIP para generar su carpeta de archivos.');
         
         setIsUploading(true);
         setStep('uploading');
         const uploadedTracksInfo = [];
         try {
-            const devProxy = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
+            const trackFolder = `multitracks/sellers/${currentUser.uid}/${zipFolderName}/tracks`;
 
             for (let i = 0; i < fileList.length; i++) {
                 const track = fileList[i];
                 const formData = new FormData();
                 formData.append('audioFile', track.blob);
-                const b2Filename = `sell_${currentUser.uid}_${Date.now()}_${songName.replace(/\s+/g, '_')}_${track.displayName.replace(/\s+/g, '_')}.mp3`;
+                const safeTrackName = sanitizePathSegment(track.displayName) || `track_${i + 1}`;
+                const ext = String(track.extension || 'wav').toLowerCase();
+                const b2Filename = `${trackFolder}/${String(i + 1).padStart(2, '0')}_${safeTrackName}.${ext}`;
                 formData.append('fileName', b2Filename);
                 formData.append('generatePreview', 'true');
 
-                const uploadRes = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
+                const uploadRes = await fetch(`${proxyBase}/api/upload`, { method: 'POST', body: formData });
                 if (!uploadRes.ok) throw new Error(`Fallo al subir pista ${track.displayName}`);
 
                 const uploadData = await uploadRes.json();
@@ -374,10 +385,10 @@ function Vendedores() {
             if (mixBlob) {
                 const formData = new FormData();
                 formData.append('audioFile', mixBlob);
-                const b2Filename = `sell_${currentUser.uid}_${Date.now()}_${songName.replace(/\s+/g, '_')}__PreviewMix.mp3`;
+                const b2Filename = `multitracks/sellers/${currentUser.uid}/${zipFolderName}/mix/PreviewMix.wav`;
                 formData.append('fileName', b2Filename);
                 formData.append('generatePreview', 'true');
-                const res = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
+                const res = await fetch(`${proxyBase}/api/upload`, { method: 'POST', body: formData });
                 if (res.ok) {
                     const data = await res.json();
                     uploadedTracksInfo.push({
@@ -430,19 +441,17 @@ function Vendedores() {
     const resetWizard = () => {
         setStep('idle'); setFileList([]); setSongName(''); setArtist('');
         setSongKey(''); setTempo(''); setTimeSignature('4/4'); setPrice('9.99');
-        setCoverUrl(''); setCoverFileId('');
+        setZipFolderName(''); setCoverUrl(''); setCoverFileId('');
     };
 
     const handlePvUpload = async () => {
         if (!pvFile || !pvInstrument || !pvTitle || !currentUser) return;
         setPvUploading(true);
         try {
-            const devProxy = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
             const formData = new FormData();
             formData.append('audioFile', pvFile);
             formData.append('fileName', `partitura_venta_${currentUser.uid}_${Date.now()}_${pvInstrument.replace(/\s+/g,'_')}.pdf`);
-            const res = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
+            const res = await fetch(`${proxyBase}/api/upload`, { method: 'POST', body: formData });
             if (!res.ok) throw new Error('Error subiendo PDF');
             const data = await res.json();
             await addDoc(collection(db, 'partituras_venta'), {

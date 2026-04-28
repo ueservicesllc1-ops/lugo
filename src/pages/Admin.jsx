@@ -140,20 +140,28 @@ export default function Admin() {
     const [tempo, setTempo] = useState('');
     const [timeSignature, setTimeSignature] = useState('4/4');
     const [price, setPrice] = useState('9.99');
+    const [zipFolderName, setZipFolderName] = useState('');
     const [coverUrl, setCoverUrl] = useState('');
     const [coverFileId, setCoverFileId] = useState('');
     const [isUploadingCover, setIsUploadingCover] = useState(false);
 
-    const devProxy = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
+    const proxyBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:3001'
+        : window.location.origin;
+    const sanitizePathSegment = (value) => String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9_-]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .slice(0, 80);
 
     const getProxyUrl = (url) => {
         if (!url) return '';
         const cleanUrl = String(url).split(',')[0].trim();
         if (cleanUrl.startsWith('/') || cleanUrl.includes('localhost') || cleanUrl.startsWith('blob:')) return cleanUrl;
-        
-        const baseProxy = 'https://mixernew-production.up.railway.app';
-        return `${baseProxy}/api/download?url=${encodeURIComponent(cleanUrl)}`;
+
+        return `${proxyBase}/api/download?url=${encodeURIComponent(cleanUrl)}`;
     };
 
     // Auth Check
@@ -213,9 +221,11 @@ export default function Admin() {
         const zip = new JSZip();
         try {
             const cleanName = file.name.replace(/\.zip$/i, '');
+            const safeZipFolder = sanitizePathSegment(cleanName) || `zip_${Date.now()}`;
             const parts = cleanName.split('-').map(p => p.trim());
             if (parts.length >= 1) setSongName(parts[0]);
             if (parts.length >= 2) setArtist(parts[1]);
+            setZipFolderName(safeZipFolder);
             const contents = await zip.loadAsync(file);
             const extractedFiles = [];
             
@@ -257,8 +267,10 @@ export default function Admin() {
         try {
             const formData = new FormData();
             formData.append('audioFile', file);
-            formData.append('fileName', `cover_admin_${Date.now()}.${file.name.split('.').pop()}`);
-            const res = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
+            const coverExt = String(file.name.split('.').pop() || 'jpg').toLowerCase();
+            const folder = zipFolderName || `admin_${Date.now()}`;
+            formData.append('fileName', `multitracks/admin/${folder}/cover/cover_admin.${coverExt}`);
+            const res = await fetch(`${proxyBase}/api/upload`, { method: 'POST', body: formData });
             const data = await res.json();
             if (data.url) { setCoverUrl(data.url); setCoverFileId(data.fileId); }
         } catch (err) { alert('Error al subir portada: ' + err.message); }
@@ -268,18 +280,20 @@ export default function Admin() {
     const uploadMtToB2 = async () => {
         if (!songName.trim()) return alert('Nombre requerido');
         if (!coverUrl) return alert('La portada es obligatoria.');
+        if (!zipFolderName) return alert('Vuelve a cargar el ZIP para generar su carpeta de archivos.');
         setMtStep('uploading');
         const uploadedTracksInfo = [];
         try {
+            const trackFolder = `multitracks/admin/${zipFolderName}/tracks`;
             for (let i = 0; i < fileList.length; i++) {
                 const track = fileList[i];
                 const formData = new FormData();
                 formData.append('audioFile', track.blob);
-                // Usar extensión original para preservar calidad (wav o mp3)
-                const b2Filename = `sell_admin_${Date.now()}_${songName.replace(/\s+/g, '_')}_${track.displayName.replace(/\s+/g, '_')}.${track.extension}`;
+                const safeTrackName = sanitizePathSegment(track.displayName) || `track_${i + 1}`;
+                const b2Filename = `${trackFolder}/${String(i + 1).padStart(2, '0')}_${safeTrackName}.${track.extension}`;
                 formData.append('fileName', b2Filename);
                 formData.append('generatePreview', 'true');
-                const uploadRes = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
+                const uploadRes = await fetch(`${proxyBase}/api/upload`, { method: 'POST', body: formData });
                 if (!uploadRes.ok) throw new Error(`Fallo al subir pista ${track.displayName}`);
                 const uploadData = await uploadRes.json();
                 uploadedTracksInfo.push({
@@ -295,10 +309,9 @@ export default function Admin() {
             if (mixBlob) {
                 const formData = new FormData();
                 formData.append('audioFile', mixBlob);
-                // El mix total es un WAV generado en el cliente
-                formData.append('fileName', `sell_admin_${Date.now()}_${songName.replace(/\s+/g, '_')}__PreviewMix.wav`);
+                formData.append('fileName', `multitracks/admin/${zipFolderName}/mix/PreviewMix.wav`);
                 formData.append('generatePreview', 'true');
-                const res = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
+                const res = await fetch(`${proxyBase}/api/upload`, { method: 'POST', body: formData });
                 if (res.ok) {
                     const data = await res.json();
                     uploadedTracksInfo.push({ name: '__PreviewMix', url: data.url, previewUrl: data.previewUrl, b2FileId: data.fileId, isWaveformSource: true, sizeMB: (mixBlob.size / 1024 / 1024).toFixed(2) });
@@ -335,7 +348,7 @@ export default function Admin() {
     const resetMtWizard = () => {
         setMtStep('idle'); setFileList([]); setSongName(''); setArtist('');
         setSongKey(''); setTempo(''); setTimeSignature('4/4'); setPrice('9.99');
-        setCoverUrl(''); setCoverFileId(''); setUploadProgress(0); setMtError('');
+        setZipFolderName(''); setCoverUrl(''); setCoverFileId(''); setUploadProgress(0); setMtError('');
     };
 
     // ── Catálogo handlers ────────────────────────────────────────────────────
@@ -346,7 +359,7 @@ export default function Admin() {
         formData.append('audioFile', file);
         formData.append('fileName', b2FileName);
         if (generatePreview) formData.append('generatePreview', 'true');
-        const res = await fetch(`${devProxy}/api/upload`, { method: 'POST', body: formData });
+        const res = await fetch(`${proxyBase}/api/upload`, { method: 'POST', body: formData });
         if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Error subiendo'); }
         return await res.json();
     };
