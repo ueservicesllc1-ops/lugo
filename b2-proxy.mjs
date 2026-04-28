@@ -52,7 +52,7 @@ let b2AccountId = null;
 let b2ResolvedBucketName = null;
 let b2ResolvedBucketId = null;
 
-const REQUIRED_ENV = ['B2_KEY_ID', 'B2_APPLICATION_KEY', 'B2_BUCKET_NAME'];
+const REQUIRED_ENV = ['B2_KEY_ID', 'B2_APPLICATION_KEY', 'B2_BUCKET_ID', 'B2_BUCKET_NAME'];
 const missingEnv = REQUIRED_ENV.filter((k) => !process.env[k]);
 if (missingEnv.length > 0) {
     throw new Error(`[B2 CONFIG] Faltan variables requeridas: ${missingEnv.join(', ')}`);
@@ -125,12 +125,13 @@ async function getEffectiveBucketConfig() {
             console.warn(`[B2 CONFIG] bucketId env no coincide con bucketName env. Se prioriza bucketName "${B2_BUCKET_NAME}" (id ${byName.bucketId}).`);
         }
     } catch (e) {
-        console.error(`[B2 CONFIG] Error resolviendo bucket "${B2_BUCKET_NAME}": ${e.message}`);
-        throw new Error(`[B2 CONFIG] No se pudo validar el bucket "${B2_BUCKET_NAME}". Revisa credenciales/capabilities y B2_BUCKET_ID en producción.`);
+        console.warn(`[B2 CONFIG] No se pudo resolver bucket por API (${e.message}). Se usará configuración env.`);
+        b2ResolvedBucketName = B2_BUCKET_NAME;
+        b2ResolvedBucketId = B2_BUCKET_ID || null;
     }
 
-    if (!b2ResolvedBucketId || b2ResolvedBucketName !== B2_BUCKET_NAME) {
-        throw new Error(`[B2 CONFIG] Bucket efectivo inválido. Esperado: ${B2_BUCKET_NAME}. Obtenido: ${b2ResolvedBucketName || 'N/A'}.`);
+    if (!b2ResolvedBucketId) {
+        throw new Error('[B2 CONFIG] No se pudo determinar bucketId efectivo para subidas.');
     }
     return { bucketName: b2ResolvedBucketName, bucketId: b2ResolvedBucketId };
 }
