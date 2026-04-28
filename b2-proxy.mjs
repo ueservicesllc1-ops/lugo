@@ -235,6 +235,9 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
     try {
         const file = req.file;
         const b2Filename = String(req.body.fileName || '').trim();
+        const fileNameLower = b2Filename.toLowerCase();
+        const isTargetWav = fileNameLower.endsWith('.wav');
+        const isTargetMp3 = fileNameLower.endsWith('.mp3');
         const generatePreview = req.body.generatePreview === 'true';
 
         if (!file || !b2Filename) {
@@ -250,7 +253,7 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
         // Main upload buffer (strict: keep original format, no transcode)
         let mainBuffer = file.buffer;
         const knownNonAudio = isImageFile(file) || isApkFile(file) || isPdfFile(file);
-        const knownAudio = isMp3File(file) || isWavFile(file);
+        const knownAudio = isMp3File(file) || isWavFile(file) || isTargetMp3 || isTargetWav;
         if (!knownNonAudio && !knownAudio) {
             return res.status(400).json({ error: 'Formato no permitido. Solo WAV, MP3, imagen, APK o PDF.' });
         }
@@ -259,7 +262,14 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
             uploadNode,
             fileName: b2Filename,
             buffer: mainBuffer,
-            contentType: inferContentType(file)
+            contentType: (() => {
+                if (isImageFile(file)) return file.mimetype || 'image/jpeg';
+                if (isApkFile(file)) return 'application/vnd.android.package-archive';
+                if (isPdfFile(file)) return 'application/pdf';
+                if (isWavFile(file) || isTargetWav) return 'audio/wav';
+                if (isMp3File(file) || isTargetMp3) return 'audio/mpeg';
+                return inferContentType(file);
+            })()
         });
         const url = await buildPublicUrl(b2Filename);
 
@@ -267,29 +277,33 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
         let previewUrl = null;
 
         // 20-second preview for audio assets (same source format)
-        const canPreview = !isImageFile(file) && !isApkFile(file) && !isPdfFile(file);
+        const canPreview = !isImageFile(file) && !isApkFile(file) && !isPdfFile(file) && knownAudio;
         if (generatePreview && canPreview) {
-            fs.writeFileSync(tempInputPath, file.buffer);
-            const previewExt = isWavFile(file) ? 'wav' : 'mp3';
-            const previewOutputPath = `${tempPreviewPath}.${previewExt}`;
-            await new Promise((resolve, reject) => {
-                const cmd = ffmpeg().input(tempInputPath).setStartTime(20).setDuration(20);
-                if (isWavFile(file)) {
-                    cmd.audioCodec('pcm_s16le');
-                } else {
-                    cmd.audioCodec('libmp3lame').audioBitrate('64k');
-                }
-                cmd.output(previewOutputPath).on('end', resolve).on('error', reject).run();
-            });
-            const previewBuffer = fs.readFileSync(previewOutputPath);
-            const previewFilename = b2Filename.replace(/\.(mp3|wav)$/i, `_preview.${previewExt}`);
-            await uploadBufferToB2({
-                uploadNode,
-                fileName: previewFilename,
-                buffer: previewBuffer,
-                contentType: isWavFile(file) ? 'audio/wav' : 'audio/mpeg'
-            });
-            previewUrl = await buildPublicUrl(previewFilename);
+            try {
+                fs.writeFileSync(tempInputPath, file.buffer);
+                const previewExt = (isWavFile(file) || isTargetWav) ? 'wav' : 'mp3';
+                const previewOutputPath = `${tempPreviewPath}.${previewExt}`;
+                await new Promise((resolve, reject) => {
+                    const cmd = ffmpeg().input(tempInputPath).setStartTime(20).setDuration(20);
+                    if (previewExt === 'wav') {
+                        cmd.audioCodec('pcm_s16le');
+                    } else {
+                        cmd.audioCodec('libmp3lame').audioBitrate('64k');
+                    }
+                    cmd.output(previewOutputPath).on('end', resolve).on('error', reject).run();
+                });
+                const previewBuffer = fs.readFileSync(previewOutputPath);
+                const previewFilename = b2Filename.replace(/\.(mp3|wav)$/i, `_preview.${previewExt}`);
+                await uploadBufferToB2({
+                    uploadNode,
+                    fileName: previewFilename,
+                    buffer: previewBuffer,
+                    contentType: previewExt === 'wav' ? 'audio/wav' : 'audio/mpeg'
+                });
+                previewUrl = await buildPublicUrl(previewFilename);
+            } catch (previewErr) {
+                console.warn('[UPLOAD] Preview generation failed, continuing without preview:', previewErr.message);
+            }
         }
 
         res.json({
