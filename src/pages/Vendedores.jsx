@@ -368,7 +368,17 @@ function Vendedores() {
                 formData.append('generatePreview', 'true');
 
                 const uploadRes = await fetch(`${proxyBase}/api/upload`, { method: 'POST', body: formData });
-                if (!uploadRes.ok) throw new Error(`Fallo al subir pista ${track.displayName}`);
+                if (!uploadRes.ok) {
+                    const errText = await uploadRes.text();
+                    let errMsg = errText;
+                    try {
+                        const parsed = JSON.parse(errText);
+                        errMsg = parsed?.error || parsed?.details || errText;
+                    } catch {
+                        // Keep raw text when backend returns non-JSON.
+                    }
+                    throw new Error(`Fallo al subir pista ${track.displayName}: ${errMsg}`);
+                }
 
                 const uploadData = await uploadRes.json();
                 uploadedTracksInfo.push({
