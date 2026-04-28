@@ -213,7 +213,8 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
     };
     const buildPublicUrl = async (fileName) => {
         const { downloadUrl } = await getB2Auth();
-        return `${downloadUrl}/file/${B2_BUCKET_NAME}/${encodeURI(fileName)}`;
+        const effectiveBucketName = await getEffectiveBucketName();
+        return `${downloadUrl}/file/${effectiveBucketName}/${encodeURI(fileName)}`;
     };
     const uploadBufferToB2 = async ({ uploadNode, fileName, buffer, contentType }) => {
         const response = await fetch(uploadNode.uploadUrl, {
