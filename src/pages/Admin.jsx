@@ -140,6 +140,10 @@ export default function Admin() {
     const [tempo, setTempo] = useState('');
     const [timeSignature, setTimeSignature] = useState('4/4');
     const [price, setPrice] = useState('9.99');
+    const [priceCustomMix, setPriceCustomMix] = useState('15.00');
+    const [priceWavTrack, setPriceWavTrack] = useState('15.00');
+    const [priceMp3Track, setPriceMp3Track] = useState('9.00');
+    const [mtPriceTouched, setMtPriceTouched] = useState(false);
     const [zipFolderName, setZipFolderName] = useState('');
     const [coverUrl, setCoverUrl] = useState('');
     const [coverFileId, setCoverFileId] = useState('');
@@ -211,6 +215,14 @@ export default function Admin() {
         });
         return () => { unsubP(); unsubG(); unsubV(); unsubS(); unsubU(); };
     }, [firebaseAdmin]);
+
+    useEffect(() => {
+        if (mtPriceTouched) return;
+        setPrice(String(pricing.wavPrice ?? 29.0));
+        setPriceCustomMix(String(pricing.stemsPrice ?? 15.0));
+        setPriceWavTrack(String(pricing.wavTrackPrice ?? 15.0));
+        setPriceMp3Track(String(pricing.mp3Price ?? 9.0));
+    }, [pricing, mtPriceTouched]);
 
     const handleLogout = () => { auth.signOut(); navigate('/'); };
 
@@ -335,6 +347,9 @@ export default function Admin() {
                 tempo,
                 timeSignature,
                 price: parseFloat(price) || 0,
+                priceCustomMix: parseFloat(priceCustomMix) || 0,
+                priceWavTrack: parseFloat(priceWavTrack) || 0,
+                priceMp3: parseFloat(priceMp3Track) || 0,
                 forSale: true,
                 status: 'active',
                 userId: auth.currentUser?.uid || 'admin',
@@ -357,7 +372,12 @@ export default function Admin() {
 
     const resetMtWizard = () => {
         setMtStep('idle'); setFileList([]); setSongName(''); setArtist('');
-        setSongKey(''); setTempo(''); setTimeSignature('4/4'); setPrice('9.99');
+        setSongKey(''); setTempo(''); setTimeSignature('4/4');
+        setPrice(String(pricing.wavPrice ?? 29.0));
+        setPriceCustomMix(String(pricing.stemsPrice ?? 15.0));
+        setPriceWavTrack(String(pricing.wavTrackPrice ?? 15.0));
+        setPriceMp3Track(String(pricing.mp3Price ?? 9.0));
+        setMtPriceTouched(false);
         setZipFolderName(''); setCoverUrl(''); setCoverFileId(''); setUploadProgress(0); setMtError('');
     };
 
@@ -740,9 +760,21 @@ export default function Admin() {
                                             {['4/4', '3/4', '6/8', '2/4', '4/2', '5/4', '12/8'].map(t => <option key={t} value={t}>{t}</option>)}
                                         </select>
                                     </div>
-                                    <div style={{ gridColumn: 'span 2' }}>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Precio de Venta (USD)</label>
-                                        <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.2rem', fontWeight: '900' }} value={price} onChange={e => setPrice(e.target.value)} />
+                                    <div>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Secuencia WAV/ZIP (USD)</label>
+                                        <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={price} onChange={e => { setPrice(e.target.value); setMtPriceTouched(true); }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>CustomMix WAV (USD)</label>
+                                        <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceCustomMix} onChange={e => { setPriceCustomMix(e.target.value); setMtPriceTouched(true); }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Acompañamiento WAV (USD)</label>
+                                        <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceWavTrack} onChange={e => { setPriceWavTrack(e.target.value); setMtPriceTouched(true); }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Acompañamiento MP3 (USD)</label>
+                                        <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceMp3Track} onChange={e => { setPriceMp3Track(e.target.value); setMtPriceTouched(true); }} />
                                     </div>
                                     <div style={{ gridColumn: 'span 2' }}>
                                         <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#64748b', display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>Portada de la Canción (400×400 recomendado)</label>

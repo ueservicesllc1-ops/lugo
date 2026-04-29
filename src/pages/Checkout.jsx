@@ -6,6 +6,7 @@ import JSZip from 'jszip';
 import { getDoc, setDoc, doc, updateDoc, arrayUnion, collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import Footer from '../components/Footer';
+import { audioEngine } from '../AudioEngine';
 
 const PAYPAL_CLIENT_ID = 'AUpK2JoMNn5YN5Yp0T-oyI3rAW63sBXc-LZ4EaC0VeOPjfJzOQWACN6bo2DNqhtq7z2T22Ob8_c7EdkO';
 
@@ -106,6 +107,11 @@ export default function Checkout() {
         setToast({ message, type });
         setTimeout(() => setToast(null), 3500);
     };
+    const proxyBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:3001'
+        : window.location.origin;
+    const wantsMp3 = (song) => String(song.purchaseFormat || '').toLowerCase().includes('mp3');
+    const wantsSingleLicense = (song) => String(song.purchaseVariant || '').toLowerCase().includes('licencia');
 
     const applyCoupon = async () => {
         if (!couponCode.trim()) return;
@@ -209,10 +215,23 @@ export default function Checkout() {
         const isCustom = song.purchaseVariant?.toLowerCase().includes('personalizado') || song.purchaseVariant?.toLowerCase().includes('custom');
         const isTrackOnly = song.purchaseVariant?.toLowerCase().includes('pista') || song.purchaseVariant?.toLowerCase().includes('acompañamiento');
 
-        const devProxy = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:3001' : 'https://mixernew-production.up.railway.app';
-
         try {
+            if (wantsSingleLicense(song)) {
+                const singleUrl = wantsMp3(song)
+                    ? (song.mp3Url || song.audioUrl)
+                    : (song.audioUrl || song.mp3Url);
+                if (!singleUrl) throw new Error('No hay archivo disponible para esta licencia.');
+                const res = await fetch(`${proxyBase}/api/download?url=${encodeURIComponent(singleUrl)}`);
+                if (!res.ok) throw new Error(`Fallo al descargar archivo (${res.status})`);
+                const blob = await res.blob();
+                const ext = wantsMp3(song) ? 'mp3' : 'wav';
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${song.name} - ${wantsMp3(song) ? 'Licencia MP3' : 'Licencia WAV'}.${ext}`;
+                link.click();
+                return;
+            }
+
             if (isCustom || isTrackOnly) {
                 // Caso: MEZCLA (Custom o Pista)
                 showToast(`Generando ${isCustom ? 'Mezcla Personalizada' : 'Pista'}...`, 'info');
@@ -229,13 +248,16 @@ export default function Checkout() {
                     if (isCustom && selectedNames.length > 0 && !selectedNames.includes(track.name)) continue;
                     
                     setDownloadProgress({ current: i + 1, total: allTracks.length });
-                    const res = await fetch(`${devProxy}/api/download?url=${encodeURIComponent(track.url)}`);
+                    const res = await fetch(`${proxyBase}/api/download?url=${encodeURIComponent(track.url)}`);
                     const blob = await res.blob();
                     await audioEngine.addTrack(track.name, null, blob);
                 }
 
                 const renderedBlob = await audioEngine.renderMix();
                 if (renderedBlob) {
+                    if (wantsMp3(song)) {
+                        throw new Error('La opción MP3 no está disponible para mezcla renderizada en este momento. Usa WAV.');
+                    }
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(renderedBlob);
                     link.download = `${song.name} - ${isCustom ? 'Custom Mix' : 'Pista'}.wav`;
@@ -246,7 +268,7 @@ export default function Checkout() {
                 setDownloadProgress({ current: 0, total: allTracks.length });
                 for (let i = 0; i < allTracks.length; i++) {
                     const track = allTracks[i];
-                    const res = await fetch(`${devProxy}/api/download?url=${encodeURIComponent(track.url)}`);
+                    const res = await fetch(`${proxyBase}/api/download?url=${encodeURIComponent(track.url)}`);
                     if (!res.ok) throw new Error(`Fallo al descargar ${track.name}`);
                     const blob = await res.blob();
                     const ext = track.url.split('.').pop().split('?')[0] || 'wav';

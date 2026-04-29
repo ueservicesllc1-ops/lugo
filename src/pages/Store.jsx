@@ -14,8 +14,8 @@ const SongCard = ({ song, onPreview, onBuy, navigate }) => {
         if (!url) return '';
         const cleanUrl = String(url).split(',')[0].trim();
         if (cleanUrl.startsWith('/') || cleanUrl.includes('localhost')) return cleanUrl;
-        
-        const baseProxy = 'https://mixernew-production.up.railway.app';
+
+        const baseProxy = window.location.origin;
         return `${baseProxy}/api/download?url=${encodeURIComponent(cleanUrl)}`;
     };
 
@@ -167,15 +167,25 @@ export default function Store() {
     const [previewProgress, setPreviewProgress] = useState(0);
     const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
     const [selectedMixOption, setSelectedMixOption] = useState('wav'); // wav | stems | custom | wav_track | mp3
+    const getSequencePrice = (song) => {
+        const songPrice = parseFloat(song?.price);
+        if (Number.isFinite(songPrice) && songPrice > 0) return songPrice;
+        return parseFloat(pricing.wavPrice) || 29.0;
+    };
+    const getOptionPrice = (song, songField, globalValue, fallback) => {
+        const songPrice = parseFloat(song?.[songField]);
+        if (Number.isFinite(songPrice) && songPrice > 0) return songPrice;
+        const globalPrice = parseFloat(globalValue);
+        if (Number.isFinite(globalPrice) && globalPrice > 0) return globalPrice;
+        return fallback;
+    };
 
     const getProxyUrl = (url) => {
         if (!url) return '';
         const cleanUrl = String(url).split(',')[0].trim();
         if (cleanUrl.startsWith('/') || cleanUrl.includes('localhost')) return cleanUrl;
-        
-        // Forzamos el uso del proxy de producción (Railway) incluso en local,
-        // ya que el internet local del usuario bloquea Backblaze B2.
-        const baseProxy = 'https://mixernew-production.up.railway.app';
+
+        const baseProxy = window.location.origin;
         return `${baseProxy}/api/download?url=${encodeURIComponent(cleanUrl)}`;
     };
 
@@ -684,9 +694,9 @@ export default function Store() {
                                         { id: 'single_wav', name: 'Licencia Premium (WAV)', desc: 'Versión WAV de alta fidelidad para uso profesional.', price: previewSong.priceWav || previewSong.price || 0, icon: <Music size={18} /> },
                                         { id: 'single_mp3', name: 'Licencia Básica (MP3)', desc: 'Versión MP3 lista para maquetar o uso personal.', price: previewSong.priceMp3 || 0, icon: <Music size={18} /> }
                                     ] : [
-                                        { id: 'wav', name: 'Secuencia (Multitrack)', desc: 'Sesión completa con tracks individuales en formato WAV.', price: pricing.wavPrice, icon: <Layers size={18} /> },
-                                        { id: 'custom', name: 'CustomMix (Mezcla WAV)', desc: 'Crea tu propia mezcla personalizada exportada en WAV.', price: pricing.stemsPrice, icon: <Disc size={18} /> },
-                                        { id: 'wav_track', name: 'Pista Instrumental (WAV)', desc: 'Pista de acompañamiento con coros de fondo en alta calidad.', price: pricing.wavTrackPrice || 9.00, icon: <Music size={18} /> }
+                                        { id: 'wav', name: 'Secuencia (Multitrack)', desc: 'Sesión completa con tracks individuales en formato WAV.', price: getSequencePrice(previewSong), icon: <Layers size={18} /> },
+                                        { id: 'custom', name: 'CustomMix (Mezcla WAV)', desc: 'Crea tu propia mezcla personalizada exportada en WAV.', price: getOptionPrice(previewSong, 'priceCustomMix', pricing.stemsPrice, 15.0), icon: <Disc size={18} /> },
+                                        { id: 'wav_track', name: 'Pista Instrumental (WAV)', desc: 'Pista de acompañamiento con coros de fondo en alta calidad.', price: getOptionPrice(previewSong, 'priceWavTrack', pricing.wavTrackPrice, 15.0), icon: <Music size={18} /> }
                                     ]).map(opt => (
                                         <div 
                                             key={opt.id}
@@ -717,9 +727,9 @@ export default function Store() {
                                                 { id: 'single_wav', name: 'Licencia Premium (WAV)', price: previewSong.priceWav || previewSong.price || 0, format: 'WAV' },
                                                 { id: 'single_mp3', name: 'Licencia Básica (MP3)', price: previewSong.priceMp3 || 0, format: 'MP3' }
                                             ] : [
-                                                { id: 'wav', name: 'Secuencia (Multitrack)', price: pricing.wavPrice, format: 'WAV/ZIP' },
-                                                { id: 'custom', name: 'CustomMix (Mezcla WAV)', price: pricing.stemsPrice, format: 'Custom WAV' },
-                                                { id: 'wav_track', name: 'Pista Instrumental (WAV)', price: pricing.wavTrackPrice || 9.00, format: 'WAV' }
+                                                { id: 'wav', name: 'Secuencia (Multitrack)', price: getSequencePrice(previewSong), format: 'WAV/ZIP' },
+                                                { id: 'custom', name: 'CustomMix (Mezcla WAV)', price: getOptionPrice(previewSong, 'priceCustomMix', pricing.stemsPrice, 15.0), format: 'Custom WAV' },
+                                                { id: 'wav_track', name: 'Pista Instrumental (WAV)', price: getOptionPrice(previewSong, 'priceWavTrack', pricing.wavTrackPrice, 15.0), format: 'WAV' }
                                             ]).find(o => o.id === selectedMixOption);
                                             
                                             const meta = selectedMixOption === 'custom' 
@@ -764,10 +774,10 @@ export default function Store() {
                                     { id: 'single_wav', name: 'Licencia Premium (WAV)', desc: 'Versión WAV de alta fidelidad para uso profesional.', price: selectedSongForOptions.priceWav || selectedSongForOptions.price || 0, format: 'WAV', icon: <Music size={18} /> },
                                     { id: 'single_mp3', name: 'Licencia Básica (MP3)', desc: 'Versión MP3 lista para maquetar o uso personal.', price: selectedSongForOptions.priceMp3 || 0, format: 'MP3', icon: <Music size={18} /> }
                                 ] : [
-                                    { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales para Zion Stage o DAW.', price: pricing.wavPrice, format: 'WAV/ZIP', icon: <Layers size={18} /> },
-                                    { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, etc).', price: pricing.stemsPrice, format: 'WAV Stems', icon: <Music2 size={18} /> },
-                                    { id: 'wav_track', name: 'Acompañamiento (WAV)', desc: 'Archivo WAV de alta fidelidad sin voz principal.', price: pricing.wavTrackPrice || 15.00, format: 'WAV High Quality', icon: <Music size={18} /> },
-                                    { id: 'mp3', name: 'Acompañamiento (MP3)', desc: 'Archivo MP3 de alta calidad sin voz principal.', price: pricing.mp3Price, format: 'MP3 High Quality', icon: <Music size={18} /> }
+                                    { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales para Zion Stage o DAW.', price: getSequencePrice(selectedSongForOptions), format: 'WAV/ZIP', icon: <Layers size={18} /> },
+                                    { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, etc).', price: getOptionPrice(selectedSongForOptions, 'priceCustomMix', pricing.stemsPrice, 15.0), format: 'WAV Stems', icon: <Music2 size={18} /> },
+                                    { id: 'wav_track', name: 'Acompañamiento (WAV)', desc: 'Archivo WAV de alta fidelidad sin voz principal.', price: getOptionPrice(selectedSongForOptions, 'priceWavTrack', pricing.wavTrackPrice, 15.0), format: 'WAV High Quality', icon: <Music size={18} /> },
+                                    { id: 'mp3', name: 'Acompañamiento (MP3)', desc: 'Archivo MP3 de alta calidad sin voz principal.', price: getOptionPrice(selectedSongForOptions, 'priceMp3', pricing.mp3Price, 9.0), format: 'MP3 High Quality', icon: <Music size={18} /> }
                                 ]).map((option) => (
                                     <div 
                                         key={option.id}
