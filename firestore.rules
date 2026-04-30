@@ -11,10 +11,9 @@ service cloud.firestore {
               request.auth.token.email.lower() == 'juniorlugokey@gmail.com');
     }
 
-    // -- GALLERY: public can read; write admin
+    // -- GALLERY: public can read and write (anonymous access)
     match /gallery/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     // -- USERS: owner or admin
@@ -97,10 +96,9 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
-    // -- PORTFOLIO: public can read; write admin
+    // -- PORTFOLIO: public can read and write (anonymous access)
     match /portfolio/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     // -- SALES: owner can create/read; admin has full access
