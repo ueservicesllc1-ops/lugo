@@ -33,10 +33,9 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
-    // -- SETTINGS: public read; admin write
+    // -- SETTINGS: public read and write (anonymous access)
     match /settings/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     // -- MASTER_ARTISTS: admin can manage, any authenticated or public can read
