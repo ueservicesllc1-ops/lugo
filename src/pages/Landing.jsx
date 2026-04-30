@@ -1598,7 +1598,7 @@ export default function Landing() {
                                 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     {[
-                                        { id: 'wav', name: 'Secuencia (Multitrack)', desc: 'Sesión completa con tracks individuales en formato WAV.', price: pricing.wavPrice, icon: <Layers size={18} /> },
+                                        { id: 'wav', name: 'Secuencia (Multitrack)', desc: 'Sesión completa con tracks individuales en formato WAV.', price: parseFloat(previewSong.price) || 0, icon: <Layers size={18} /> },
                                         { id: 'custom', name: 'CustomMix (Mezcla WAV)', desc: 'Crea tu propia mezcla personalizada exportada en WAV.', price: pricing.stemsPrice, icon: <Disc size={18} /> },
                                         { id: 'wav_track', name: 'Pista Instrumental (WAV)', desc: 'Pista de acompañamiento con coros de fondo en alta calidad.', price: pricing.wavTrackPrice || 9.00, icon: <Music size={18} /> }
                                     ].map(opt => (
@@ -1628,7 +1628,7 @@ export default function Landing() {
                                     <button 
                                         onClick={() => {
                                             const opt = [
-                                                { id: 'wav', name: 'Secuencia (Multitrack)', price: pricing.wavPrice, format: 'WAV/ZIP' },
+                                                { id: 'wav', name: 'Secuencia (Multitrack)', price: parseFloat(previewSong.price) || 0, format: 'WAV/ZIP' },
                                                 { id: 'custom', name: 'CustomMix (Mezcla WAV)', price: pricing.stemsPrice, format: 'Custom WAV' },
                                                 { id: 'wav_track', name: 'Pista Instrumental (WAV)', price: pricing.wavTrackPrice || 9.00, format: 'WAV' }
                                             ].find(o => o.id === selectedMixOption);
@@ -1912,7 +1912,7 @@ export default function Landing() {
                                     { id: 'single_wav', name: 'Licencia Premium (WAV)', desc: 'Versión WAV de alta fidelidad para uso profesional.', price: selectedSongForOptions.priceWav || selectedSongForOptions.price || 0, format: 'WAV', icon: <Music size={20} /> },
                                     { id: 'single_mp3', name: 'Licencia Básica (MP3)', desc: 'Versión MP3 lista para maquetar o uso personal.', price: selectedSongForOptions.priceMp3 || 0, format: 'MP3', icon: <Music size={20} /> }
                                 ] : [
-                                    { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales de alta calidad.', price: pricing.wavPrice, format: 'WAV/ZIP', icon: <Layers size={20} /> },
+                                    { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales de alta calidad.', price: parseFloat(selectedSongForOptions.price) || 0, format: 'WAV/ZIP', icon: <Layers size={20} /> },
                                     { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, Guitarras, etc).', price: pricing.stemsPrice, format: 'WAV Stems', icon: <Music2 size={20} /> },
                                     { id: 'wav_track', name: 'Acompañamiento (WAV)', desc: 'Versión WAV de alta fidelidad sin voz principal.', price: pricing.wavTrackPrice || 15.00, format: 'WAV High Quality', icon: <Music size={20} /> },
                                     { id: 'mp3', name: 'Acompañamiento (MP3)', desc: 'Versión MP3 lista para cantar sin voz principal.', price: pricing.mp3Price, format: 'MP3 High Quality', icon: <Music size={20} /> }

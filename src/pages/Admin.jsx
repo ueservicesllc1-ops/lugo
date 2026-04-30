@@ -1133,19 +1133,6 @@ export default function Admin() {
                         <div style={{ background: '#080d1a', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', maxWidth: '650px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
                             <form onSubmit={handleUpdatePricing} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(139, 92, 246, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(139, 92, 246, 0.1)' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ element: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', display: 'flex' }}>
-                                            <Upload size={18} color="#8B5CF6" />
-                                            <label style={{ fontWeight: '900', fontSize: '1rem' }}>Multitrack (WAV/ZIP)</label>
-                                        </div>
-                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Paquete completo de pistas individuales.</p>
-                                    </div>
-                                    <div style={{ position: 'relative', width: '130px' }}>
-                                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#8B5CF6' }}>$</span>
-                                        <input type="number" step="0.01" value={pricing.wavPrice} onChange={e => setPricing({ ...pricing, wavPrice: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '25px', textAlign: 'right', fontWeight: '900' }} />
-                                    </div>
-                                </div>
 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0, 188, 212, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(0, 188, 212, 0.1)' }}>
                                     <div style={{ flex: 1 }}>
