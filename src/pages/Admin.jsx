@@ -35,7 +35,8 @@ import {
     TrendingUp,
     Calendar,
     Search,
-    CreditCard
+    CreditCard,
+    Music2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -419,6 +420,9 @@ export default function Admin() {
                 isSingle: true,
                 forSale: true, 
                 status: 'active', 
+                userId: auth.currentUser?.uid || 'admin',
+                userEmail: auth.currentUser?.email || 'admin',
+                sellerName: 'Junior Lugo',
                 createdAt: serverTimestamp() 
             });
             setIsAddingProduct(false);
