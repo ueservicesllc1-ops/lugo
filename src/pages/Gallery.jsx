@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { ChevronLeft, X, Maximize2, Camera } from 'lucide-react';
+import { ChevronLeft, X, Maximize2, Camera, Play } from 'lucide-react';
 import Footer from '../components/Footer';
 
 export default function Gallery() {
@@ -76,15 +76,26 @@ export default function Gallery() {
                                     cursor: 'pointer', 
                                     aspectRatio: '16/10',
                                     border: '1px solid rgba(255,255,255,0.05)',
-                                    transition: 'all 0.4s ease'
+                                    transition: 'all 0.4s ease',
+                                    background: '#000'
                                 }}
                                 className="gallery-grid-item"
                             >
-                                <img 
-                                    src={getProxyUrl(photo.url)} 
-                                    alt={photo.caption} 
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s ease' }} 
-                                />
+                                {photo.type === 'video' ? (
+                                    <video 
+                                        src={getProxyUrl(photo.url)} 
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        muted
+                                        onMouseEnter={e => e.currentTarget.play()}
+                                        onMouseLeave={e => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                                    />
+                                ) : (
+                                    <img 
+                                        src={getProxyUrl(photo.url)} 
+                                        alt={photo.caption} 
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s ease' }} 
+                                    />
+                                )}
                                 <div style={{ 
                                     position: 'absolute', inset: 0, 
                                     background: 'linear-gradient(to top, rgba(139, 92, 246, 0.6), transparent)', 
@@ -93,7 +104,11 @@ export default function Gallery() {
                                     opacity: 0, transition: 'opacity 0.3s' 
                                 }} className="overlay">
                                     <div style={{ textAlign: 'center' }}>
-                                        <Maximize2 size={32} color="white" style={{ marginBottom: '10px' }} />
+                                        {photo.type === 'video' ? (
+                                            <Play size={32} color="white" style={{ marginBottom: '10px' }} />
+                                        ) : (
+                                            <Maximize2 size={32} color="white" style={{ marginBottom: '10px' }} />
+                                        )}
                                         <p style={{ color: 'white', fontWeight: '900', fontSize: '0.9rem', textTransform: 'uppercase' }}>{photo.caption}</p>
                                     </div>
                                 </div>
@@ -119,17 +134,32 @@ export default function Gallery() {
                         <X size={28} />
                     </button>
                     <div style={{ maxWidth: '1200px', maxHeight: '80%', textAlign: 'center' }}>
-                        <img 
-                            src={getProxyUrl(selectedPhoto.url)} 
-                            alt={selectedPhoto.caption} 
-                            style={{ 
-                                maxWidth: '100%', 
-                                maxHeight: '75vh', 
-                                borderRadius: '20px', 
-                                border: '4px solid rgba(139, 92, 246, 0.3)',
-                                boxShadow: '0 50px 100px rgba(0,0,0,0.9)' 
-                            }} 
-                        />
+                        {selectedPhoto.type === 'video' ? (
+                            <video 
+                                src={getProxyUrl(selectedPhoto.url)} 
+                                controls
+                                autoPlay
+                                style={{ 
+                                    maxWidth: '100%', 
+                                    maxHeight: '75vh', 
+                                    borderRadius: '20px', 
+                                    border: '4px solid rgba(139, 92, 246, 0.3)',
+                                    boxShadow: '0 50px 100px rgba(0,0,0,0.9)' 
+                                }} 
+                            />
+                        ) : (
+                            <img 
+                                src={getProxyUrl(selectedPhoto.url)} 
+                                alt={selectedPhoto.caption} 
+                                style={{ 
+                                    maxWidth: '100%', 
+                                    maxHeight: '75vh', 
+                                    borderRadius: '20px', 
+                                    border: '4px solid rgba(139, 92, 246, 0.3)',
+                                    boxShadow: '0 50px 100px rgba(0,0,0,0.9)' 
+                                }} 
+                            />
+                        )}
                         <h3 style={{ marginTop: '30px', fontSize: '1.8rem', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase' }}>{selectedPhoto.caption}</h3>
                     </div>
                 </div>

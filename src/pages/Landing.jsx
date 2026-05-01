@@ -333,7 +333,7 @@ export default function Landing() {
                 const displayTime = useClips ? (20 + p) : p;
                 setPreviewProgress(displayTime);
 
-                const stopTime = useClips ? 45 : 45; // 25s limit from start at 20s
+                const stopTime = useClips ? 80 : 80; // 60s limit from start at 20s
                 if (displayTime >= stopTime) {
                     audioEngine.pause();
                     audioEngine.seek(useClips ? 0 : 20);
@@ -400,7 +400,7 @@ export default function Landing() {
             setIsPreviewPlaying(false);
         } else {
             const useClips = previewSong?.tracks?.some(t => t.previewUrl && t.previewUrl !== t.url);
-            if (previewProgress >= 40) {
+            if (previewProgress >= 75) {
                 await previewEngineRef.current.seek(useClips ? 0 : 20);
                 setPreviewProgress(20);
             }
@@ -543,7 +543,7 @@ export default function Landing() {
                             autoPlay 
                             style={{ width: '100%', height: '40px', marginTop: '10px' }} 
                             onTimeUpdate={(e) => {
-                                if (e.target.currentTime >= 25) {
+                                if (e.target.currentTime >= 60) {
                                     e.target.pause();
                                     e.target.currentTime = 0;
                                 }
@@ -554,7 +554,7 @@ export default function Landing() {
                         />
 
                         <p style={{ color: '#00bcd4', fontSize: '0.75rem', fontWeight: '800', textAlign: 'center', margin: '5px 0 0 0' }}>
-                            Nota: La muestra de audio dura 25 segundos.
+                            Nota: La muestra de audio dura 60 segundos.
                         </p>
 
                         <button 
@@ -1276,13 +1276,24 @@ export default function Landing() {
                                     cursor: 'zoom-in'
                                 }}
                             >
-                                <img
-                                    src={getProxyUrl(photo.url)}
-                                    alt={photo.caption}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.8s ease' }}
-                                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-                                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                                />
+                                {photo.type === 'video' ? (
+                                    <video
+                                        src={getProxyUrl(photo.url)}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                        muted
+                                        loop
+                                        onMouseEnter={e => e.currentTarget.play()}
+                                        onMouseLeave={e => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                                    />
+                                ) : (
+                                    <img
+                                        src={getProxyUrl(photo.url)}
+                                        alt={photo.caption}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.8s ease' }}
+                                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                                    />
+                                )}
                                 <div style={{
                                     position: 'absolute', inset: 0,
                                     background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 80%)',
@@ -1293,7 +1304,9 @@ export default function Landing() {
                                     opacity: 0.8,
                                     pointerEvents: 'none'
                                 }}>
-                                    <span style={{ color: 'white', fontSize: '0.65rem', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', borderLeft: '2px solid #FFFFFF', paddingLeft: '10px' }}>{photo.caption}</span>
+                                    <span style={{ color: 'white', fontSize: '0.65rem', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', borderLeft: '2px solid #FFFFFF', paddingLeft: '10px' }}>
+                                        {photo.type === 'video' ? '▶ ' : ''}{photo.caption}
+                                    </span>
                                 </div>
                             </div>
                         ))}
@@ -1342,11 +1355,20 @@ export default function Landing() {
                             <X size={34} />
                         </button>
                         <div style={{ maxWidth: '90%', maxHeight: '80%', textAlign: 'center' }}>
-                            <img 
-                                src={getProxyUrl(selectedGalleryPhoto.url)} 
-                                alt={selectedGalleryPhoto.caption} 
-                                style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: '12px', boxShadow: '0 40px 100px rgba(0,0,0,0.8)' }} 
-                            />
+                            {selectedGalleryPhoto.type === 'video' ? (
+                                <video
+                                    src={getProxyUrl(selectedGalleryPhoto.url)}
+                                    controls
+                                    autoPlay
+                                    style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: '12px', boxShadow: '0 40px 100px rgba(0,0,0,0.8)' }}
+                                />
+                            ) : (
+                                <img
+                                    src={getProxyUrl(selectedGalleryPhoto.url)}
+                                    alt={selectedGalleryPhoto.caption}
+                                    style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: '12px', boxShadow: '0 40px 100px rgba(0,0,0,0.8)' }}
+                                />
+                            )}
                             <h3 style={{ marginTop: '30px', fontSize: '1.8rem', fontWeight: '900', color: 'white', letterSpacing: '2px', textTransform: 'uppercase' }}>{selectedGalleryPhoto.caption}</h3>
                         </div>
                     </div>
@@ -1566,11 +1588,11 @@ export default function Landing() {
 
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                                    <span style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: '900', letterSpacing: '0.5px' }}>PLAYBACK (20s-40s)</span>
+                                                    <span style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: '900', letterSpacing: '0.5px' }}>PLAYBACK (20s-80s)</span>
                                                     <span style={{ color: '#00A3FF', fontSize: '1rem', fontWeight: '900', fontFamily: 'monospace' }}>{previewProgress.toFixed(1)}s</span>
                                                 </div>
                                                 <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                                                    <div style={{ height: '100%', width: `${((previewProgress - 20) / 20) * 100}%`, background: '#00A3FF', boxShadow: '0 0 10px #00A3FF' }}></div>
+                                                    <div style={{ height: '100%', width: `${((previewProgress - 20) / 60) * 100}%`, background: '#00A3FF', boxShadow: '0 0 10px #00A3FF' }}></div>
                                                 </div>
                                             </div>
                                         </div>

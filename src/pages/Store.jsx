@@ -239,7 +239,7 @@ export default function Store() {
                 const displayTime = useClips ? (20 + p) : p;
                 setPreviewProgress(displayTime);
 
-                const stopTime = useClips ? 45 : 45; // 25s limit from start at 20s
+                const stopTime = useClips ? 80 : 80; // 60s limit from start at 20s
                 if (displayTime >= stopTime) {
                     audioEngine.pause();
                     audioEngine.seek(useClips ? 0 : 20);
@@ -659,11 +659,11 @@ export default function Store() {
 
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                                    <span style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: '900', letterSpacing: '0.5px' }}>PLAYBACK (20s-40s)</span>
+                                                    <span style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: '900', letterSpacing: '0.5px' }}>PLAYBACK (20s-80s)</span>
                                                     <span style={{ color: '#00A3FF', fontSize: '1rem', fontWeight: '900', fontFamily: 'monospace' }}>{previewProgress.toFixed(1)}s</span>
                                                 </div>
                                                 <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                                                    <div style={{ height: '100%', width: `${Math.max(0, Math.min(100, ((previewProgress - 20) / 20) * 100))}%`, background: '#00A3FF', boxShadow: '0 0 10px #00A3FF', transition: 'width 0.1s linear' }}></div>
+                                                    <div style={{ height: '100%', width: `${Math.max(0, Math.min(100, ((previewProgress - 20) / 60) * 100))}%`, background: '#00A3FF', boxShadow: '0 0 10px #00A3FF', transition: 'width 0.1s linear' }}></div>
                                                 </div>
                                             </div>
                                         </div>

@@ -221,13 +221,12 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
     const isPdfFile = (file) => file.mimetype === 'application/pdf' || /\.pdf$/i.test(file.originalname || '');
     const isWavFile = (file) => file.mimetype === 'audio/wav' || file.mimetype === 'audio/x-wav' || /\.wav$/i.test(file.originalname || '');
     const isMp3File = (file) => file.mimetype === 'audio/mpeg' || file.mimetype === 'audio/mp3' || /\.mp3$/i.test(file.originalname || '');
+    const isVideoFile = (file) => file.mimetype?.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(file.originalname || '');
     const sha1 = (buffer) => crypto.createHash('sha1').update(buffer).digest('hex');
     const inferContentType = (file) => {
-        if (isImageFile(file)) return file.mimetype || 'image/jpeg';
-        if (isApkFile(file)) return 'application/vnd.android.package-archive';
-        if (isPdfFile(file)) return 'application/pdf';
-        if (isWavFile(file)) return 'audio/wav';
-        if (isMp3File(file)) return 'audio/mpeg';
+        if (isVideoFile(file)) return file.mimetype || 'video/mp4';
+        if (isWavFile(file)) return file.mimetype || 'audio/wav';
+        if (isMp3File(file)) return file.mimetype || 'audio/mpeg';
         return 'application/octet-stream';
     };
     const buildPublicUrl = async (fileName) => {
@@ -272,10 +271,10 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
 
         // Main upload buffer (strict: keep original format, no transcode)
         let mainBuffer = file.buffer;
-        const knownNonAudio = isImageFile(file) || isApkFile(file) || isPdfFile(file);
+        const knownNonAudio = isImageFile(file) || isApkFile(file) || isPdfFile(file) || isVideoFile(file);
         const knownAudio = isMp3File(file) || isWavFile(file) || isTargetMp3 || isTargetWav;
         if (!knownNonAudio && !knownAudio) {
-            return res.status(400).json({ error: 'Formato no permitido. Solo WAV, MP3, imagen, APK o PDF.' });
+            return res.status(400).json({ error: 'Formato no permitido. Solo WAV, MP3, imagen, video, APK o PDF.' });
         }
 
         const mainUpload = await uploadBufferToB2({
@@ -284,6 +283,7 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
             buffer: mainBuffer,
             contentType: (() => {
                 if (isImageFile(file)) return file.mimetype || 'image/jpeg';
+                if (isVideoFile(file)) return file.mimetype || 'video/mp4';
                 if (isApkFile(file)) return 'application/vnd.android.package-archive';
                 if (isPdfFile(file)) return 'application/pdf';
                 if (isWavFile(file) || isTargetWav) return 'audio/wav';
@@ -297,14 +297,14 @@ app.post('/api/upload', upload.single('audioFile'), async (req, res) => {
         let previewUrl = null;
 
         // 20-second preview for audio assets (same source format)
-        const canPreview = !isImageFile(file) && !isApkFile(file) && !isPdfFile(file) && knownAudio;
+        const canPreview = !isImageFile(file) && !isVideoFile(file) && !isApkFile(file) && !isPdfFile(file) && knownAudio;
         if (generatePreview && canPreview) {
             try {
                 fs.writeFileSync(tempInputPath, file.buffer);
                 const previewExt = (isWavFile(file) || isTargetWav) ? 'wav' : 'mp3';
                 const previewOutputPath = `${tempPreviewPath}.${previewExt}`;
                 await new Promise((resolve, reject) => {
-                    const cmd = ffmpeg().input(tempInputPath).setStartTime(20).setDuration(20);
+                    const cmd = ffmpeg().input(tempInputPath).setStartTime(20).setDuration(60);
                     if (previewExt === 'wav') {
                         cmd.audioCodec('pcm_s16le');
                     } else {

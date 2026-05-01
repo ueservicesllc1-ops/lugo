@@ -434,9 +434,15 @@ export default function Admin() {
     const handleAddPhoto = async (e) => {
         e.preventDefault(); if (!newPhoto.file) return; setUploading(true);
         try {
+            const isVideo = newPhoto.file.type.startsWith('video/');
             const res = await uploadToB2(newPhoto.file);
             const url = res ? res.url : '';
-            await addDoc(collection(db, 'gallery'), { url, caption: newPhoto.caption, createdAt: serverTimestamp() });
+            await addDoc(collection(db, 'gallery'), { 
+                url, 
+                caption: newPhoto.caption, 
+                type: isVideo ? 'video' : 'image',
+                createdAt: serverTimestamp() 
+            });
             setIsAddingPhoto(false); setNewPhoto({ caption: '', file: null }); setPreviews({ ...previews, photo: null });
         } catch (err) { alert(err.message); } finally { setUploading(false); }
     };
@@ -547,15 +553,30 @@ export default function Admin() {
                 </div>
             )}
 
-            {/* MODAL: FOTO */}
+            {/* MODAL: FOTO/VIDEO */}
             {isAddingPhoto && (
                 <div style={S.overlay}>
                     <div style={S.modal}>
-                        <h2 style={{ marginBottom: '20px' }}>Agregar Foto Galería</h2>
+                        <h2 style={{ marginBottom: '20px' }}>Agregar a Galería</h2>
                         <form onSubmit={handleAddPhoto} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <input style={S.input} type="text" placeholder="Descripción" value={newPhoto.caption} onChange={e => setNewPhoto({ ...newPhoto, caption: e.target.value })} />
-                            <input type="file" required accept="image/*" onChange={e => { const f = e.target.files[0]; setNewPhoto({ ...newPhoto, file: f }); if (f) setPreviews({ ...previews, photo: URL.createObjectURL(f) }); }} />
-                            {previews.photo && <img src={previews.photo} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '8px' }} />}
+                            <label style={{ fontSize: '0.8rem', color: '#64748b' }}>Archivo (Imagen o Video):</label>
+                            <input type="file" required accept="image/*,video/*" onChange={e => { 
+                                const f = e.target.files[0]; 
+                                setNewPhoto({ ...newPhoto, file: f }); 
+                                if (f) setPreviews({ ...previews, photo: URL.createObjectURL(f) }); 
+                            }} />
+                            
+                            {previews.photo && (
+                                <div style={{ width: '100%', maxHeight: '200px', borderRadius: '8px', overflow: 'hidden' }}>
+                                    {newPhoto.file?.type.startsWith('video/') ? (
+                                        <video src={previews.photo} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} muted autoPlay loop />
+                                    ) : (
+                                        <img src={previews.photo} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+                                    )}
+                                </div>
+                            )}
+                            
                             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                                 <button type="button" onClick={() => { setIsAddingPhoto(false); setPreviews({ ...previews, photo: null }); }} style={{ flex: 1, ...S.btnGhost }}>CANCELAR</button>
                                 <button type="submit" disabled={uploading} style={{ flex: 1, ...S.btnPurple }}>{uploading ? 'SUBIENDO...' : 'GUARDAR'}</button>
@@ -1047,8 +1068,19 @@ export default function Admin() {
                         <div style={{ background: '#080d1a', padding: '24px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
                                 {gallery.map(g => (
-                                    <div key={g.id} style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', aspectRatio: '1/1' }}>
-                                        <img src={getProxyUrl(g.url)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <div key={g.id} style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', aspectRatio: '1/1', background: '#000' }}>
+                                        {g.type === 'video' ? (
+                                            <video src={getProxyUrl(g.url)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
+                                        ) : (
+                                            <img src={getProxyUrl(g.url)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        )}
+                                        
+                                        {g.type === 'video' && (
+                                            <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(139, 92, 246, 0.9)', color: 'white', padding: '4px', borderRadius: '6px' }}>
+                                                <Video size={14} />
+                                            </div>
+                                        )}
+                                        
                                         <button onClick={() => deleteItem('gallery', g.id)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239,68,68,0.9)', color: 'white', border: 'none', padding: '6px', borderRadius: '8px', cursor: 'pointer' }}><Trash2 size={14} /></button>
                                     </div>
                                 ))}
