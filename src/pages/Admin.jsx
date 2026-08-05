@@ -36,7 +36,8 @@ import {
     Calendar,
     Search,
     CreditCard,
-    Music2
+    Music2,
+    X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -107,6 +108,7 @@ export default function Admin() {
     const [socials, setSocials] = useState({ instagram: '', youtube: '', tiktok: '', spotify: '' });
     const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00, wavTrackPrice: 15.00 });
     const [users, setUsers] = useState([]);
+    const [partiturasVenta, setPartiturasVenta] = useState([]);
     const [usersSearch, setUsersSearch] = useState('');
     const [userSortField, setUserSortField] = useState('createdAt'); // 'createdAt' | 'mtCount'
     const [userSortOrder, setUserSortOrder] = useState('desc'); // 'asc' | 'desc'
@@ -192,9 +194,9 @@ export default function Admin() {
         return () => unsub();
     }, []);
 
-    // Listeners que exigen token admin en Firestore (ventas / usuarios); PIN solo no basta
+    // Listeners que exigen estar autenticado como admin
     useEffect(() => {
-        if (!firebaseAdmin) return;
+        if (!isAdmin) return;
         const unsubP = onSnapshot(query(collection(db, 'songs'), orderBy('createdAt', 'desc')), (snap) => {
             setProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         });
@@ -203,6 +205,9 @@ export default function Admin() {
         });
         const unsubV = onSnapshot(query(collection(db, 'portfolio'), orderBy('createdAt', 'desc')), (snap) => {
             setVideos(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+        const unsubPV = onSnapshot(query(collection(db, 'partituras_venta'), orderBy('createdAt', 'desc')), (snap) => {
+            setPartiturasVenta(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         });
         getDoc(doc(db, 'settings', 'socials')).then(snap => { if (snap.exists()) setSocials(snap.data()); });
         const unsubS = onSnapshot(query(collection(db, 'sales'), orderBy('createdAt', 'desc')), (snap) => {
@@ -214,8 +219,8 @@ export default function Admin() {
         getDoc(doc(db, 'settings', 'multitrack_pricing')).then(snap => { 
             if (snap.exists()) setPricing(snap.data()); 
         });
-        return () => { unsubP(); unsubG(); unsubV(); unsubS(); unsubU(); };
-    }, [firebaseAdmin]);
+        return () => { unsubP(); unsubG(); unsubV(); unsubPV(); unsubS(); unsubU(); };
+    }, [isAdmin]);
 
     useEffect(() => {
         if (mtPriceTouched) return;
@@ -493,8 +498,60 @@ export default function Admin() {
         setEditingVideo(v); setNewVideo({ title: v.title, genre: v.genre, youtubeUrl: `https://youtube.com/watch?v=${v.videoId}` }); setIsEditingVideo(true);
     };
 
-    const deleteItem = async (col, id) => {
-        if (window.confirm('¿Eliminar este elemento?')) await deleteDoc(doc(db, col, id));
+    const deleteItem = async (col, id, item = null) => {
+        const itemName = item?.name || item?.title || item?.caption || item?.displayName || 'este elemento';
+        if (!window.confirm(`¿Estás seguro de que deseas eliminar "${itemName}"? Esta acción borrará el elemento permanentemente.`)) return;
+
+        try {
+            // Intenta limpiar archivos almacenados en B2 si se proporcionan metadatos
+            if (item) {
+                if (Array.isArray(item.tracks)) {
+                    for (const tr of item.tracks) {
+                        if (tr.b2FileId || tr.name) {
+                            try {
+                                await fetch(`${proxyBase}/api/delete-file`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ fileId: tr.b2FileId || '', fileName: tr.name || '' })
+                                });
+                            } catch (e) {
+                                console.warn('[B2 DELETE] Falló borrar pista:', e);
+                            }
+                        }
+                    }
+                }
+                if (item.coverFileId || item.coverUrl) {
+                    const fileName = item.coverUrl ? item.coverUrl.split('/').pop() : '';
+                    try {
+                        await fetch(`${proxyBase}/api/delete-file`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ fileId: item.coverFileId || '', fileName })
+                        });
+                    } catch (e) {
+                        console.warn('[B2 DELETE] Falló borrar portada:', e);
+                    }
+                }
+                if (item.pdfUrl) {
+                    const fileName = item.pdfUrl.split('/').pop();
+                    try {
+                        await fetch(`${proxyBase}/api/delete-file`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ fileId: '', fileName })
+                        });
+                    } catch (e) {
+                        console.warn('[B2 DELETE] Falló borrar PDF:', e);
+                    }
+                }
+            }
+
+            await deleteDoc(doc(db, col, id));
+            alert(`"${itemName}" fue eliminado correctamente.`);
+        } catch (err) {
+            console.error('Error al eliminar elemento:', err);
+            alert('Error al eliminar elemento: ' + err.message);
+        }
     };
 
     // ── Styles ───────────────────────────────────────────────────────────────
@@ -656,13 +713,14 @@ export default function Admin() {
                     <h2 style={{ fontSize: '1.1rem', fontWeight: '900', margin: 0 }}>LUGO ADMIN</h2>
                 </div>
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
-                    <button onClick={() => setActiveTab(activeTab === 'mt' ? 'mt' : 'mt')} style={S.sideBtn(activeTab === 'mt')}><Upload size={18} /> Subir MT</button>
-                    <button onClick={() => setActiveTab('users')} style={S.sideBtn(activeTab === 'users')}><Users size={18} /> Usuarios</button>
-                    <button onClick={() => setActiveTab('catalogoMT')} style={S.sideBtn(activeTab === 'catalogoMT')}><Music size={18} /> Catálogo MT</button>
-                    <button onClick={() => setActiveTab('products')} style={S.sideBtn(activeTab === 'products')}><Music size={18} /> Catálogo Simple</button>
-                    <button onClick={() => setActiveTab('gallery')} style={S.sideBtn(activeTab === 'gallery')}><ImageIcon size={18} /> Galería</button>
-                    <button onClick={() => setActiveTab('portfolio')} style={S.sideBtn(activeTab === 'portfolio')}><Video size={18} /> Portafolio</button>
-                    <button onClick={() => setActiveTab('sales')} style={S.sideBtn(activeTab === 'sales')}><DollarSign size={18} /> Ventas</button>
+                    <button onClick={() => setActiveTab('mt')} style={S.sideBtn(activeTab === 'mt')}><Upload size={18} /> Subir MT</button>
+                    <button onClick={() => setActiveTab('catalogoMT')} style={S.sideBtn(activeTab === 'catalogoMT')}><Music size={18} /> Catálogo MT ({mtProducts.length})</button>
+                    <button onClick={() => setActiveTab('products')} style={S.sideBtn(activeTab === 'products')}><Music size={18} /> Catálogo Simple ({simpleProducts.length})</button>
+                    <button onClick={() => setActiveTab('partituras')} style={S.sideBtn(activeTab === 'partituras')}><FileText size={18} /> Partituras ({partiturasVenta.length})</button>
+                    <button onClick={() => setActiveTab('gallery')} style={S.sideBtn(activeTab === 'gallery')}><ImageIcon size={18} /> Galería ({gallery.length})</button>
+                    <button onClick={() => setActiveTab('portfolio')} style={S.sideBtn(activeTab === 'portfolio')}><Video size={18} /> Portafolio ({videos.length})</button>
+                    <button onClick={() => setActiveTab('users')} style={S.sideBtn(activeTab === 'users')}><Users size={18} /> Usuarios ({users.length})</button>
+                    <button onClick={() => setActiveTab('sales')} style={S.sideBtn(activeTab === 'sales')}><DollarSign size={18} /> Ventas ({sales.length})</button>
                     <button onClick={() => setActiveTab('pricing')} style={S.sideBtn(activeTab === 'pricing')}><CreditCard size={18} /> Precios MT</button>
                     <button onClick={() => setActiveTab('socials')} style={S.sideBtn(activeTab === 'socials')}><Share2 size={18} /> Redes</button>
                 </nav>
@@ -717,6 +775,47 @@ export default function Admin() {
                                 <button onClick={() => fileInputRef.current.click()} style={{ ...S.btnTeal, padding: '16px 40px', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <Upload size={20} /> CARGAR ARCHIVO ZIP
                                 </button>
+
+                                {/* Lista rápida de multitracks subidos con opción de borrar */}
+                                <div style={{ marginTop: '50px', background: '#080d1a', padding: '30px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                                        <div>
+                                            <h3 style={{ margin: 0, textTransform: 'uppercase', fontSize: '1.1rem', fontWeight: '900' }}>Multitracks Subidos Recientemente ({mtProducts.length})</h3>
+                                            <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.85rem' }}>Administra o elimina multitracks cargados previamente.</p>
+                                        </div>
+                                        <button onClick={() => setActiveTab('catalogoMT')} style={{ ...S.btnGhost, fontSize: '0.8rem', padding: '8px 16px' }}>Ver Todo el Catálogo MT →</button>
+                                    </div>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        {mtProducts.slice(0, 10).map(p => (
+                                            <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.02)', padding: '14px 20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <img src={getProxyUrl(p.coverUrl || '/logo.png')} alt={p.name} style={{ width: '50px', height: '50px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }} />
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ fontWeight: '800', fontSize: '0.95rem' }}>{p.name}</div>
+                                                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{p.artist} {p.tempo ? `· ${p.tempo} BPM` : ''} {p.key ? `· Tono: ${p.key}` : ''} · ${(p.tracks || []).length} pistas</div>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                                    <button
+                                                        onClick={() => setRoutesModalSong(p)}
+                                                        style={{ background: 'rgba(0,188,212,0.12)', color: '#00bcd4', border: '1px solid rgba(0,188,212,0.35)', borderRadius: '8px', padding: '6px 12px', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer' }}
+                                                    >
+                                                        Rutas
+                                                    </button>
+                                                    <button
+                                                        onClick={() => deleteItem('songs', p.id, p)}
+                                                        style={{ padding: '8px 14px', background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', cursor: 'pointer', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
+                                                        title="Borrar este Multitrack"
+                                                    >
+                                                        <Trash2 size={15} /> Borrar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {mtProducts.length === 0 && (
+                                            <p style={{ color: '#475569', textAlign: 'center', padding: '20px' }}>No hay multitracks subidos aún.</p>
+                                        )}
+                                    </div>
+                                </div>
                             </>
                         )}
 
@@ -974,14 +1073,23 @@ export default function Admin() {
                                                         </div>
                                                     </td>
                                                     <td style={{ padding: '20px 24px', textAlign: 'right' }}>
-                                                        <button 
-                                                            onClick={() => navigate(`/seller-profile/${user.id}`)}
-                                                            style={{ padding: '10px', background: 'rgba(255,255,255,0.05)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: '0.2s' }}
-                                                            title="Ver Perfil"
-                                                        >
-                                                            <ExternalLink size={16} />
-                                                        </button>
-                                                    </td>
+                                                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                                             <button 
+                                                                 onClick={() => navigate(`/seller-profile/${user.id}`)}
+                                                                 style={{ padding: '10px', background: 'rgba(255,255,255,0.05)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: '0.2s' }}
+                                                                 title="Ver Perfil"
+                                                             >
+                                                                 <ExternalLink size={16} />
+                                                             </button>
+                                                             <button 
+                                                                 onClick={() => deleteItem('users', user.id, user)}
+                                                                 style={{ padding: '10px', background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', cursor: 'pointer', transition: '0.2s' }}
+                                                                 title="Eliminar Usuario"
+                                                             >
+                                                                 <Trash2 size={16} />
+                                                             </button>
+                                                         </div>
+                                                     </td>
                                                 </tr>
                                             ))}
                                     </tbody>
@@ -1018,7 +1126,13 @@ export default function Admin() {
                                                 <span style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700' }}>{(p.tracks || []).length} pistas</span>
                                             </div>
                                         </div>
-                                        <button onClick={() => deleteItem('songs', p.id)} style={{ padding: '8px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '8px', cursor: 'pointer', flexShrink: 0 }}><Trash2 size={16} /></button>
+                                         <button
+                                             onClick={() => deleteItem('songs', p.id, p)}
+                                             style={{ padding: '8px 14px', background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800' }}
+                                             title="Eliminar Multitrack"
+                                         >
+                                             <Trash2 size={15} /> Borrar
+                                         </button>
                                     </div>
                                 ))}
                                 {mtProducts.length === 0 && <p style={{ color: '#475569', padding: '20px' }}>No hay multitracks subidos todavía.</p>}
@@ -1046,10 +1160,58 @@ export default function Admin() {
                                             <div style={{ fontWeight: '800', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                                             <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{p.artist} · ${p.price}</div>
                                         </div>
-                                        <button onClick={() => deleteItem('songs', p.id)} style={{ padding: '8px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '8px', cursor: 'pointer', flexShrink: 0 }}><Trash2 size={16} /></button>
+                                        <button onClick={() => deleteItem('songs', p.id, p)} style={{ padding: '8px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '8px', cursor: 'pointer', flexShrink: 0 }}><Trash2 size={16} /></button>
                                     </div>
                                 ))}
-                                {simpleProducts.length === 0 && <p style={{ color: '#475569', padding: '20px' }}>No hay canciones simples. Los MTs están en "Catálogo MT".</p>}
+                                 {simpleProducts.length === 0 && <p style={{ color: '#475569', padding: '20px' }}>No hay canciones simples. Los MTs están en "Catálogo MT".</p>}
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {/* ── TAB: PARTITURAS ── */}
+                {activeTab === 'partituras' && (
+                    <>
+                        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                            <div>
+                                <h1 style={{ margin: 0, textTransform: 'uppercase' }}>Partituras en Venta</h1>
+                                <p style={{ color: '#64748b', margin: 0 }}>Partituras en formato PDF subidas a la plataforma.</p>
+                            </div>
+                        </header>
+                        <div style={{ background: '#080d1a', padding: '24px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+                                {partiturasVenta.map(pv => (
+                                    <div key={pv.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px' }}>
+                                        <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                                            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(139,92,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8B5CF6', flexShrink: 0 }}>
+                                                <FileText size={24} />
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontWeight: '800', fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pv.title}</div>
+                                                <div style={{ fontSize: '0.8rem', color: '#00bcd4', fontWeight: '700', marginTop: '2px' }}>{pv.instrument} · {pv.level || 'Básica'}</div>
+                                                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>Por: {pv.sellerName || 'Vendedor'}</div>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <span style={{ fontWeight: '900', color: '#10b981', fontSize: '1.1rem' }}>${pv.price}</span>
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                {pv.pdfUrl && (
+                                                    <a href={getProxyUrl(pv.pdfUrl)} target="_blank" rel="noreferrer" style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.05)', color: 'white', textDecoration: 'none', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                        <ExternalLink size={14} /> PDF
+                                                    </a>
+                                                )}
+                                                <button
+                                                    onClick={() => deleteItem('partituras_venta', pv.id, pv)}
+                                                    style={{ padding: '8px 14px', background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem' }}
+                                                    title="Eliminar Partitura"
+                                                >
+                                                    <Trash2 size={14} /> Borrar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {partiturasVenta.length === 0 && <p style={{ color: '#475569', padding: '20px' }}>No hay partituras en venta registradas.</p>}
                             </div>
                         </div>
                     </>
@@ -1081,7 +1243,7 @@ export default function Admin() {
                                             </div>
                                         )}
                                         
-                                        <button onClick={() => deleteItem('gallery', g.id)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239,68,68,0.9)', color: 'white', border: 'none', padding: '6px', borderRadius: '8px', cursor: 'pointer' }}><Trash2 size={14} /></button>
+                                        <button onClick={() => deleteItem('gallery', g.id, g)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239,68,68,0.9)', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', fontWeight: '800' }} title="Eliminar Imagen/Video"><Trash2 size={13} /> Borrar</button>
                                     </div>
                                 ))}
                                 {gallery.length === 0 && <p style={{ color: '#475569', padding: '20px' }}>No hay fotos en la galería.</p>}
@@ -1115,7 +1277,7 @@ export default function Admin() {
                                             </div>
                                             <div style={{ display: 'flex', gap: '8px' }}>
                                                 <button onClick={() => startEditVideo(v)} style={{ padding: '8px', background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', border: 'none', borderRadius: '8px', cursor: 'pointer' }}><FileText size={16} /></button>
-                                                <button onClick={() => deleteItem('portfolio', v.id)} style={{ padding: '8px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '8px', cursor: 'pointer' }}><Trash2 size={16} /></button>
+                                                <button onClick={() => deleteItem('portfolio', v.id, v)} style={{ padding: '8px 12px', background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: '800' }} title="Eliminar Video"><Trash2 size={15} /> Borrar</button>
                                             </div>
                                         </div>
                                     </div>
