@@ -471,7 +471,14 @@ export default function Multitrack() {
 
         return () => {
             unsubAuth();
-            if (audioEngine) audioEngine.onProgress = null;
+            if (audioEngine) {
+                audioEngine.stop().catch(err => console.error("Error stopping audioEngine on unmount:", err));
+                audioEngine.clear();
+                audioEngine.onProgress = null;
+            }
+            if (padEngine) {
+                padEngine.stop();
+            }
         };
     }, []);
 
