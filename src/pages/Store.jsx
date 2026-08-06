@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
-import { Search, ShoppingCart, Play, X, ArrowLeft, Music2, Music, Layers, Disc, Globe, LogOut } from 'lucide-react';
+import { Search, ShoppingCart, Play, X, ArrowLeft, Music2, Music, Layers, Disc, Globe, LogOut, Flame, Check, Clock, Sparkles, Smartphone } from 'lucide-react';
 import { useTranslation } from '../context/LanguageContext';
 import Footer from '../components/Footer';
 import { HorizontalMixer } from '../components/HorizontalMixer';
@@ -758,6 +758,265 @@ export default function Store() {
                     </div>
                 </div>
             )}
+
+
+            {/* SECCIÓN PRECIOS MULTITRACKS PERSONALIZADOS */}
+            <section style={{ 
+                padding: '80px 20px', 
+                background: 'linear-gradient(to bottom, #090d16, #020617)',
+                color: 'white',
+                fontFamily: '"Outfit", sans-serif',
+                borderTop: '1px solid rgba(255, 255, 255, 0.05)'
+            }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    
+                    {/* Banner Estándar de Producción */}
+                    <div style={{
+                        background: 'linear-gradient(135deg, rgba(234,179,8,0.06) 0%, rgba(249,115,22,0.06) 100%)',
+                        borderLeft: '4px solid #f97316',
+                        borderRadius: '16px',
+                        padding: '24px 30px',
+                        marginBottom: '60px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '15px'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b', fontWeight: '900', fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <Sparkles size={20} fill="#f59e0b" /> Estándar de Producción Profesional
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '5px' }}>
+                            <div>
+                                <strong style={{ color: '#00A3FF' }}>🎸 Guitarras Reales:</strong> Grabadas en vivo en estudio.
+                            </div>
+                            <div>
+                                <strong style={{ color: '#00A3FF' }}>🥁 Percusión:</strong> Samples de instrumentos reales.
+                            </div>
+                            <div>
+                                <strong style={{ color: '#00A3FF' }}>🎺 Brass & Teclados:</strong> VSTs y VIs de gama alta.
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Planes Principales */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '30px', marginBottom: '60px' }}>
+                        
+                        {/* Pack Stems Custom */}
+                        <div style={{
+                            background: 'rgba(255, 255, 255, 0.02)',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            borderRadius: '24px',
+                            padding: '40px 30px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            transition: 'all 0.3s ease',
+                            position: 'relative'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#00A3FF'; e.currentTarget.style.transform = 'translateY(-5px)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                        >
+                            <div>
+                                <span style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: '800', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Para complementar tu banda</span>
+                                <h3 style={{ fontSize: '2rem', fontWeight: '900', marginTop: '5px', marginBottom: '10px' }}>Pack Stems Custom</h3>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '25px' }}>
+                                    <span style={{ fontSize: '2.5rem', fontWeight: '900', color: 'white' }}>$1,800</span>
+                                    <span style={{ color: '#94a3b8', fontSize: '0.9rem', fontWeight: '600' }}>MXN / tema</span>
+                                </div>
+                                <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '30px' }}>
+                                    Ideal si ya tienes músicos en tu alineación y solo necesitas los instrumentos que te faltan en vivo.
+                                </p>
+                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    {[
+                                        'Sección específica (Ej: Solo Brass + Teclados + Percusión).',
+                                        'Pistas separadas (Stems) en alta calidad.',
+                                        'Ajuste de tono y estructura a tu medida.',
+                                        'Mezcla lista para sonar directo en PA.'
+                                    ].map((item, idx) => (
+                                        <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.9rem', color: '#cbd5e1' }}>
+                                            <Check size={16} color="#00A3FF" style={{ marginTop: '3px', flexShrink: 0 }} />
+                                            <span>{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* Full Playback Premium */}
+                        <div style={{
+                            background: 'rgba(0, 163, 255, 0.02)',
+                            border: '1px solid #00A3FF',
+                            borderRadius: '24px',
+                            padding: '40px 30px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            transition: 'all 0.3s ease',
+                            position: 'relative'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,163,255,0.15)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                        >
+                            <div>
+                                <span style={{ color: '#00A3FF', fontSize: '0.8rem', fontWeight: '800', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Producción Completa</span>
+                                <h3 style={{ fontSize: '2rem', fontWeight: '900', marginTop: '5px', marginBottom: '10px' }}>Full Playback Premium</h3>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '25px' }}>
+                                    <span style={{ fontSize: '2.5rem', fontWeight: '900', color: '#00A3FF' }}>$3,500</span>
+                                    <span style={{ color: '#94a3b8', fontSize: '0.9rem', fontWeight: '600' }}>MXN / tema</span>
+                                </div>
+                                <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '30px' }}>
+                                    La canción reproducida al 100% desde cero. Todos los instrumentos incluidos para un show masivo y potente.
+                                </p>
+                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    {[
+                                        <strong>Todos los elementos de la canción original.</strong>,
+                                        'Multitrack completo + Click/Guía de voz.',
+                                        'Arreglos e instrumentación real y virtual pro.',
+                                        'Formato listo para Stage / App de secuencias.'
+                                    ].map((item, idx) => (
+                                        <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.9rem', color: '#cbd5e1' }}>
+                                            <Check size={16} color="#00A3FF" style={{ marginTop: '3px', flexShrink: 0 }} />
+                                            <span>{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* Paquetes Especiales de Repertorio */}
+                    <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '1.5rem', fontWeight: '900', textTransform: 'uppercase', marginBottom: '30px', letterSpacing: '1px' }}>
+                            <Flame size={24} color="#f97316" fill="#f97316" /> Paquetes Especiales de Repertorio
+                        </div>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px', maxWidth: '900px', margin: '0 auto' }}>
+                            
+                            {/* Paquete 5 Secuencias Stems */}
+                            <div style={{
+                                background: 'rgba(255, 255, 255, 0.02)',
+                                border: '1px solid rgba(255, 255, 255, 0.06)',
+                                borderRadius: '20px',
+                                padding: '30px 20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '10px'
+                            }}>
+                                <h4 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0 }}>Paquete 5 Secuencias Stems</h4>
+                                <div style={{ fontSize: '2rem', fontWeight: '900', color: '#f97316' }}>$7,500 <span style={{ fontSize: '1rem', color: '#cbd5e1' }}>MXN</span></div>
+                                <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>Te sale en <strong>$1,500 MXN</strong> por canción</div>
+                                <div style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e', fontSize: '0.8rem', fontWeight: '800', padding: '6px 12px', borderRadius: '50px', marginTop: '10px' }}>
+                                    AHORRAS $1,500 MXN
+                                </div>
+                            </div>
+
+                            {/* Paquete 5 Full Playbacks */}
+                            <div style={{
+                                background: 'rgba(255, 255, 255, 0.02)',
+                                border: '2px solid #f97316',
+                                borderRadius: '20px',
+                                padding: '30px 20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '10px',
+                                position: 'relative'
+                            }}>
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '-12px',
+                                    background: '#f97316',
+                                    color: 'white',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '900',
+                                    padding: '3px 12px',
+                                    borderRadius: '50px',
+                                    textTransform: 'uppercase'
+                                }}>
+                                    Más Popular
+                                </div>
+                                <h4 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, marginTop: '5px' }}>Paquete 5 Full Playbacks</h4>
+                                <div style={{ fontSize: '2rem', fontWeight: '900', color: '#f97316' }}>$15,000 <span style={{ fontSize: '1rem', color: '#cbd5e1' }}>MXN</span></div>
+                                <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>Te sale en <strong>$3,000 MXN</strong> por canción</div>
+                                <div style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e', fontSize: '0.8rem', fontWeight: '800', padding: '6px 12px', borderRadius: '50px', marginTop: '10px' }}>
+                                    AHORRAS $2,500 MXN
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {/* Proceso */}
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', 
+                        gap: '20px', 
+                        background: 'rgba(255,255,255,0.01)', 
+                        padding: '30px', 
+                        borderRadius: '20px',
+                        border: '1px solid rgba(255, 255, 255, 0.03)',
+                        marginBottom: '40px'
+                    }}>
+                        {[
+                            { step: '01. DEMO', desc: 'Revisamos tu lista, tono y estructura antes de empezar.' },
+                            { step: '02. AVANCE', desc: 'Te envío muestra para aprobación y ajustes.' },
+                            { step: '03. ENTREGA', desc: 'Recibes tus archivos en WAV HQ listos para sonar.' }
+                        ].map((p, i) => (
+                            <div key={i} style={{ textAlign: 'center', padding: '10px' }}>
+                                <div style={{ color: '#00A3FF', fontWeight: '900', fontSize: '1.1rem', marginBottom: '8px' }}>{p.step}</div>
+                                <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0, lineHeight: '1.5' }}>{p.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Nota y CTA */}
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ 
+                            background: 'rgba(249,115,22,0.05)', 
+                            border: '1px dashed rgba(249,115,22,0.3)', 
+                            borderRadius: '12px', 
+                            padding: '15px 20px', 
+                            fontSize: '0.85rem', 
+                            color: '#e2e8f0',
+                            maxWidth: '750px',
+                            margin: '0 auto 35px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}>
+                            <Clock size={16} color="#f97316" />
+                            <span><strong>Nota:</strong> Precios base válidos para canciones con una duración máxima de <strong>4:00 minutos</strong>. Si el tema supera este tiempo, el presupuesto se ajusta proporcionalmente.</span>
+                        </div>
+
+                        <div>
+                            <button 
+                                onClick={() => window.open('https://wa.me/5215519805954?text=Hola,%20me%20interesa%20cotizar%20un%20multitrack%20personalizado.', '_blank')}
+                                style={{ 
+                                    padding: '18px 45px', 
+                                    background: '#25D366', 
+                                    color: 'white', 
+                                    border: 'none', 
+                                    borderRadius: '50px', 
+                                    fontSize: '1.1rem', 
+                                    fontWeight: '900', 
+                                    cursor: 'pointer', 
+                                    boxShadow: '0 10px 30px rgba(37,211,102,0.3)', 
+                                    transition: 'transform 0.2s, background-color 0.2s',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '10px'
+                                }}
+                                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.backgroundColor = '#20ba56'; }}
+                                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.backgroundColor = '#25D366'; }}
+                            >
+                                <Smartphone size={20} /> COTIZAR SECUENCIA PERSONALIZADA
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
 
             <Footer />
         </div>
