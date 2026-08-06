@@ -37,13 +37,13 @@ export default function Biography() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                         <h2 style={{ fontSize: '2.2rem', fontWeight: '900', letterSpacing: '-0.5px', color: 'white' }}>Más de Dos Décadas de Legado Musical</h2>
                         <p style={{ color: '#94a3b8', lineHeight: '1.8', fontSize: '1.05rem', margin: 0 }}>
-                            Con una impecable trayectoria de más de **20 años en la industria musical**, Junior Lugo se ha consolidado como un referente en la producción, mezcla y arreglos musicales. Su formación como músico y arreglista le otorga una sensibilidad única para comprender las necesidades expresivas y técnicas de cada obra.
+                            Junior Lugo es un músico, pianista, tecladista, arreglista y productor musical radicado en la Ciudad de México. Con una sólida trayectoria en la industria, su enfoque se centra en crear producciones que conecten genuinamente tanto con los artistas como con el público.
                         </p>
                         <p style={{ color: '#94a3b8', lineHeight: '1.8', fontSize: '1.05rem', margin: 0 }}>
-                            A lo largo de su carrera, ha tenido el privilegio de colaborar con artistas internacionales de renombre. Destacan sus trabajos con agrupaciones legendarias como **"Adolescentes Orquesta"** y solistas de talla mundial como **"Carlos Baute"**, aportando arreglos vibrantes y una producción de primer nivel.
+                            Versátil por naturaleza y con una clara comprensión de las exigencias del mercado actual —donde los géneros se cruzan y conviven de manera simultánea—, Junior domina una amplia gama de estilos musicales que van desde la balada, el pop, la música urbana y la electrónica, hasta la salsa, la cumbia y el jazz.
                         </p>
                         <p style={{ color: '#94a3b8', lineHeight: '1.8', fontSize: '1.05rem', margin: 0 }}>
-                            Su versatilidad musical abarca desde géneros tropicales complejos como la salsa y el merengue, hasta el pop internacional y corrientes urbanas modernas, fusionando de manera magistral la calidez analógica clásica con la potencia de las herramientas digitales contemporáneas.
+                            A lo largo de su carrera, ha aportado su talento como músico en agrupaciones y artistas de alto nivel internacional como Adolescentes Orquesta, y Carlos Baute, consolidando un perfil que se adapta con facilidad a las tendencias y necesidades de la industria musical de hoy.
                         </p>
                     </div>
 
