@@ -867,7 +867,8 @@ export default function Store() {
                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                     {[
                                         <strong>Todos los elementos de la canción original.</strong>,
-                                        'Multitrack completo + Click/Guía de voz.',
+                                        'Multitrack completo.',
+                                        'Click + guía con indicaciones.',
                                         'Arreglos e instrumentación real y virtual pro.',
                                         'Formato listo para Stage / App de secuencias.'
                                     ].map((item, idx) => (
