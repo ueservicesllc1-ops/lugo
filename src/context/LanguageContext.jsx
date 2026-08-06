@@ -274,11 +274,11 @@ const translations = {
 };
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState(localStorage.getItem('preferredLanguage') || 'es');
+  const [language, setLanguage] = useState('es');
 
   useEffect(() => {
-    localStorage.setItem('preferredLanguage', language);
-  }, [language]);
+    localStorage.removeItem('preferredLanguage');
+  }, []);
 
   const t = (key) => {
     return translations[language][key] || key;
