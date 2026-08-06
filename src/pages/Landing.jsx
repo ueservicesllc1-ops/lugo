@@ -631,6 +631,7 @@ export default function Landing() {
                                     { label: 'Partituras Pro', desc: 'Escritura profesional de partituras', action: () => navigate('/partituras-pro') }
                                 ]
                             },
+                            { label: 'Biografía', action: () => navigate('/biografia') },
                             { label: 'Portafolio', action: () => navigate('/portfolio') },
                             { label: 'Galería', action: () => navigate('/gallery') },
                             { label: 'Academia', action: () => navigate('/academy') },
