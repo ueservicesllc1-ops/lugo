@@ -1,5 +1,5 @@
 /**
- * academyFeedback.js — Zion Academy v2.0
+ * academyFeedback.js — Lugo Academy v2.0
  * Mensajes de feedback en español, variados y motivadores
  */
 

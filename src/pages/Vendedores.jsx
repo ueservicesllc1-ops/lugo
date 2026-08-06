@@ -417,7 +417,7 @@ function Vendedores() {
                 artist: artist || userData?.displayName || 'Vendedor',
                 sellerName: (userData?.firstName || userData?.lastName) 
                     ? `${userData.firstName || ''} ${userData.lastName || ''}`.trim() 
-                    : (userData?.displayName || artist || currentUser?.displayName || 'Vendedor Zion'),
+                    : (userData?.displayName || artist || currentUser?.displayName || 'Vendedor Lugo'),
                 key: songKey,
                 tempo,
                 timeSignature,

@@ -1,5 +1,5 @@
 /**
- * academyData.js  — Zion Academy  (FULL v2.0)
+ * academyData.js  — Lugo Academy  (FULL v2.0)
  * Comprehensive music curriculum: 5 Stages | 50 Levels
  * Theory + Ear Training + Rhythm + Sight-Reading + Chords
  */

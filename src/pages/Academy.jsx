@@ -174,7 +174,7 @@ const LoadingScreen = ({ loadingMsg }) => (
         </div>
         <div style={{ width: 40, height: 40, border: '4px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: 20 }}></div>
         <p style={{ fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: 2, opacity: 0.8 }}>
-            Preparando Zion Academy
+            Preparando Lugo Academy
         </p>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
@@ -196,9 +196,9 @@ const HomeScreen = ({ user, onStartLevel }) => {
             <header className="home-header">
                 <div className="logo-group">
                     <div className="logo-box" style={{ background: 'none', padding: 0, overflow: 'hidden' }}>
-                        <img src="/logo2.png" alt="Zion Academy Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src="/logo2.png" alt="Lugo Academy Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
-                    <span className="logo-text">Zion Academy</span>
+                    <span className="logo-text">Lugo Academy</span>
                 </div>
                 <div className="header-pills">
                     <div className="pill gem-pill"><Icon name="diamond" size={14}/> {user.gems}</div>
@@ -589,9 +589,9 @@ const ProfileView = ({ user, onReset }) => {
                     boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
                     overflow: 'hidden'
                 }}>
-                    <img src="/logo2.png" alt="Zion Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src="/logo2.png" alt="Lugo Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>Músico Zion Academy</h3>
+                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>Músico Lugo Academy</h3>
                 <div style={{ fontSize: 13, color: '#64748b', marginBottom: 16 }}>
                     {titles[titleIdx]} · Nivel {userLevel}
                 </div>
@@ -696,7 +696,7 @@ const AchievementPopup = ({ achievement }) => (
 const Academy = () => {
     const [user, setUser] = useState(() => {
         try {
-            const saved = localStorage.getItem('zion_academy_user');
+            const saved = localStorage.getItem('lugo_academy_user');
             const base = saved ? JSON.parse(saved) : { ...INITIAL_USER_STATE };
             // Update streak on load (runs once on mount, no effect needed)
             const today = new Date().toDateString();
@@ -726,7 +726,7 @@ const Academy = () => {
                         const data = userDoc.data();
                         if (data.academyProgress) {
                             setUser(data.academyProgress);
-                            localStorage.setItem('zion_academy_user', JSON.stringify(data.academyProgress));
+                            localStorage.setItem('lugo_academy_user', JSON.stringify(data.academyProgress));
                         }
                     }
                 } catch (err) {
@@ -772,7 +772,7 @@ const Academy = () => {
     // Persist user
     useEffect(() => {
         const saveProgress = async () => {
-            localStorage.setItem('zion_academy_user', JSON.stringify(user));
+            localStorage.setItem('lugo_academy_user', JSON.stringify(user));
             
             if (currentUser) {
                 try {
@@ -936,7 +936,7 @@ const Academy = () => {
                                 user={user} 
                                 onReset={() => {
                                     if (confirm('¿Reiniciar todo el progreso?')) {
-                                        localStorage.removeItem('zion_academy_user');
+                                        localStorage.removeItem('lugo_academy_user');
                                         setUser({ ...INITIAL_USER_STATE });
                                     }
                                 }} 

@@ -1,5 +1,5 @@
 /**
- * academyAudio.js — Zion Academy Audio Engine v2.0
+ * academyAudio.js — Lugo Academy Audio Engine v2.0
  * Real piano samples via Tone.js Salamander + Web Audio API fallback
  */
 import * as Tone from 'tone';

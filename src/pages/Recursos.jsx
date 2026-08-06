@@ -35,7 +35,7 @@ export default function Recursos() {
         {
             category: 'music',
             title: 'Base de Letras y Acordes',
-            desc: 'Accede a miles de cifrados precisos preparados para Zion Stage.',
+            desc: 'Accede a miles de cifrados precisos preparados para Lugo Stage.',
             icon: <FileText size={40} color="#00d2d3" />,
             status: 'Disponible'
         },
@@ -56,7 +56,7 @@ export default function Recursos() {
         {
             category: 'music',
             title: 'Video Tutoriales',
-            desc: 'Aprende a usar todas las funciones del mixer nativo de Zion Stage.',
+            desc: 'Aprende a usar todas las funciones del mixer nativo de Lugo Stage.',
             icon: <Video size={40} color="#ff4757" />,
             status: 'Video'
         }
@@ -176,7 +176,7 @@ export default function Recursos() {
                 }}>
                     <h2 style={{ color: '#020617', fontSize: '2.5rem', fontWeight: '900', marginBottom: '20px' }}>¿Necesitas ayuda personalizada?</h2>
                     <p style={{ color: '#020617', opacity: 0.8, fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto 40px' }}>
-                        Nuestro equipo está listo para ayudarte a configurar Zion Stage en tu iglesia local. Ofrecemos demos gratuitas.
+                        Nuestro equipo está listo para ayudarte a configurar Lugo Stage en tu iglesia local. Ofrecemos demos gratuitas.
                     </p>
                     <button onClick={() => navigate('/contact')} style={{
                         background: '#020617',

@@ -83,7 +83,7 @@ export default function SellerProfile() {
                     <User size={64} color="#00d2d3" />
                 </div>
                 <h1 style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '10px' }}>{seller?.displayName || seller?.name || 'Vendedor'}</h1>
-                <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>Socio de Zion Stage • {songs.length} pistas disponibles</p>
+                <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>Socio de Lugo Stage • {songs.length} pistas disponibles</p>
             </header>
 
             <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>

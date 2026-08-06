@@ -21,7 +21,7 @@ export default function Software() {
             <div style={{ background: 'radial-gradient(circle at 50% -20%, rgba(0,210,211,0.15), transparent 70%)', padding: '100px 40px 60px', textAlign: 'center' }}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(0,210,211,0.1)', border: '1px solid rgba(0,210,211,0.3)', borderRadius: '20px', padding: '6px 16px', marginBottom: '24px' }}>
                     <Activity size={16} color="#00d2d3" />
-                    <span style={{ color: '#00d2d3', fontWeight: '800', fontSize: '0.8rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Zion Stage Engine v2.0</span>
+                    <span style={{ color: '#00d2d3', fontWeight: '800', fontSize: '0.8rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Lugo Stage Engine v2.0</span>
                 </div>
                 <h1 style={{ fontSize: 'clamp(2.2rem, 4vw, 3.5rem)', fontWeight: '900', margin: '0 0 24px', lineHeight: '1.1' }}>
                     El motor de audio más avanzado<br />creado para adoración.
@@ -35,8 +35,8 @@ export default function Software() {
             <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 40px 100px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
                     {[
-                        { icon: <MonitorPlay size={32} color="#f1c40f" />, bg: 'rgba(241,196,15,0.05)', color: '#f1c40f', title: 'Desempeño Nativo', text: 'Zion Stage está optimizado para funcionar directamente en tu dispositivo con máxima eficiencia. Nuestra arquitectura garantiza que cada click y pista fluyan en perfecta sincronía, sin importar qué equipo utilices.' },
-                        { icon: <Cloud size={32} color="#00d2d3" />, bg: 'rgba(0,210,211,0.05)', color: '#00d2d3', title: 'Funcionamiento Offline', text: 'Tus archivos se mantienen de forma segura y eficiente en la memoria de tu dispositivo. Si la conexión a internet de la iglesia falla repentinamente en medio del servicio, Zion Stage seguirá reproduciendo como si nada hubiera pasado.' },
+                        { icon: <MonitorPlay size={32} color="#f1c40f" />, bg: 'rgba(241,196,15,0.05)', color: '#f1c40f', title: 'Desempeño Nativo', text: 'Lugo Stage está optimizado para funcionar directamente en tu dispositivo con máxima eficiencia. Nuestra arquitectura garantiza que cada click y pista fluyan en perfecta sincronía, sin importar qué equipo utilices.' },
+                        { icon: <Cloud size={32} color="#00d2d3" />, bg: 'rgba(0,210,211,0.05)', color: '#00d2d3', title: 'Funcionamiento Offline', text: 'Tus archivos se mantienen de forma segura y eficiente en la memoria de tu dispositivo. Si la conexión a internet de la iglesia falla repentinamente en medio del servicio, Lugo Stage seguirá reproduciendo como si nada hubiera pasado.' },
                         { icon: <Settings2 size={32} color="#9b59b6" />, bg: 'rgba(155,89,182,0.05)', color: '#9b59b6', title: 'Mezcla en Tiempo Real', text: 'Controla el volumen de cada instrumento de manera individual. Aplicamos algoritmos avanzados de procesamiento ultra-ligero para asegurar que tus mezclas en vivo no generen ruidos ni cortes.' },
                         { icon: <Smartphone size={32} color="#10b981" />, bg: 'rgba(16,185,129,0.05)', color: '#10b981', title: 'Consumo Inteligente de Batería', text: 'Pocas cosas asustan más que ver un 10% de batería en el escenario. Nuestra tecnología central minimiza drásticamente los recursos del procesador, alargando la batería de tu iPad o Tablet por horas.' }
                     ].map((feat, i) => (
@@ -55,7 +55,7 @@ export default function Software() {
                         <div style={{ fontSize: '0.8rem', color: '#00d2d3', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Tu biblioteca segura</div>
                         <h2 style={{ fontSize: '2rem', fontWeight: '900', marginBottom: '16px', lineHeight: '1.1' }}>Almacenamiento Seguro en la Nube</h2>
                         <p style={{ color: '#94a3b8', lineHeight: '1.7', fontSize: '1rem', marginBottom: '24px' }}>
-                            Manejar gigabytes de audio de alta fidelidad no es un juego. Cada vez que subes un archivo a tu nube privada en Zion Stage, este se cifra y se replica automáticamente en centros de datos de nivel empresarial, dándote absoluta tranquilidad para el domingo y disponibilidad del 99.9%.
+                            Manejar gigabytes de audio de alta fidelidad no es un juego. Cada vez que subes un archivo a tu nube privada en Lugo Stage, este se cifra y se replica automáticamente en centros de datos de nivel empresarial, dándote absoluta tranquilidad para el domingo y disponibilidad del 99.9%.
                         </p>
                         <button onClick={() => navigate('/')} style={{ background: 'transparent', border: '1px solid #00d2d3', color: '#00d2d3', padding: '12px 24px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s', fontFamily: '"Outfit"' }} onMouseEnter={e => { e.currentTarget.style.background = '#00d2d3'; e.currentTarget.style.color = '#020617'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#00d2d3'; }}>Únete gratis</button>
                     </div>

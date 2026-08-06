@@ -12,7 +12,7 @@ export default function RecursosAudio() {
             desc: "Para que tu equipo de alabanza escuche el click y la guía sin que el público los oiga, necesitas usar el paneo (Panning) hard-coded.",
             icon: <Zap size={24} color="#00d2d3" />,
             steps: [
-                "Zion Stage rutea el Click y la Guía naturalmente agrupados.",
+                "Lugo Stage rutea el Click y la Guía naturalmente agrupados.",
                 "Usamos el Paneo Estéreo para separar las señales.",
                 "Canal IZQUIERDO (L): Para el monitoreo (Click + Guía + Secuencias si se desea).",
                 "Canal DERECHO (R): Para el Sistema de Sonido (P.A. / Público)."

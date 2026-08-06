@@ -552,7 +552,7 @@ export default function Store() {
                 </h1>
                 <p style={{ color: '#94a3b8', fontSize: window.innerWidth < 768 ? '1rem' : '1.2rem', maxWidth: '600px', margin: '0 auto 20px' }}>
                     {activeCategory === 'multitrack' 
-                        ? 'Explora multitracks profesionales para Zion Stage.' 
+                        ? 'Explora multitracks profesionales para Lugo Stage.' 
                         : 'Encuentra pistas individuales y acompañamientos para tu ministerio.'}
                 </p>
             </header>
@@ -774,7 +774,7 @@ export default function Store() {
                                     { id: 'single_wav', name: 'Licencia Premium (WAV)', desc: 'Versión WAV de alta fidelidad para uso profesional.', price: selectedSongForOptions.priceWav || selectedSongForOptions.price || 0, format: 'WAV', icon: <Music size={18} /> },
                                     { id: 'single_mp3', name: 'Licencia Básica (MP3)', desc: 'Versión MP3 lista para maquetar o uso personal.', price: selectedSongForOptions.priceMp3 || 0, format: 'MP3', icon: <Music size={18} /> }
                                 ] : [
-                                    { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales para Zion Stage o DAW.', price: getSequencePrice(selectedSongForOptions), format: 'WAV/ZIP', icon: <Layers size={18} /> },
+                                    { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales para Lugo Stage o DAW.', price: getSequencePrice(selectedSongForOptions), format: 'WAV/ZIP', icon: <Layers size={18} /> },
                                     { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, etc).', price: getOptionPrice(selectedSongForOptions, 'priceCustomMix', pricing.stemsPrice, 15.0), format: 'WAV Stems', icon: <Music2 size={18} /> },
                                     { id: 'wav_track', name: 'Acompañamiento (WAV)', desc: 'Archivo WAV de alta fidelidad sin voz principal.', price: getOptionPrice(selectedSongForOptions, 'priceWavTrack', pricing.wavTrackPrice, 15.0), format: 'WAV High Quality', icon: <Music size={18} /> },
                                     { id: 'mp3', name: 'Acompañamiento (MP3)', desc: 'Archivo MP3 de alta calidad sin voz principal.', price: getOptionPrice(selectedSongForOptions, 'priceMp3', pricing.mp3Price, 9.0), format: 'MP3 High Quality', icon: <Music size={18} /> }

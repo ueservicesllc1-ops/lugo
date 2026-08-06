@@ -137,7 +137,7 @@ export default function Library() {
                                 {selectedArtist ? `Canciones de ${selectedArtist.name}` : `Explora por Artistas`}
                             </h1>
                             <p style={{ color: '#64748b', fontSize: '1.1rem', maxWidth: '600px' }}>
-                                Encuentra letras y acordes verificados por el equipo de Zion Stage. Todo organizado para tu domingo.
+                                Encuentra letras y acordes verificados por el equipo de Lugo Stage. Todo organizado para tu domingo.
                             </p>
                         </div>
                         <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 24px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '16px', width: '100%', maxWidth: '450px' }}>
