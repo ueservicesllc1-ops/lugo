@@ -681,25 +681,6 @@ export default function Landing() {
                              >
                                  Ir a Tienda
                              </button>
-                             <button
-                                 onClick={() => navigate('/academy')}
-                                 style={{
-                                     padding: '14px 40px',
-                                     background: 'transparent',
-                                     border: '1px solid #FFFFFF',
-                                     borderRadius: '6px',
-                                     color: '#FFFFFF',
-                                     fontSize: '0.85rem',
-                                     fontWeight: '800',
-                                     cursor: 'pointer',
-                                     transition: 'all 0.3s ease',
-                                     textTransform: 'uppercase'
-                                 }}
-                                 onMouseOver={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#000000'; }}
-                                 onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}
-                             >
-                                 Academia
-                             </button>
                          </div>
                      </div>
                  </div>
