@@ -19,7 +19,6 @@ import Portfolio from './pages/Portfolio'
 import ProduccionIntegral from './pages/ProduccionIntegral'
 import MezclaMastering from './pages/MezclaMastering'
 import ArreglosMusicales from './pages/ArreglosMusicales'
-import PartiturasPro from './pages/PartiturasPro'
 import Biography from './pages/Biography'
 import ScrollToTop from './components/ScrollToTop'
 import './index.css'
@@ -81,7 +80,6 @@ function App() {
           <Route path="/produccion-integral" element={<ProduccionIntegral />} />
           <Route path="/mezcla-y-mastering" element={<MezclaMastering />} />
           <Route path="/arreglos-musicales" element={<ArreglosMusicales />} />
-          <Route path="/partituras-pro" element={<PartiturasPro />} />
           <Route path="/biografia" element={<Biography />} />
         </Routes>
       </Suspense>

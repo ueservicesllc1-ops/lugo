@@ -133,8 +133,7 @@ export default function Navbar({ cartCount }) {
                                 dropdown: [
                                     { label: 'Producción Integral', desc: 'De la idea al master final', action: () => navigate('/produccion-integral') },
                                     { label: 'Mezcla y Mastering', desc: 'Sonido potente y competitivo', action: () => navigate('/mezcla-y-mastering') },
-                                    { label: 'Arreglos Musicales', desc: 'Dirección artística y arreglos', action: () => navigate('/arreglos-musicales') },
-                                    { label: 'Partituras Pro', desc: 'Escritura profesional de partituras', action: () => navigate('/partituras-pro') }
+                                    { label: 'Arreglos Musicales', desc: 'Dirección artística y arreglos', action: () => navigate('/arreglos-musicales') }
                                 ]
                             },
                             { label: 'Biografía', action: () => navigate('/biografia') },

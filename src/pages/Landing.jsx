@@ -612,30 +612,31 @@ export default function Landing() {
                          style={{
                              width: '100%',
                              height: '100%',
-                             objectFit: 'cover'
+                             objectFit: 'cover',
+                             objectPosition: 'right center'
                          }}
                      />
                  </div>
 
-                 {/* CONTENEDOR DE TEXTO: Centrado, minimalista y moderno */}
+                 {/* CONTENEDOR DE TEXTO: Alineado a la izquierda, minimalista y moderno */}
                  <div style={{ 
                      display: 'flex', 
                      width: '100%', 
                      maxWidth: '1400px', 
                      margin: '0 auto', 
                      alignItems: 'center', 
-                     justifyContent: 'center',
+                     justifyContent: 'flex-start',
                      position: 'relative', 
                      zIndex: 10,
                      padding: '0 5%'
                  }}>
-                     <div style={{ flex: 1, textAlign: 'center', maxWidth: '650px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                     <div style={{ flex: 1, textAlign: 'left', maxWidth: '650px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                          <div style={{ marginBottom: '10px', animation: 'fadeInDown 1s ease-out' }}>
                              <img 
                                  src="/logo.png" 
                                  alt="Logo" 
                                  style={{ 
-                                     height: 'clamp(200px, 35vw, 400px)', 
+                                     height: 'clamp(150px, 25vw, 300px)', 
                                      objectFit: 'contain', 
                                      animation: 'fadeInDown 1s ease-out'
                                  }} 

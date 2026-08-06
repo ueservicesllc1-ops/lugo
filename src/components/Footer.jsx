@@ -59,7 +59,6 @@ export default function Footer() {
                                 <li onClick={() => navigate('/produccion-integral')} style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = 'white'} onMouseLeave={e => e.target.style.color = '#94a3b8'}>Producción Integral</li>
                                 <li onClick={() => navigate('/mezcla-y-mastering')} style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = 'white'} onMouseLeave={e => e.target.style.color = '#94a3b8'}>Mezcla y Mastering</li>
                                 <li onClick={() => navigate('/arreglos-musicales')} style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = 'white'} onMouseLeave={e => e.target.style.color = '#94a3b8'}>Arreglos Musicales</li>
-                                <li onClick={() => navigate('/partituras-pro')} style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = 'white'} onMouseLeave={e => e.target.style.color = '#94a3b8'}>Partituras Pro</li>
                             </ul>
                         </div>
 
