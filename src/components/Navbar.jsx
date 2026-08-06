@@ -120,14 +120,7 @@ export default function Navbar({ cartCount }) {
 
                     <div className="hide-mobile" style={{ display: 'flex', gap: '22px', marginLeft: '15px', fontSize: '0.92rem', fontWeight: '600', color: '#94a3b8', alignItems: 'center' }}>
                         {[
-                            { 
-                                label: 'Tienda', 
-                                action: () => navigate('/store'),
-                                dropdown: [
-                                    { label: 'Secuencias (Multitracks)', desc: 'Multipistas profesionales para Lugo Stage', action: () => navigate('/store?type=multitrack') },
-                                    { label: 'Pistas (Instrumentales)', desc: 'Instrumentales y acompañamientos', action: () => navigate('/store?type=single') }
-                                ]
-                            },
+                            { label: 'Multitracks', action: () => navigate('/store') },
                             { 
                                 label: 'Servicios',
                                 dropdown: [
@@ -139,7 +132,6 @@ export default function Navbar({ cartCount }) {
                             { label: 'Biografía', action: () => navigate('/biografia') },
                             { label: 'Portafolio', action: () => navigate('/portfolio') },
                             { label: 'Galería', action: () => navigate('/gallery') },
-                            { label: 'Academia', action: () => navigate('/academy') },
                             { label: 'Trayectoria', action: () => handleScrollOrNavigate('creditos') },
                             { label: 'Contacto', action: () => navigate('/contact') },
                         ].map(item => (

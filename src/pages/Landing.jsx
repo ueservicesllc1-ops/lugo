@@ -657,32 +657,6 @@ export default function Landing() {
                              Producción musical para artistas globales.<br/>
                              <strong style={{ fontWeight: '800', letterSpacing: '1px' }}>Más allá del sonido, creamos tu legado.</strong>
                          </p>
-
-                         <div style={{ 
-                             display: 'flex', 
-                             gap: '15px', 
-                             animation: 'fadeInUp 1s ease-out 0.5s both'
-                         }}>
-                             <button
-                                 onClick={() => navigate('/store')}
-                                 style={{
-                                     padding: '14px 40px',
-                                     background: '#FFFFFF',
-                                     border: '1px solid #FFFFFF',
-                                     borderRadius: '6px',
-                                     color: '#000000',
-                                     fontSize: '0.85rem',
-                                     fontWeight: '800',
-                                     cursor: 'pointer',
-                                     transition: 'all 0.3s ease',
-                                     textTransform: 'uppercase'
-                                 }}
-                                 onMouseOver={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}
-                                 onMouseOut={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#000000'; }}
-                             >
-                                 Ir a Tienda
-                             </button>
-                         </div>
                      </div>
                  </div>
              </header>

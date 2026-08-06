@@ -463,12 +463,10 @@ export default function Store() {
 
             <header style={{ padding: window.innerWidth < 768 ? '110px 20px 30px' : '140px 40px 30px', textAlign: 'center', background: 'radial-gradient(circle at center, rgba(139,92,246,0.1), transparent)' }}>
                 <h1 style={{ fontSize: window.innerWidth < 768 ? '2.2rem' : '3.5rem', fontWeight: '900', marginBottom: '10px', lineHeight: 1.1 }}>
-                    {activeCategory === 'multitrack' ? 'Tienda de Secuencias' : 'Venta de Pistas'}
+                    Tienda de Secuencias
                 </h1>
                 <p style={{ color: '#94a3b8', fontSize: window.innerWidth < 768 ? '1rem' : '1.2rem', maxWidth: '600px', margin: '0 auto 20px' }}>
-                    {activeCategory === 'multitrack' 
-                        ? 'Explora multitracks profesionales para Lugo Stage.' 
-                        : 'Encuentra pistas individuales y acompañamientos para tu ministerio.'}
+                    Explora multitracks profesionales para Lugo Stage.
                 </p>
             </header>
 
@@ -504,47 +502,12 @@ export default function Store() {
             <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
                 <div style={{ padding: '40px' }}>
                     
-                    {/* Toolbar with Search and Category Selectors */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', flexWrap: 'wrap', marginBottom: '30px' }}>
-                        <div style={{ display: 'flex', gap: '15px' }}>
-                            <button 
-                                onClick={() => navigate('/store?type=multitrack')}
-                                style={{
-                                    padding: '10px 24px',
-                                    borderRadius: '30px',
-                                    border: '1px solid',
-                                    borderColor: activeCategory === 'multitrack' ? '#00A3FF' : 'rgba(255,255,255,0.1)',
-                                    background: activeCategory === 'multitrack' ? 'rgba(0,163,255,0.1)' : 'transparent',
-                                    color: activeCategory === 'multitrack' ? 'white' : '#94a3b8',
-                                    fontWeight: '800',
-                                    cursor: 'pointer',
-                                    fontSize: '0.85rem'
-                                }}
-                            >
-                                Secuencias (Multitracks)
-                            </button>
-                            <button 
-                                onClick={() => navigate('/store?type=single')}
-                                style={{
-                                    padding: '10px 24px',
-                                    borderRadius: '30px',
-                                    border: '1px solid',
-                                    borderColor: activeCategory === 'single' ? '#00A3FF' : 'rgba(255,255,255,0.1)',
-                                    background: activeCategory === 'single' ? 'rgba(0,163,255,0.1)' : 'transparent',
-                                    color: activeCategory === 'single' ? 'white' : '#94a3b8',
-                                    fontWeight: '800',
-                                    cursor: 'pointer',
-                                    fontSize: '0.85rem'
-                                }}
-                            >
-                                Pistas (Singles)
-                            </button>
-                        </div>
-
+                    {/* Toolbar with Search */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginBottom: '30px' }}>
                         <div style={{ position: 'relative', width: '300px' }}>
                             <input
                                 type="text"
-                                placeholder="Buscar secuencias o pistas..."
+                                placeholder="Buscar secuencias..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 style={{ 
@@ -565,11 +528,11 @@ export default function Store() {
                         </div>
                     </div>
 
-                    <h2 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '30px' }}>{searchQuery ? 'Resultados de Búsqueda' : (activeCategory === 'multitrack' ? 'Catálogo de Secuencias' : 'Pistas Individuales')}</h2>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '30px' }}>{searchQuery ? 'Resultados de Búsqueda' : 'Catálogo de Secuencias'}</h2>
                     
                     <div className="store-grid">
                         {storeSongs
-                            .filter(s => activeCategory === 'multitrack' ? s.isMultitrack : s.isSingle)
+                            .filter(s => s.isMultitrack)
                             .filter(s => 
                                 (s.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                                 (s.artist || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -585,7 +548,7 @@ export default function Store() {
                             ))}
                     </div>
 
-                    {storeSongs.filter(s => activeCategory === 'multitrack' ? s.isMultitrack : s.isSingle).length === 0 && (
+                    {storeSongs.filter(s => s.isMultitrack).length === 0 && (
                         <div style={{ textAlign: 'center', padding: '100px 0', color: '#64748b' }}>
                             <Music2 size={48} style={{ margin: '0 auto 20px', opacity: 0.2 }} />
                             <h3 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#94a3b8' }}>No hay resultados aquí</h3>

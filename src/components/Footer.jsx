@@ -42,7 +42,6 @@ export default function Footer() {
                             <div style={{ display: 'flex', gap: '16px' }}>
                                 {[
                                     { icon: <Instagram size={20} />, url: 'https://www.instagram.com/juniorlug' },
-                                    { icon: <Youtube size={20} />, url: 'https://www.youtube.com/@juniorlugoproducciones' },
                                     { icon: <Music size={18} />, url: 'https://www.tiktok.com/@juniorlugoproducciones' },
                                 ].map(({ icon, url }, i) => (
                                     <a key={i} href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#64748b', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#FFFFFF'} onMouseLeave={e => e.currentTarget.style.color = '#64748b'}>
@@ -68,7 +67,6 @@ export default function Footer() {
                             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem' }}>
                                 <li onClick={() => navigate('/store')} style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = 'white'} onMouseLeave={e => e.target.style.color = '#94a3b8'}>Secuencias Multitrack</li>
                                 <li onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = 'white'} onMouseLeave={e => e.target.style.color = '#94a3b8'}>Mis Compras</li>
-                                <li onClick={() => navigate('/store')} style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = 'white'} onMouseLeave={e => e.target.style.color = '#94a3b8'}>Nuevos Lanzamientos</li>
                             </ul>
                         </div>
 
