@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '../context/LanguageContext';
 import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
 
 const ProduccionIntegral = () => {
     const navigate = useNavigate();
@@ -13,28 +14,7 @@ const ProduccionIntegral = () => {
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: 'white', fontFamily: '"Inter", sans-serif' }}>
-            {/* HEADER / NAV */}
-            <header style={{ position: 'fixed', top: 0, width: '100%', padding: '20px 40px', background: 'rgba(2, 6, 23, 0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <div onClick={() => navigate('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', color: 'white' }}>JUNIOR<span style={{ color: '#00A3FF' }}>LUGO</span></h1>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <button 
-                        onClick={toggleLanguage}
-                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
-                    >
-                        <Globe size={14} /> {language === 'es' ? 'EN' : 'ES'}
-                    </button>
-                    <button 
-                        onClick={() => navigate('/')} 
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 16px', borderRadius: '8px', color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold', transition: 'all 0.2s' }}
-                        onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                        onMouseOut={e => e.currentTarget.style.background = 'transparent'}
-                    >
-                        <Home size={16} /> {t('backToHome')}
-                    </button>
-                </div>
-            </header>
+            <Navbar />
 
             {/* HERO SECTION */}
             <section style={{ paddingTop: '160px', paddingBottom: '100px', textAlign: 'center', background: 'radial-gradient(circle at top, rgba(139,92,246,0.15) 0%, transparent 60%)' }}>

@@ -2,27 +2,19 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Music, Star, Award, ShieldCheck, Flame } from 'lucide-react';
 import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
 
 export default function Biography() {
     const navigate = useNavigate();
 
     return (
         <div style={{ backgroundColor: '#0f172a', minHeight: '100vh', color: 'white', fontFamily: '"Outfit", sans-serif' }}>
-            {/* Header Navigation */}
-            <nav style={{ padding: '20px 40px', background: '#020617', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '20px', position: 'sticky', top: 0, zIndex: 100, backdropFilter: 'blur(10px)' }}>
-                <button onClick={() => navigate('/')} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontFamily: '"Outfit", sans-serif', fontSize: '0.95rem', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'white'} onMouseLeave={e => e.currentTarget.style.color = '#94a3b8'}>
-                    <ArrowLeft size={20} /> Volver al inicio
-                </button>
-                <div style={{ height: '20px', width: '1px', background: 'rgba(255,255,255,0.1)' }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '0.9rem', fontWeight: '600' }}>
-                    <Music size={16} /> Biografía
-                </div>
-            </nav>
+            <Navbar />
 
             {/* Hero Section */}
             <div style={{ 
                 background: 'radial-gradient(circle at 50% 30%, rgba(0, 163, 255, 0.15), transparent 60%), radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1), transparent)', 
-                padding: '100px 40px 80px', 
+                padding: '160px 40px 80px', 
                 textAlign: 'center',
                 position: 'relative'
             }}>

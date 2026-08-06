@@ -6,6 +6,7 @@ import { Search, ShoppingCart, Play, X, ArrowLeft, Music2, Music, Layers, Disc, 
 import { useTranslation } from '../context/LanguageContext';
 import Footer from '../components/Footer';
 import { HorizontalMixer } from '../components/HorizontalMixer';
+import Navbar from '../components/Navbar';
 
 const SongCard = ({ song, onPreview, onBuy, navigate }) => {
     const [realSellerName, setRealSellerName] = useState(song.sellerName || 'Vendedor Lugo');
@@ -458,95 +459,9 @@ export default function Store() {
                 }
             `}</style>
 
-            <nav style={{
-                padding: window.innerWidth < 768 ? '10px 15px' : '15px 40px',
-                background: '#0f172a',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                position: 'sticky',
-                top: 0,
-                zIndex: 1000,
-                backdropFilter: 'blur(20px)'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: window.innerWidth < 768 ? '10px' : '30px' }}>
-                    <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                        <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', color: 'white', letterSpacing: '-1px' }}>JUNIOR<span style={{ color: '#00A3FF' }}>LUGO</span></h1>
-                    </div>
+            <Navbar cartCount={cart.length} />
 
-                    <button
-                        onClick={() => navigate('/')}
-                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '6px 12px', borderRadius: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700', fontSize: '0.75rem' }}
-                    >
-                        <ArrowLeft size={14} /> <span className="hide-mobile">Volver</span>
-                    </button>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ position: 'relative' }} className="hide-mobile">
-                        <input
-                            type="text"
-                            placeholder="Buscar..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '8px 12px 8px 35px', borderRadius: '30px', width: '180px', fontSize: '0.85rem' }}
-                        />
-                        <Search size={14} style={{ position: 'absolute', top: '10px', left: '12px', color: '#64748b' }} />
-                    </div>
-
-                    <button 
-                        onClick={toggleLanguage}
-                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
-                    >
-                        <Globe size={14} /> {language === 'es' ? 'EN' : 'ES'}
-                    </button>
-
-                    <button
-                        onClick={() => navigate('/checkout')}
-                        style={{ position: 'relative', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '38px', height: '38px', borderRadius: '50%', cursor: 'pointer' }}
-                    >
-                        <ShoppingCart size={18} />
-                        {cart.length > 0 && <span style={{ position: 'absolute', top: '-2px', right: '-2px', background: '#00A3FF', color: '#fff', fontSize: '0.65rem', fontWeight: '900', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0f172a' }}>
-                                {cart.length}
-                            </span>
-                        }
-                    </button>
-
-                    {currentUser && (
-                        <div style={{ position: 'relative' }}>
-                            <div
-                                onClick={() => setShowDropdown(!showDropdown)}
-                                style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', padding: '4px 4px 4px 10px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)' }}
-                            >
-                                <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#e2e8f0' }} className="hide-mobile">{currentUser.displayName || currentUser.email?.split('@')[0]}</span>
-                                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg,#00A3FF,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '0.75rem' }}>
-                                    {(currentUser.displayName || currentUser.email || 'U')[0].toUpperCase()}
-                                </div>
-                            </div>
-
-                            {showDropdown && (
-                                <div style={{ position: 'absolute', top: '42px', right: 0, background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', width: '180px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', overflow: 'hidden', zIndex: 2000 }}>
-                                    <div
-                                        onClick={() => navigate('/dashboard')}
-                                        style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: '#e2e8f0', fontSize: '0.85rem', fontWeight: '600' }}
-                                    >
-                                        <Globe size={14} color="#94a3b8" /> {t('dashboard')}
-                                    </div>
-                                    <div
-                                        onClick={() => auth.signOut()}
-                                        style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: '#ef4444', fontSize: '0.85rem', fontWeight: '600' }}
-                                    >
-                                        <LogOut size={14} /> {t('logout')}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </nav>
-
-            <header style={{ padding: window.innerWidth < 768 ? '30px 20px' : '60px 40px 30px', textAlign: 'center', background: 'radial-gradient(circle at center, rgba(139,92,246,0.1), transparent)' }}>
+            <header style={{ padding: window.innerWidth < 768 ? '110px 20px 30px' : '140px 40px 30px', textAlign: 'center', background: 'radial-gradient(circle at center, rgba(139,92,246,0.1), transparent)' }}>
                 <h1 style={{ fontSize: window.innerWidth < 768 ? '2.2rem' : '3.5rem', fontWeight: '900', marginBottom: '10px', lineHeight: 1.1 }}>
                     {activeCategory === 'multitrack' ? 'Tienda de Secuencias' : 'Venta de Pistas'}
                 </h1>
@@ -588,6 +503,68 @@ export default function Store() {
 
             <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
                 <div style={{ padding: '40px' }}>
+                    
+                    {/* Toolbar with Search and Category Selectors */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', flexWrap: 'wrap', marginBottom: '30px' }}>
+                        <div style={{ display: 'flex', gap: '15px' }}>
+                            <button 
+                                onClick={() => navigate('/store?type=multitrack')}
+                                style={{
+                                    padding: '10px 24px',
+                                    borderRadius: '30px',
+                                    border: '1px solid',
+                                    borderColor: activeCategory === 'multitrack' ? '#00A3FF' : 'rgba(255,255,255,0.1)',
+                                    background: activeCategory === 'multitrack' ? 'rgba(0,163,255,0.1)' : 'transparent',
+                                    color: activeCategory === 'multitrack' ? 'white' : '#94a3b8',
+                                    fontWeight: '800',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                Secuencias (Multitracks)
+                            </button>
+                            <button 
+                                onClick={() => navigate('/store?type=single')}
+                                style={{
+                                    padding: '10px 24px',
+                                    borderRadius: '30px',
+                                    border: '1px solid',
+                                    borderColor: activeCategory === 'single' ? '#00A3FF' : 'rgba(255,255,255,0.1)',
+                                    background: activeCategory === 'single' ? 'rgba(0,163,255,0.1)' : 'transparent',
+                                    color: activeCategory === 'single' ? 'white' : '#94a3b8',
+                                    fontWeight: '800',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                Pistas (Singles)
+                            </button>
+                        </div>
+
+                        <div style={{ position: 'relative', width: '300px' }}>
+                            <input
+                                type="text"
+                                placeholder="Buscar secuencias o pistas..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{ 
+                                    background: 'rgba(255,255,255,0.05)', 
+                                    border: '1px solid rgba(255,255,255,0.1)', 
+                                    color: 'white', 
+                                    padding: '10px 16px 10px 42px', 
+                                    borderRadius: '30px', 
+                                    width: '100%', 
+                                    fontSize: '0.9rem',
+                                    outline: 'none',
+                                    transition: 'border-color 0.2s'
+                                }}
+                                onFocus={e => e.currentTarget.style.borderColor = '#00A3FF'}
+                                onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                            />
+                            <Search size={18} style={{ position: 'absolute', top: '12px', left: '16px', color: '#64748b' }} />
+                        </div>
+                    </div>
+
                     <h2 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '30px' }}>{searchQuery ? 'Resultados de Búsqueda' : (activeCategory === 'multitrack' ? 'Catálogo de Secuencias' : 'Pistas Individuales')}</h2>
                     
                     <div className="store-grid">
