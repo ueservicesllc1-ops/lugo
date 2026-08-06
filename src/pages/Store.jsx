@@ -465,6 +465,9 @@ export default function Store() {
                 <h1 style={{ fontSize: window.innerWidth < 768 ? '2.2rem' : '3.5rem', fontWeight: '900', marginBottom: '10px', lineHeight: 1.1 }}>
                     Tienda de Secuencias
                 </h1>
+                <p style={{ color: '#94a3b8', fontSize: window.innerWidth < 768 ? '0.95rem' : '1.1rem', maxWidth: '800px', margin: '15px auto 20px', lineHeight: '1.6', fontWeight: '400' }}>
+                    Los multitracks y secuencias profesionales por encargo arrancan desde los $1,800 MXN (Pack estándar con 3 o 4 stems esenciales: coros, teclados, metales). También tenemos el Pack Premium con la secuencia full y instrumentación completa para canciones de hasta 4 minutos.
+                </p>
             </header>
 
             <style>{`
