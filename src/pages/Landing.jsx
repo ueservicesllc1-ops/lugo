@@ -35,6 +35,7 @@ export default function Landing() {
     const previewEngineRef = React.useRef(null);
     const [cart, setCart] = useState([]);
     const [toast, setToast] = useState(null);
+    const [hoveredNav, setHoveredNav] = useState(null);
     const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
     const [latestApp, setLatestApp] = useState(null);
     const [selectedGalleryPhoto, setSelectedGalleryPhoto] = useState(null);
@@ -611,22 +612,97 @@ export default function Landing() {
                         </h1>
                     </div>
 
-                    <div className="hide-mobile" style={{ display: 'flex', gap: '25px', marginLeft: '20px', fontSize: '0.95rem', fontWeight: '600', color: '#94a3b8' }}>
+                    <div className="hide-mobile" style={{ display: 'flex', gap: '25px', marginLeft: '20px', fontSize: '0.95rem', fontWeight: '600', color: '#94a3b8', alignItems: 'center' }}>
                         {[
-                            { label: 'Tienda', action: () => navigate('/store') },
+                            { 
+                                label: 'Tienda', 
+                                action: () => navigate('/store'),
+                                dropdown: [
+                                    { label: 'Secuencias (Multitracks)', desc: 'Multipistas profesionales para Lugo Stage', action: () => navigate('/store?type=multitrack') },
+                                    { label: 'Pistas (Instrumentales)', desc: 'Instrumentales y acompañamientos', action: () => navigate('/store?type=single') }
+                                ]
+                            },
+                            { 
+                                label: 'Servicios',
+                                dropdown: [
+                                    { label: 'Producción Integral', desc: 'De la idea al master final', action: () => navigate('/produccion-integral') },
+                                    { label: 'Mezcla y Mastering', desc: 'Sonido potente y competitivo', action: () => navigate('/mezcla-y-mastering') },
+                                    { label: 'Arreglos Musicales', desc: 'Dirección artística y arreglos', action: () => navigate('/arreglos-musicales') },
+                                    { label: 'Partituras Pro', desc: 'Escritura profesional de partituras', action: () => navigate('/partituras-pro') }
+                                ]
+                            },
+                            { label: 'Portafolio', action: () => navigate('/portfolio') },
+                            { label: 'Galería', action: () => navigate('/gallery') },
                             { label: 'Academia', action: () => navigate('/academy') },
+                            {
+                                label: 'Recursos',
+                                dropdown: [
+                                    { label: 'Software', desc: 'Aplicaciones y utilidades oficiales', action: () => navigate('/software') },
+                                    { label: 'Librerías de Loops', desc: 'Loops y samples premium', action: () => navigate('/library') },
+                                    { label: 'Recursos de Audio', desc: 'Recursos educativos y multipistas', action: () => navigate('/recursos/audio') },
+                                    { label: 'Otros Recursos', desc: 'Descargas y herramientas adicionales', action: () => navigate('/recursos') }
+                                ]
+                            },
                             { label: 'Trayectoria', action: () => document.getElementById('creditos')?.scrollIntoView({ behavior: 'smooth' }) },
                             { label: 'Contacto', action: () => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' }) },
                         ].map(item => (
-                            <span
+                            <div 
                                 key={item.label}
-                                onClick={item.action}
-                                style={{ cursor: 'pointer', transition: 'color 0.2s', textDecoration: 'none' }}
-                                onMouseEnter={e => e.target.style.color = '#fff'}
-                                onMouseLeave={e => e.target.style.color = '#94a3b8'}
+                                onMouseEnter={() => item.dropdown && setHoveredNav(item.label)}
+                                onMouseLeave={() => setHoveredNav(null)}
+                                style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
                             >
-                                {item.label}
-                            </span>
+                                <span
+                                    onClick={item.action}
+                                    style={{ cursor: 'pointer', transition: 'color 0.2s', textDecoration: 'none', padding: '10px 0', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                    onMouseEnter={e => e.target.style.color = '#fff'}
+                                    onMouseLeave={e => e.target.style.color = '#94a3b8'}
+                                >
+                                    {item.label} {item.dropdown && <span style={{ fontSize: '0.65rem' }}>▼</span>}
+                                </span>
+                                
+                                {item.dropdown && hoveredNav === item.label && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        background: '#0f172a',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '12px',
+                                        width: '260px',
+                                        padding: '10px',
+                                        boxShadow: '0 15px 35px rgba(0,0,0,0.6)',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '4px',
+                                        zIndex: 3000
+                                    }}>
+                                        {item.dropdown.map(subItem => (
+                                            <div
+                                                key={subItem.label}
+                                                onClick={() => { subItem.action(); setHoveredNav(null); }}
+                                                style={{
+                                                    padding: '10px 14px',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s',
+                                                    textAlign: 'left'
+                                                }}
+                                                onMouseEnter={e => {
+                                                    e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                                }}
+                                                onMouseLeave={e => {
+                                                    e.currentTarget.style.background = 'transparent';
+                                                }}
+                                            >
+                                                <div style={{ fontWeight: '700', fontSize: '0.85rem', color: '#fff' }}>{subItem.label}</div>
+                                                <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>{subItem.desc}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         ))}
                     </div>
                 </div>
