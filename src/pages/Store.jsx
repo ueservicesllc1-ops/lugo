@@ -826,6 +826,7 @@ export default function Store() {
                                     {[
                                         'Sección específica (Ej: Solo Brass + Teclados + Percusión).',
                                         'Pistas separadas (Stems) en alta calidad.',
+                                        'Click + guía con indicaciones.',
                                         'Ajuste de tono y estructura a tu medida.',
                                         'Mezcla lista para sonar directo en PA.'
                                     ].map((item, idx) => (
