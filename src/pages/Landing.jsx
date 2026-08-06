@@ -914,25 +914,6 @@ export default function Landing() {
                 </div>
             </section>
 
-            {/* CONTACT SECTION */}
-            <section id="contacto" style={{ padding: '100px 20px', background: 'linear-gradient(to bottom, #000, #020617)' }}>
-                <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', background: 'rgba(255,255,255,0.03)', padding: '80px 40px', borderRadius: '40px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <h2 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '20px' }}>¿LISTO PARA EMPEZAR?</h2>
-                    <p style={{ fontSize: '1.2rem', color: '#94a3b8', marginBottom: '40px' }}>
-                        Transformemos tu idea en un sonido profesional. Contáctame directamente para hablar de tu proyecto.
-                    </p>
-                    <button 
-                        onClick={() => window.open('https://wa.me/5215519805954', '_blank')} 
-                        className="btn-teal" 
-                        style={{ padding: '20px 50px', fontSize: '1.2rem', background: '#25D366', border: 'none', display: 'flex', alignItems: 'center', gap: '15px', margin: '0 auto', cursor: 'pointer', borderRadius: '12px', fontWeight: '900', color: 'white' }}
-                    >
-                        <span style={{ fontSize: '1.5rem' }}>💬</span> Hablar por WhatsApp
-                    </button>
-                    <div style={{ marginTop: '30px', color: '#64748b', fontSize: '0.9rem' }}>
-                        Servicios personalizados para artistas y bandas.
-                    </div>
-                </div>
-            </section>
             <Footer />
 
             {/* MODAL DE OPCIONES DE COMPRA (Estilo Secuencias.com) */}

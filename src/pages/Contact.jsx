@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Send, CheckCircle2, MessageSquare, Phone, MapPin } from 'lucide-react';
 import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -44,17 +45,9 @@ export default function Contact() {
 
     return (
         <div style={{ backgroundColor: '#0f172a', minHeight: '100vh', color: 'white', fontFamily: '"Outfit", sans-serif' }}>
-            <nav style={{ padding: '20px 40px', background: '#020617', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <button onClick={() => navigate('/')} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontFamily: '"Outfit", sans-serif' }}>
-                    <ArrowLeft size={20} /> Volver al inicio
-                </button>
-                <div style={{ height: '20px', width: '1px', background: 'rgba(255,255,255,0.1)' }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '0.9rem' }}>
-                    <MessageSquare size={16} /> Contacto
-                </div>
-            </nav>
+            <Navbar />
 
-            <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '70px 40px 100px', display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '80px', alignItems: 'start' }}>
+            <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '140px 40px 100px', display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '80px', alignItems: 'start' }}>
                 {/* Left info */}
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>

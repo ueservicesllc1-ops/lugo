@@ -26,7 +26,7 @@ export default function Biography() {
                     JUNIOR LUGO
                 </h1>
                 <p style={{ color: '#94a3b8', fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6', fontWeight: '300' }}>
-                    Productor Musical, Arreglista y Multiinstrumentista. 20 años de experiencia transformando el sonido y dando vida a producciones de impacto internacional.
+                    Productor Musical y Arreglista. 20 años de experiencia transformando el sonido y dando vida a producciones de impacto internacional.
                 </p>
             </div>
 
@@ -97,7 +97,7 @@ export default function Biography() {
                     padding: '60px 40px', 
                     textAlign: 'center', 
                     border: '1px solid rgba(255,255,255,0.05)',
-                    marginBottom: '80px'
+                    marginBottom: '40px'
                 }}>
                     <Star size={44} color="#00A3FF" style={{ marginBottom: '20px' }} />
                     <p style={{ 
@@ -112,32 +112,6 @@ export default function Biography() {
                         "La música no se trata solo de frecuencias o volumen competitivo; se trata de inmortalizar la emoción. Mi compromiso durante estos 20 años siempre ha sido el mismo: ayudar a que el mensaje del artista perdure para siempre."
                     </p>
                     <span style={{ fontWeight: '800', fontSize: '1rem', letterSpacing: '1px', textTransform: 'uppercase', color: '#00A3FF' }}>— Junior Lugo</span>
-                </div>
-
-                {/* Call To Action */}
-                <div style={{ textAlign: 'center' }}>
-                    <button 
-                        onClick={() => window.open('https://credits.muso.ai/profile/816a8ebd-5537-4c14-bc2e-4283b52ffbcc', '_blank')}
-                        style={{ 
-                            padding: '18px 45px', 
-                            background: '#FFFFFF', 
-                            color: '#000000', 
-                            border: 'none', 
-                            borderRadius: '50px', 
-                            fontSize: '1rem', 
-                            fontWeight: '900', 
-                            letterSpacing: '1px', 
-                            cursor: 'pointer', 
-                            transition: 'all 0.3s ease',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '10px'
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(255,255,255,0.2)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                        Ver Discografía Completa en Muso.ai
-                    </button>
                 </div>
             </div>
             <Footer />

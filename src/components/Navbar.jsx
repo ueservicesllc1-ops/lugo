@@ -142,7 +142,7 @@ export default function Navbar({ cartCount }) {
                             { label: 'Galería', action: () => navigate('/gallery') },
                             { label: 'Academia', action: () => navigate('/academy') },
                             { label: 'Trayectoria', action: () => handleScrollOrNavigate('creditos') },
-                            { label: 'Contacto', action: () => handleScrollOrNavigate('contacto') },
+                            { label: 'Contacto', action: () => navigate('/contact') },
                         ].map(item => (
                             <div 
                                 key={item.label}
