@@ -613,16 +613,14 @@ export default function Landing() {
 
                     <div className="hide-mobile" style={{ display: 'flex', gap: '25px', marginLeft: '20px', fontSize: '0.95rem', fontWeight: '600', color: '#94a3b8' }}>
                         {[
-                            { label: 'Catálogo de Productos', id: 'tienda' },
-                            { label: 'Servicios', id: 'servicios' },
-                            { label: 'Galería', id: 'galeria' },
+                            { label: 'Tienda', action: () => navigate('/store') },
+                            { label: 'Academia', action: () => navigate('/academy') },
+                            { label: 'Trayectoria', action: () => document.getElementById('creditos')?.scrollIntoView({ behavior: 'smooth' }) },
+                            { label: 'Contacto', action: () => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' }) },
                         ].map(item => (
                             <span
                                 key={item.label}
-                                onClick={() => {
-                                    const el = document.getElementById(item.id);
-                                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                                }}
+                                onClick={item.action}
                                 style={{ cursor: 'pointer', transition: 'color 0.2s', textDecoration: 'none' }}
                                 onMouseEnter={e => e.target.style.color = '#fff'}
                                 onMouseLeave={e => e.target.style.color = '#94a3b8'}
@@ -730,9 +728,8 @@ export default function Landing() {
                     </div>
                 </div>
               </div>
-            </nav >
-
-            {/* HERO SECTION - PREMIUM CINEMATIC EXPERIENCE */}
+            </nav>
+              {/* HERO SECTION - PREMIUM CINEMATIC EXPERIENCE */}
              <header style={{
                  position: 'relative',
                  minHeight: '85vh',
@@ -740,25 +737,16 @@ export default function Landing() {
                  alignItems: 'center',
                  padding: '0 60px',
                  overflow: 'hidden',
-                 backgroundColor: '#000000'
+                 backgroundColor: '#020617'
              }}>
-                 {/* IMAGEN HERO: Fondo fusionado a la derecha */}
+                 {/* IMAGEN HERO: De fondo en toda la pantalla con baja opacidad sin degradado a negro */}
                  <div style={{ 
                      position: 'absolute', 
-                     right: 0, 
-                     top: 0, 
-                     bottom: 0, 
-                     width: '55%', 
+                     inset: 0,
                      zIndex: 1,
-                     pointerEvents: 'none'
+                     pointerEvents: 'none',
+                     opacity: 0.15
                  }}>
-                     {/* Degradado de fusión (Hacia el negro a la izquierda) */}
-                     <div style={{
-                         position: 'absolute',
-                         inset: 0,
-                         background: 'linear-gradient(to right, #000000 0%, transparent 35%)',
-                         zIndex: 2
-                     }} />
                      <img 
                          src="/portada.jpg" 
                          alt="Junior Lugo Studio" 
@@ -770,45 +758,41 @@ export default function Landing() {
                      />
                  </div>
 
-                 {/* CONTENEDOR DE TEXTO: Equilibrado */}
+                 {/* CONTENEDOR DE TEXTO: Centrado, minimalista y moderno */}
                  <div style={{ 
                      display: 'flex', 
                      width: '100%', 
                      maxWidth: '1400px', 
                      margin: '0 auto', 
                      alignItems: 'center', 
+                     justifyContent: 'center',
                      position: 'relative', 
                      zIndex: 10,
                      padding: '0 5%'
                  }}>
-                     <div style={{ flex: 1, textAlign: 'left', maxWidth: '650px' }}>
-                         <div style={{ marginBottom: '24px', animation: 'fadeInDown 1s ease-out' }}>
-
-                             
-                             <div style={{ marginBottom: '10px', marginTop: '20px' }}>
-                                 <img 
-                                     src="/logo.png" 
-                                     alt="Logo" 
-                                     style={{ 
-                                         height: 'clamp(256px, 42vw, 513px)', 
-                                         objectFit: 'contain', 
-                                         animation: 'fadeInDown 1s ease-out'
-                                     }} 
-                                 />
-                             </div>
+                     <div style={{ flex: 1, textAlign: 'center', maxWidth: '650px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                         <div style={{ marginBottom: '10px', animation: 'fadeInDown 1s ease-out' }}>
+                             <img 
+                                 src="/logo.png" 
+                                 alt="Logo" 
+                                 style={{ 
+                                     height: 'clamp(200px, 35vw, 400px)', 
+                                     objectFit: 'contain', 
+                                     animation: 'fadeInDown 1s ease-out'
+                                 }} 
+                             />
                          </div>
 
                          <p style={{
                              fontSize: 'clamp(1.2rem, 2.5vw, 1.5rem)',
                              color: 'rgba(255,255,255,0.9)',
                              maxWidth: '550px',
-                             lineHeight: '1.4',
-                             marginBottom: '10px',
+                             lineHeight: '1.5',
+                             marginBottom: '30px',
                              fontWeight: '300',
                              letterSpacing: '0.5px',
-                             borderLeft: '3px solid #FFFFFF',
-                             paddingLeft: '20px',
-                             animation: 'fadeIn 1.5s ease-out'
+                             animation: 'fadeIn 1.5s ease-out',
+                             paddingLeft: 0
                          }}>
                              Producción musical para artistas globales.<br/>
                              <strong style={{ fontWeight: '800', letterSpacing: '1px' }}>Más allá del sonido, creamos tu legado.</strong>
@@ -838,6 +822,25 @@ export default function Landing() {
                              >
                                  Ir a Tienda
                              </button>
+                             <button
+                                 onClick={() => navigate('/academy')}
+                                 style={{
+                                     padding: '14px 40px',
+                                     background: 'transparent',
+                                     border: '1px solid #FFFFFF',
+                                     borderRadius: '6px',
+                                     color: '#FFFFFF',
+                                     fontSize: '0.85rem',
+                                     fontWeight: '800',
+                                     cursor: 'pointer',
+                                     transition: 'all 0.3s ease',
+                                     textTransform: 'uppercase'
+                                 }}
+                                 onMouseOver={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#000000'; }}
+                                 onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}
+                             >
+                                 Academia
+                             </button>
                          </div>
                      </div>
                  </div>
@@ -857,825 +860,6 @@ export default function Landing() {
                     to { opacity: 1; }
                 }
             `}</style>
-
-
-
-            {/* CATÁLOGO DE PRODUCTOS */}
-            <section id="tienda" style={{ padding: '20px 40px 100px 40px', background: 'linear-gradient(to bottom, #0000CC 0%, #000000 100%)', position: 'relative', overflow: 'hidden' }}>
-                <style>{`
-                    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
-                    @keyframes pulse { 0%,100%{opacity:0.3;} 50%{opacity:1;} }
-                    .beat-card:hover { transform: translateY(-8px) !important; }
-                    .beat-card:hover .beat-card-overlay { opacity: 1 !important; }
-                    .service-card:hover { border-color: rgba(255,255,255,0.2) !important; background: rgba(255,255,255,0.06) !important; }
-                    .gallery-img:hover { transform: scale(1.05); }
-                    .gallery-img { transition: transform 0.4s ease; }
-                `}</style>
-
-                <div style={{ maxWidth: '1300px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-                    <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                        <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '10px', color: 'white' }}>INSTRUMENTALES EXCLUSIVOS</h2>
-                        <p style={{ color: '#00d2d3', fontSize: '0.85rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: '800' }}>Para lanzamientos comerciales y plataformas</p>
-                    </div>
-
-                    {/* Beat Cards Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '24px', marginBottom: '40px' }}>
-                        {songsForSale.length > 0 ? songsForSale.slice(0, 8).map((track, i) => (
-                            <div
-                                key={track.id || i}
-                                className="beat-card"
-                                style={{
-                                    background: 'rgba(255,255,255,0.04)',
-                                    borderRadius: '8px',
-                                    border: '1px solid rgba(255,255,255,0.07)',
-                                    overflow: 'hidden',
-                                    cursor: 'pointer',
-                                    transition: 'transform 0.3s ease',
-                                    position: 'relative'
-                                }}
-                            >
-                                {/* Cover art */}
-                                <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden', background: '#0d1428' }}>
-                                    <img
-                                        src={getProxyUrl(track.coverUrl) || `https://picsum.photos/seed/${track.id || i}/300/300`}
-                                        alt={track.name}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        onError={e => { e.target.src = 'https://juniorlugoproducciones.my.canva.site/_assets/media/86c9224aafa4cc886d9b45995298444f.jpg'; }}
-                                    />
-                                    {/* Hover overlay */}
-                                    <div className="beat-card-overlay" style={{
-                                        position: 'absolute', inset: 0,
-                                        background: 'rgba(0,0,0,0.6)',
-                                        opacity: 0,
-                                        transition: 'opacity 0.3s ease',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); toggleSimplePlay(track); }}
-                                            style={{ background: 'white', border: 'none', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                        >
-                                            <Play size={20} fill="black" color="black" style={{ marginLeft: '3px' }} />
-                                        </button>
-                                    </div>
-                                    {/* Script title overlay */}
-                                    <div style={{
-                                        position: 'absolute', bottom: 0, left: 0, right: 0,
-                                        padding: '40px 16px 12px',
-                                        background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)'
-                                    }}>
-                                        <span style={{
-                                            fontFamily: '"Dancing Script", cursive',
-                                            fontSize: '1.6rem',
-                                            color: 'white',
-                                            fontWeight: '700'
-                                        }}>{track.name}</span>
-                                    </div>
-                                </div>
-
-                                {/* Card body */}
-                                <div style={{ padding: '14px 16px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                                        <span style={{ fontSize: '1rem', fontWeight: '800', color: '#c8d0e0' }}>${track.price || '49.00'} <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: '500' }}>USD</span></span>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); toggleSimplePlay(track); }}
-                                            style={{
-                                                flex: 1,
-                                                padding: '8px',
-                                                background: 'rgba(255,255,255,0.06)',
-                                                border: '1px solid rgba(255,255,255,0.12)',
-                                                borderRadius: '4px',
-                                                color: '#8892a4',
-                                                fontSize: '0.72rem',
-                                                fontWeight: '700',
-                                                letterSpacing: '1px',
-                                                cursor: 'pointer',
-                                                textTransform: 'uppercase',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '5px',
-                                                transition: 'all 0.2s'
-                                            }}
-                                            onMouseEnter={e => { e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.color = '#8892a4'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}
-                                        >
-                                            <Play size={11} fill="currentColor" /> ESCUCHAR
-                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleBuyClick(track); }}
-                                            style={{
-                                                flex: 1,
-                                                padding: '8px',
-                                                background: 'rgba(255,255,255,0.09)',
-                                                border: '1px solid rgba(255,255,255,0.18)',
-                                                borderRadius: '4px',
-                                                color: 'white',
-                                                fontSize: '0.72rem',
-                                                fontWeight: '700',
-                                                letterSpacing: '1px',
-                                                cursor: 'pointer',
-                                                textTransform: 'uppercase',
-                                                transition: 'all 0.2s'
-                                            }}
-                                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.18)'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; }}
-                                        >COMPRAR</button>
-                                    </div>
-                                </div>
-                            </div>
-                        )) : (
-                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                                Aún no hay instrumentales exclusivos publicados.
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Ver catálogo completo */}
-                    <div style={{ textAlign: 'center' }}>
-                        <button
-                            onClick={() => navigate('/store?type=single')}
-                            style={{
-                                padding: '12px 36px',
-                                background: 'transparent',
-                                border: '1px solid rgba(255,255,255,0.25)',
-                                borderRadius: '4px',
-                                color: 'rgba(255,255,255,0.7)',
-                                fontSize: '0.8rem',
-                                fontWeight: '700',
-                                letterSpacing: '2px',
-                                cursor: 'pointer',
-                                textTransform: 'uppercase',
-                                transition: 'all 0.3s'
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'white'; e.currentTarget.style.color = 'white'; }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
-                        >VER CATÁLOGO DE INSTRUMENTALES</button>
-                    </div>
-                </div>
-            </section>
-
-            {/* MULTITRACKS EN VENTA - SECCION ADICIONAL */}
-            <section style={{ padding: '80px 40px', backgroundColor: '#000000', position: 'relative' }}>
-                <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
-                    <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '10px', color: '#FFFFFF' }}>MULTITRACKS EN VENTA</h2>
-                        <p style={{ color: 'white', fontSize: '0.85rem', letterSpacing: '2px', textTransform: 'uppercase' }}>Sesiones profesionales de estudio listas para tu motor</p>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px' }}>
-                        {multitracksForSale.length > 0 ? multitracksForSale.map((track, i) => (
-                            <div 
-                                key={track.id || i}
-                                style={{ 
-                                    background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(139,92,246,0.05) 100%)',
-                                    borderRadius: '16px',
-                                    border: '1px solid rgba(139,92,246,0.15)',
-                                    overflow: 'hidden',
-                                    transition: 'all 0.3s'
-                                }}
-                                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.4)'; }}
-                                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.15)'; }}
-                            >
-                                <div style={{ position: 'relative', aspectRatio: '1/1' }}>
-                                    <img 
-                                        src={getProxyUrl(track.coverUrl) || '/studio_placeholder.png'} 
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                        onError={e => {e.target.src = '/hero_banner_studio.png'}}
-                                    />
-                                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <button 
-                                            onClick={() => openPreview(track)}
-                                            style={{ background: '#FFFFFF', border: 'none', width: '50px', height: '50px', borderRadius: '50%', color: 'black', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            <Play size={20} fill="black" />
-                                        </button>
-                                    </div>
-                                    <div style={{ position: 'absolute', bottom: '15px', right: '15px', background: 'rgba(0,0,0,0.7)', padding: '4px 10px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: '900', backdropFilter: 'blur(4px)' }}>
-                                        ZIP SESSION
-                                    </div>
-                                </div>
-                                <div style={{ padding: '20px' }}>
-                                    <h3 style={{ margin: '0 0 5px 0', fontSize: '1rem', fontWeight: '800' }}>{track.name}</h3>
-                                    <p style={{ color: '#64748b', fontSize: '0.8rem', margin: '0 0 15px 0' }}>{track.artist}</p>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '1.2rem', fontWeight: '900', color: '#FFFFFF' }}>${track.price || '99.00'}</span>
-                                        <button 
-                                            onClick={() => handleBuyClick(track)}
-                                            style={{ background: 'transparent', border: '1px solid #FFFFFF', color: '#FFFFFF', padding: '6px 15px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s' }}
-                                            onMouseEnter={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#000000'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}
-                                        >AGREGAR</button>
-                                    </div>
-                                </div>
-                            </div>
-                        )) : (
-                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: '#334155' }}>
-                                <Music2 size={48} style={{ opacity: 0.1, margin: '0 auto 10px' }} />
-                                <p>Próximos lanzamientos de multitracks...</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Ver todos los multitracks */}
-                    <div style={{ textAlign: 'center', marginTop: '60px' }}>
-                        <button
-                            onClick={() => navigate('/store?type=multitrack')}
-                            style={{
-                                padding: '12px 36px',
-                                background: 'transparent',
-                                border: '1px solid rgba(255,255,255,0.25)',
-                                borderRadius: '4px',
-                                color: 'rgba(255,255,255,0.7)',
-                                fontSize: '0.8rem',
-                                fontWeight: '700',
-                                letterSpacing: '2px',
-                                cursor: 'pointer',
-                                textTransform: 'uppercase',
-                                transition: 'all 0.3s'
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'white'; e.currentTarget.style.color = 'white'; }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
-                        >VER CATÁLOGO DE MULTITRACKS</button>
-                    </div>
-                </div>
-            </section>
-
-            {/* SERVICIOS DE PRODUCCIÓN */}
-            <section id="servicios" style={{ padding: '100px 40px', background: 'linear-gradient(to bottom, #0000CC 0%, #000000 100%)' }}>
-                <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
-                    <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                        <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '10px', color: 'white' }}>SERVICIOS DE PRODUCCIÓN</h2>
-                        <p style={{ color: '#8892a4', fontSize: '0.85rem', letterSpacing: '3px', textTransform: 'uppercase' }}>¿QUÉ PUEDO HACER POR TU MÚSICA?</p>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
-                        {[
-                            {
-                                icon: (
-                                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                        <path d="M9 19V6l12-3v13" /><circle cx="6" cy="19" r="3" /><circle cx="18" cy="16" r="3" />
-                                    </svg>
-                                ),
-                                title: 'Producción Musical',
-                                desc: 'Desarrollo integral de canciones desde la idea inicial hasta el master final, trabajando cada proyecto bajo una sola visión artística y sonora.',
-                                link: '#contacto'
-                            },
-                            {
-                                icon: (
-                                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                        <line x1="18" y1="20" x2="18" y2="10" />
-                                        <line x1="12" y1="20" x2="12" y2="4" />
-                                        <line x1="6" y1="20" x2="6" y2="14" />
-                                        <line x1="3" y1="7" x2="21" y2="7" strokeDasharray="2 2" opacity="0.4" />
-                                    </svg>
-                                ),
-                                title: 'Mezcla Profesional',
-                                desc: 'Balanceo y procesamiento de todos los elementos de tu canción para lograr un sonido cohesivo, potente y competitivo.',
-                                link: '#contacto'
-                            },
-                            {
-                                icon: (
-                                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                        <rect x="2" y="3" width="20" height="14" rx="2" />
-                                        <line x1="8" y1="21" x2="16" y2="21" />
-                                        <line x1="12" y1="17" x2="12" y2="21" />
-                                        <path d="M7 8h10M7 11h6" />
-                                    </svg>
-                                ),
-                                title: 'Masterización',
-                                desc: 'Preparación final de tu canción para distribución en plataformas digitales con el máximo nivel de calidad y volumen competitivo.',
-                                link: '#contacto'
-                            },
-                            {
-                                icon: (
-                                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                        <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" />
-                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                                        <line x1="12" y1="19" x2="12" y2="23" />
-                                        <line x1="8" y1="23" x2="16" y2="23" />
-                                    </svg>
-                                ),
-                                title: 'Grabación de Voces',
-                                desc: 'Sesión de grabación vocal con dirección artística para capturar la mejor interpretación de cada canción.',
-                                link: '#contacto'
-                            }
-                        ].map((svc, i) => (
-                            <div
-                                key={i}
-                                className="service-card"
-                                style={{
-                                    background: 'rgba(255,255,255,0.03)',
-                                    border: '1px solid rgba(255,255,255,0.08)',
-                                    borderRadius: '8px',
-                                    padding: '36px 28px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '16px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease'
-                                }}
-                            >
-                                <div style={{ color: 'rgba(255,255,255,0.6)' }}>{svc.icon}</div>
-                                <h3 style={{ fontSize: '1rem', fontWeight: '800', color: 'white', margin: 0, letterSpacing: '0.5px' }}>{svc.title}</h3>
-                                <p style={{ color: '#6b778a', fontSize: '0.87rem', lineHeight: '1.65', margin: 0 }}>{svc.desc}</p>
-                                <a
-                                    href={svc.link}
-                                    onClick={e => { e.preventDefault(); document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' }); }}
-                                    style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.8rem', fontWeight: '700', letterSpacing: '1px', textDecoration: 'none', textTransform: 'uppercase', marginTop: 'auto', transition: 'color 0.2s' }}
-                                    onMouseEnter={e => e.currentTarget.style.color = 'white'}
-                                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
-                                >Más Información →</a>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* GALERÍA DE FOTOS - ESTILO FILMES PRO */}
-            <section id="galeria" style={{ padding: '120px 0', backgroundColor: '#000000', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 60px', marginBottom: '60px', textAlign: 'center' }}>
-                    <span style={{ color: '#FFFFFF', fontSize: '0.8rem', fontWeight: '800', letterSpacing: '6px', textTransform: 'uppercase', display: 'block', marginBottom: '15px' }}>Visuales</span>
-                    <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '900', color: 'white', textTransform: 'uppercase', margin: 0, letterSpacing: '-1px' }}>Experiencia en el Estudio</h2>
-                </div>
-
-                {/* Navegación Flotante PRO */}
-                <div style={{ 
-                    position: 'absolute', 
-                    top: '55%', 
-                    left: 0, 
-                    right: 0, 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    padding: '0 40px', 
-                    zIndex: 20, 
-                    pointerEvents: 'none',
-                    transform: 'translateY(-50%)'
-                }}>
-                    <button 
-                        onClick={() => scrollGallery('left')}
-                        style={{ pointerEvents: 'auto', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', width: '64px', height: '64px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s', backdropFilter: 'blur(10px)' }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#FFFFFF'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
-                    >
-                        <ChevronLeft size={32} color="currentColor" />
-                    </button>
-                    <button 
-                        onClick={() => scrollGallery('right')}
-                        style={{ pointerEvents: 'auto', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', width: '64px', height: '64px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s', backdropFilter: 'blur(10px)' }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#FFFFFF'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
-                    >
-                        <ChevronRight size={32} color="currentColor" />
-                    </button>
-                </div>
-
-                {/* Ventana de Galería Centrada - Escala Pro */}
-                <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '0 40px', position: 'relative' }}>
-                    
-                    {/* Contenedor de Scroll Limitado */}
-                    <div 
-                        ref={carouselRef}
-                        style={{ 
-                            display: 'flex', 
-                            overflowX: 'auto', 
-                            scrollSnapType: 'x mandatory',
-                            gap: '24px', 
-                            padding: '30px 0 50px',
-                            scrollbarWidth: 'none',
-                            msOverflowStyle: 'none',
-                            justifyContent: 'flex-start'
-                        }}
-                        className="gallery-scroll-container"
-                    >
-                        {(galleryPhotos.length > 0 ? galleryPhotos : [
-                            { url: 'https://juniorlugoproducciones.my.canva.site/_assets/media/304b1a4d184946867ea9137eb1bb2a6f.png', caption: 'Salsa Fest. Veracruz. 2023.' },
-                            { url: 'https://juniorlugoproducciones.my.canva.site/_assets/media/7de6e9846afef951695af2f65873f3c0.png', caption: 'Estadio El Campín. Bogotá. 2024.' },
-                            { url: 'https://juniorlugoproducciones.my.canva.site/_assets/media/86c9224aafa4cc886d9b45995298444f.jpg', caption: 'Estudio de Producción' },
-                            { url: 'https://juniorlugoproducciones.my.canva.site/_assets/media/304b1a4d184946867ea9137eb1bb2a6f.png', caption: 'Oscar de León. Salsa Fest 2023.' },
-                            { url: 'https://juniorlugoproducciones.my.canva.site/_assets/media/7de6e9846afef951695af2f65873f3c0.png', caption: 'Arena CDMX. Sanyer Nelo Show.' },
-                            { url: 'https://juniorlugoproducciones.my.canva.site/_assets/media/86c9224aafa4cc886d9b45995298444f.jpg', caption: 'Feria San Marcos. Carlos Baute.' }
-                        ]).map((photo, i) => (
-                            <div
-                                key={i}
-                                onClick={() => setSelectedGalleryPhoto(photo)}
-                                style={{
-                                    flex: '0 0 calc(25% - 18px)',
-                                    height: '220px',
-                                    minWidth: '280px',
-                                    overflow: 'hidden',
-                                    borderRadius: '14px',
-                                    position: 'relative',
-                                    scrollSnapAlign: 'start',
-                                    background: '#111',
-                                    boxShadow: '0 25px 50px rgba(0,0,0,0.6)',
-                                    border: '1px solid rgba(255,255,255,0.05)',
-                                    cursor: 'zoom-in'
-                                }}
-                            >
-                                {photo.type === 'video' ? (
-                                    <video
-                                        src={getProxyUrl(photo.url)}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                                        muted
-                                        loop
-                                        onMouseEnter={e => e.currentTarget.play()}
-                                        onMouseLeave={e => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
-                                    />
-                                ) : (
-                                    <img
-                                        src={getProxyUrl(photo.url)}
-                                        alt={photo.caption}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.8s ease' }}
-                                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-                                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                                    />
-                                )}
-                                <div style={{
-                                    position: 'absolute', inset: 0,
-                                    background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 80%)',
-                                    zIndex: 2,
-                                    display: 'flex',
-                                    alignItems: 'flex-end',
-                                    padding: '20px',
-                                    opacity: 0.8,
-                                    pointerEvents: 'none'
-                                }}>
-                                    <span style={{ color: 'white', fontSize: '0.65rem', fontWeight: '800', letterSpacing: '1px', textTransform: 'uppercase', borderLeft: '2px solid #FFFFFF', paddingLeft: '10px' }}>
-                                        {photo.type === 'video' ? '▶ ' : ''}{photo.caption}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-
-                <div style={{ textAlign: 'center' }}>
-                    <button
-                        onClick={() => navigate('/gallery')}
-                        style={{
-                            padding: '18px 50px',
-                            background: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            color: 'black',
-                            fontSize: '0.9rem',
-                            fontWeight: '900',
-                            letterSpacing: '1px',
-                            cursor: 'pointer',
-                            textTransform: 'uppercase',
-                            transition: 'all 0.3s',
-                            boxShadow: '0 10px 30px rgba(255, 255, 255, 0.2)'
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.background = '#000000'; e.currentTarget.style.color = 'white'; e.currentTarget.style.border = '1px solid white'; }}
-                        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'white'; e.currentTarget.style.color = 'black'; e.currentTarget.style.border = 'none'; }}
-                    > Ver Galería Completa </button>
-                </div>
-
-
-
-
-                {/* LIGHTBOX MODAL */}
-                {selectedGalleryPhoto && (
-                    <div 
-                        onClick={() => setSelectedGalleryPhoto(null)}
-                        style={{ 
-                            position: 'fixed', inset: 0, 
-                            backgroundColor: 'rgba(0,0,0,0.95)', 
-                            zIndex: 5000, 
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                            padding: '40px' 
-                        }}
-                    >
-                        <button style={{ position: 'absolute', top: '30px', right: '40px', background: 'white', color: 'black', border: 'none', borderRadius: '50%', width: '60px', height: '60px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-                            <X size={34} />
-                        </button>
-                        <div style={{ maxWidth: '90%', maxHeight: '80%', textAlign: 'center' }}>
-                            {selectedGalleryPhoto.type === 'video' ? (
-                                <video
-                                    src={getProxyUrl(selectedGalleryPhoto.url)}
-                                    controls
-                                    autoPlay
-                                    style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: '12px', boxShadow: '0 40px 100px rgba(0,0,0,0.8)' }}
-                                />
-                            ) : (
-                                <img
-                                    src={getProxyUrl(selectedGalleryPhoto.url)}
-                                    alt={selectedGalleryPhoto.caption}
-                                    style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: '12px', boxShadow: '0 40px 100px rgba(0,0,0,0.8)' }}
-                                />
-                            )}
-                            <h3 style={{ marginTop: '30px', fontSize: '1.8rem', fontWeight: '900', color: 'white', letterSpacing: '2px', textTransform: 'uppercase' }}>{selectedGalleryPhoto.caption}</h3>
-                        </div>
-                    </div>
-                )}
-
-                <style>{`
-                    .gallery-scroll-container::-webkit-scrollbar { display: none; }
-                    .gallery-scroll-container { scroll-behavior: smooth; }
-                `}</style>
-            </section>
-
-            {/* ETAPAS DEL PROCESO */}
-            <section id="proceso" style={{ padding: '80px 40px 40px', background: 'linear-gradient(to bottom, #0000CC 0%, #000000 100%)' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-                        <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '10px', color: 'white' }}>ETAPAS DEL PROCESO</h2>
-                        <p style={{ color: '#8892a4', fontSize: '0.85rem', letterSpacing: '3px', textTransform: 'uppercase' }}>CÓMO TRABAJAMOS JUNTOS</p>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '2px' }}>
-                        {[
-                            { step: '01', title: 'PREPRODUCCIÓN', desc: 'Definimos la dirección artística, estructura y concepto de la canción. Arreglos musicales con instrumentos virtuales como herramienta creativa.', icon: '01' },
-                            { step: '02', title: 'PRODUCCIÓN', desc: 'Grabación de instrumentos, voces y arreglos musicales. Sustitución de elementos virtuales por instrumentos reales buscando la mejor interpretación.', icon: '02' },
-                            { step: '03', title: 'MEZCLA Y MASTERING', desc: 'Pulir la visión artística del proyecto asegurando coherencia, claridad y calidad. Tu canción lista para subir a plataformas digitales.', icon: '03' },
-                            { step: '04', title: 'PARTITURAS', desc: 'Entrega de partituras profesionales para presentaciones en vivo con músicos en escena.', icon: '04' }
-                        ].map((item, i) => (
-                            <div key={i} style={{
-                                background: 'rgba(255,255,255,0.025)',
-                                padding: '40px 30px',
-                                border: '1px solid rgba(255,255,255,0.06)',
-                                transition: 'all 0.3s ease',
-                                position: 'relative',
-                                overflow: 'hidden'
-                            }}
-                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
-                            >
-                                <div style={{ fontSize: '3.5rem', fontWeight: '900', color: 'rgba(255,255,255,0.04)', position: 'absolute', top: '10px', right: '16px', fontFamily: 'monospace' }}>{item.step}</div>
-                                <div style={{ fontSize: '1.8rem', marginBottom: '20px' }}>{item.icon}</div>
-                                <h3 style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '14px', color: 'white', letterSpacing: '2px' }}>{item.title}</h3>
-                                <p style={{ color: '#6b778a', lineHeight: '1.7', fontSize: '0.88rem' }}>{item.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* PORTAFOLIO / VIDEOS */}
-            <section id="portafolio" style={{ padding: '40px 40px 100px', background: 'linear-gradient(to bottom, #0000CC 0%, #000000 100%)' }}>
-                <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
-                    <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                        <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: '900', letterSpacing: '4px', textTransform: 'uppercase', color: 'white', marginBottom: '4px' }}>PORTAFOLIO</h2>
-                        <p style={{ color: '#8892a4', fontSize: '0.8rem', letterSpacing: '4px', textTransform: 'uppercase' }}>PRODUCCIONES Y TRABAJOS RECIENTES</p>
-                    </div>
-
-                    <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
-                        gap: '25px',
-                        justifyContent: 'center'
-                    }}>
-                        {(portfolioVideos.length > 0 ? portfolioVideos.slice(0, 6) : [
-                            { videoId: 'wJGUbmth5T4', title: 'Whatsap (Y si te miro tanto) - Enza Rigano', genre: 'POP' },
-                            { videoId: 'iK7devs8FGc', title: 'Lo que tú pediste - Enza (Urbano)', genre: 'URBANO' },
-                            { videoId: '7469MKm5VyA', title: 'Baja la temperatura - Enza Rigano', genre: 'POP' },
-                            { videoId: 'NRarqQpM-38', title: 'Sanyer - A la Antigüita', genre: 'FOLKLORE' },
-                            { videoId: '7469MKm5VyA', title: 'Baja la temperatura - Enza Rigano', genre: 'POP' },
-                            { videoId: 'NRarqQpM-38', title: 'Sanyer - A la Antigüita', genre: 'FOLKLORE' }
-                        ]).map((video, idx) => (
-                            <div key={idx} style={{ 
-                                borderRadius: '12px', 
-                                overflow: 'hidden', 
-                                border: '1px solid rgba(255,255,255,0.05)', 
-                                background: '#0a0f1e', 
-                                aspectRatio: '16/9', 
-                                position: 'relative',
-                                boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-                                transition: 'all 0.3s ease'
-                            }} className="video-card-hover">
-                                <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(255, 255, 255, 0.8)', padding: '4px 12px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '1px', color: 'black', zIndex: 2, textTransform: 'uppercase' }}>{video.genre}</div>
-                                <iframe
-                                    width="100%"
-                                    height="100%"
-                                    src={`https://www.youtube.com/embed/${video.videoId}?rel=0&modestbranding=1`}
-                                    title={video.title}
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                    style={{ display: 'block' }}
-                                ></iframe>
-                            </div>
-                        ))}
-                    </div>
-
-                    {portfolioVideos.length > 6 && (
-                        <div style={{ textAlign: 'center', marginTop: '60px' }}>
-                            <button 
-                                onClick={() => navigate('/portfolio')}
-                                style={{
-                                    padding: '16px 40px',
-                                    background: 'transparent',
-                                    border: '2px solid #FFFFFF',
-                                    color: '#FFFFFF',
-                                    borderRadius: '50px',
-                                    fontSize: '0.9rem',
-                                    fontWeight: '900',
-                                    letterSpacing: '2px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s'
-                                }}
-                                onMouseEnter={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#000000'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#FFFFFF'; }}
-                            >
-                                VER TODO EL PORTAFOLIO
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </section>
-
-            {/* TOP 10 RANKING SECTION */}
-            <section style={{ padding: '100px 60px', backgroundColor: '#000000' }}>
-                <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
-                    <h2 style={{ textAlign: 'center', fontSize: '2.5rem', fontWeight: '800', marginBottom: '60px' }}>Top 10 de este Mes</h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '32px' }}>
-                        <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '32px' }}>
-                            {songsForSale.slice(0, 5).map((s, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '16px 0', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                                    <span style={{ fontSize: '1.5rem', fontWeight: '900', color: i === 0 ? '#00d2d3' : '#334155', width: '40px' }}>{i + 1}</span>
-                                    <div style={{ marginLeft: '12px', flex: 1, overflow: 'hidden' }}>
-                                        <div style={{ fontWeight: '700', fontSize: '1.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
-                                        <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{s.artist}</div>
-                                    </div>
-                                    <button 
-                                        onClick={() => s.isSingle ? toggleSimplePlay(s) : openPreview(s)}
-                                        className="btn-ghost" 
-                                        style={{ marginLeft: 'auto', padding: '6px 16px', fontSize: '0.8rem', border: '1px solid rgba(0,210,211,0.3)', color: '#00d2d3' }}
-                                    >
-                                        {s.isSingle ? 'Escuchar' : 'Ver Pistas'}
-                                    </button>
-                                </div>
-                            ))}
-                            {songsForSale.length === 0 && <p style={{ color: '#64748b', textAlign: 'center' }}>Cargando canciones...</p>}
-                        </div>
-                        <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '32px' }}>
-                            {songsForSale.slice(5, 10).map((s, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '16px 0', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                                    <span style={{ fontSize: '1.5rem', fontWeight: '900', color: '#334155', width: '40px' }}>{i + 6}</span>
-                                    <div style={{ marginLeft: '12px', flex: 1, overflow: 'hidden' }}>
-                                        <div style={{ fontWeight: '700', fontSize: '1.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
-                                        <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{s.artist}</div>
-                                    </div>
-                                    <button 
-                                        onClick={() => openPreview(s)}
-                                        className="btn-ghost" 
-                                        style={{ marginLeft: 'auto', padding: '6px 16px', fontSize: '0.8rem', border: '1px solid rgba(0,210,211,0.3)', color: '#00d2d3' }}
-                                    >
-                                        Ver Pistas
-                                    </button>
-                                </div>
-                            ))}
-                            {songsForSale.length <= 5 && songsForSale.length > 0 && <p style={{ color: '#64748b', textAlign: 'center', marginTop: '20px' }}>Más pistas próximamente...</p>}
-                        </div>
-                    </div>
-                </div>
-            </section >
-
-
-
-
-
-            {/* PREVIEW MODAL (Horizontal Studio Design) - Compact Version */}
-            {
-                previewSong && (
-                    <div key="preview-modal" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(12px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
-                        <div style={{ background: '#020617', width: '100%', maxWidth: '1300px', height: '90vh', maxHeight: '95vh', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', boxShadow: '0 40px 80px rgba(0,0,0,0.8)', color: 'white', display: 'flex', flexDirection: 'column' }}>
-
-                            <div style={{ padding: '14px 25px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(0,210,211,0.3)', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        {previewSong.coverUrl ? (
-                                            <img src={getProxyUrl(previewSong.coverUrl)} alt={previewSong.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                        ) : (
-                                            <Music2 size={20} color="#00d2d3" />
-                                        )}
-                                    </div>
-                                    <div>
-                                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900', color: '#00d2d3' }}>{previewSong.name}</h3>
-                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: '700', letterSpacing: '0.5px' }}>PREVIEW MODE</span>
-                                            <span style={{ width: '3px', height: '3px', background: '#334155', borderRadius: '50%' }}></span>
-                                            <span style={{ fontSize: '0.7rem', color: '#00d2d3', fontWeight: '800' }}>20 SECONDS</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button onClick={closePreview} style={{ background: '#1e293b', border: 'none', width: '32px', height: '32px', borderRadius: '50%', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }} onMouseEnter={e => e.target.style.background = '#ef4444'} onMouseLeave={e => e.target.style.background = '#1e293b'}><X size={16} /></button>
-                            </div>
-
-                        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
-                            {/* COLUMNA IZQUIERDA: MEZCLADOR */}
-                            <div style={{ flex: 1, padding: '25px', borderRight: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                                {previewLoading ? (
-                                    <div style={{ textAlign: 'center', padding: '50px 0' }}>
-                                        <div style={{ width: '40px', height: '40px', border: '3px solid rgba(0,163,255,0.1)', borderTopColor: '#00A3FF', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}></div>
-                                        <p style={{ color: '#00A3FF', fontSize: '0.9rem', fontWeight: '900', letterSpacing: '1px' }}>INICIALIZANDO MOTOR...</p>
-                                    </div>
-                                ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-                                        {/* Sticky Playback Controls */}
-                                        <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '15px 20px', border: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
-                                            <button
-                                                onClick={togglePreviewPlayback}
-                                                style={{ background: '#00A3FF', border: 'none', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', cursor: 'pointer', boxShadow: '0 0 20px rgba(0,163,255,0.3)', transition: 'transform 0.2s' }}
-                                            >
-                                                {isPreviewPlaying ? <X size={24} color="black" /> : <Play size={24} fill="black" color="black" style={{ marginLeft: '3px' }} />}
-                                            </button>
-
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                                    <span style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: '900', letterSpacing: '0.5px' }}>PLAYBACK (20s-80s)</span>
-                                                    <span style={{ color: '#00A3FF', fontSize: '1rem', fontWeight: '900', fontFamily: 'monospace' }}>{previewProgress.toFixed(1)}s</span>
-                                                </div>
-                                                <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                                                    <div style={{ height: '100%', width: `${((previewProgress - 20) / 60) * 100}%`, background: '#00A3FF', boxShadow: '0 0 10px #00A3FF' }}></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Scrollable Tracks */}
-                                        <div style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
-                                            <HorizontalMixer
-                                                tracks={previewTracks}
-                                                onVolumeChange={handleVolumeChange}
-                                                onMuteToggle={handleMuteToggle}
-                                                onSoloToggle={handleSoloToggle}
-                                                onPanChange={handlePanChange}
-                                                progress={previewProgress}
-                                                selectable={selectedMixOption === 'custom'}
-                                                onSelectToggle={handleTrackSelectToggle}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* COLUMNA DERECHA: OPCIONES DE DESCARGA/COMPRA */}
-                            <div style={{ width: '400px', padding: '25px', display: 'flex', flexDirection: 'column', gap: '20px', background: 'rgba(255,255,255,0.01)' }}>
-                                <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#64748b', letterSpacing: '2px' }}>OPCIONES DE COMPRA:</div>
-                                
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    {[
-                                        { id: 'wav', name: 'Secuencia (Multitrack)', desc: 'Sesión completa con tracks individuales en formato WAV.', price: parseFloat(previewSong.price) || 0, icon: <Layers size={18} /> },
-                                        { id: 'custom', name: 'CustomMix (Mezcla WAV)', desc: 'Crea tu propia mezcla personalizada exportada en WAV.', price: pricing.stemsPrice, icon: <Disc size={18} /> },
-                                        { id: 'wav_track', name: 'Pista Instrumental (WAV)', desc: 'Pista de acompañamiento con coros de fondo en alta calidad.', price: pricing.wavTrackPrice || 9.00, icon: <Music size={18} /> }
-                                    ].map(opt => (
-                                        <div 
-                                            key={opt.id}
-                                            onClick={() => setSelectedMixOption(opt.id)}
-                                            style={{ 
-                                                padding: '16px', borderRadius: '15px', border: '1px solid',
-                                                borderColor: selectedMixOption === opt.id ? '#00A3FF' : 'rgba(255,255,255,0.08)',
-                                                background: selectedMixOption === opt.id ? 'rgba(0,163,255,0.05)' : 'rgba(255,255,255,0.02)',
-                                                cursor: 'pointer', transition: 'all 0.2s', position: 'relative'
-                                            }}
-                                        >
-                                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                                <div style={{ color: selectedMixOption === opt.id ? '#00A3FF' : '#64748b' }}>{opt.icon}</div>
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>{opt.name}</div>
-                                                    <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{opt.desc}</div>
-                                                </div>
-                                                <div style={{ fontWeight: '900', fontSize: '1rem', color: selectedMixOption === opt.id ? 'white' : '#64748b' }}>${opt.price.toFixed(2)}</div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div style={{ marginTop: 'auto', padding: '20px', background: 'rgba(0,163,255,0.05)', borderRadius: '20px', border: '1px dashed rgba(0,163,255,0.2)' }}>
-                                    <button 
-                                        onClick={() => {
-                                            const opt = [
-                                                { id: 'wav', name: 'Secuencia (Multitrack)', price: parseFloat(previewSong.price) || 0, format: 'WAV/ZIP' },
-                                                { id: 'custom', name: 'CustomMix (Mezcla WAV)', price: pricing.stemsPrice, format: 'Custom WAV' },
-                                                { id: 'wav_track', name: 'Pista Instrumental (WAV)', price: pricing.wavTrackPrice || 9.00, format: 'WAV' }
-                                            ].find(o => o.id === selectedMixOption);
-                                            
-                                            const meta = selectedMixOption === 'custom' 
-                                                ? { selectedTracks: previewTracks.filter(t => t.selected).map(t => t.name) }
-                                                : null;
-                                            
-                                            addToCart(previewSong, { ...opt, meta });
-                                            closePreview();
-                                            navigate('/checkout');
-                                        }}
-                                        style={{ width: '100%', padding: '15px', borderRadius: '12px', background: '#00A3FF', border: 'none', color: 'black', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
-                                    >
-                                        <ShoppingCart size={18} /> COMPRAR AHORA
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
-            }
-
-
 
             {/* FULLSCREEN AUTH OVERLAY (Improved Design) */}
             {
