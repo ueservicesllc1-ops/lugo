@@ -465,9 +465,6 @@ export default function Store() {
                 <h1 style={{ fontSize: window.innerWidth < 768 ? '2.2rem' : '3.5rem', fontWeight: '900', marginBottom: '10px', lineHeight: 1.1 }}>
                     Tienda de Secuencias
                 </h1>
-                <p style={{ color: '#94a3b8', fontSize: window.innerWidth < 768 ? '1rem' : '1.2rem', maxWidth: '600px', margin: '0 auto 20px' }}>
-                    Explora multitracks profesionales para Lugo Stage.
-                </p>
             </header>
 
             <style>{`
