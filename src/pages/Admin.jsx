@@ -106,7 +106,7 @@ export default function Admin() {
     const [gallery, setGallery] = useState([]);
     const [videos, setVideos] = useState([]);
     const [socials, setSocials] = useState({ instagram: '', youtube: '', tiktok: '', spotify: '' });
-    const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00, wavTrackPrice: 15.00 });
+    const [pricing, setPricing] = useState({ wavPrice: 580.00, stemsPrice: 300.00, mp3Price: 180.00, wavTrackPrice: 300.00 });
     const [users, setUsers] = useState([]);
     const [partiturasVenta, setPartiturasVenta] = useState([]);
     const [usersSearch, setUsersSearch] = useState('');
@@ -142,10 +142,10 @@ export default function Admin() {
     const [songKey, setSongKey] = useState('');
     const [tempo, setTempo] = useState('');
     const [timeSignature, setTimeSignature] = useState('4/4');
-    const [price, setPrice] = useState('9.99');
-    const [priceCustomMix, setPriceCustomMix] = useState('15.00');
-    const [priceWavTrack, setPriceWavTrack] = useState('15.00');
-    const [priceMp3Track, setPriceMp3Track] = useState('9.00');
+    const [price, setPrice] = useState('580.00');
+    const [priceCustomMix, setPriceCustomMix] = useState('300.00');
+    const [priceWavTrack, setPriceWavTrack] = useState('300.00');
+    const [priceMp3Track, setPriceMp3Track] = useState('180.00');
     const [mtPriceTouched, setMtPriceTouched] = useState(false);
     const [zipFolderName, setZipFolderName] = useState('');
     const [coverUrl, setCoverUrl] = useState('');
@@ -224,10 +224,10 @@ export default function Admin() {
 
     useEffect(() => {
         if (mtPriceTouched) return;
-        setPrice(String(pricing.wavPrice ?? 29.0));
-        setPriceCustomMix(String(pricing.stemsPrice ?? 15.0));
-        setPriceWavTrack(String(pricing.wavTrackPrice ?? 15.0));
-        setPriceMp3Track(String(pricing.mp3Price ?? 9.0));
+        setPrice(String(pricing.wavPrice ?? 580.0));
+        setPriceCustomMix(String(pricing.stemsPrice ?? 300.0));
+        setPriceWavTrack(String(pricing.wavTrackPrice ?? 300.0));
+        setPriceMp3Track(String(pricing.mp3Price ?? 180.0));
     }, [pricing, mtPriceTouched]);
 
     const handleLogout = () => { auth.signOut(); navigate('/'); };
@@ -379,10 +379,10 @@ export default function Admin() {
     const resetMtWizard = () => {
         setMtStep('idle'); setFileList([]); setSongName(''); setArtist('');
         setSongKey(''); setTempo(''); setTimeSignature('4/4');
-        setPrice(String(pricing.wavPrice ?? 29.0));
-        setPriceCustomMix(String(pricing.stemsPrice ?? 15.0));
-        setPriceWavTrack(String(pricing.wavTrackPrice ?? 15.0));
-        setPriceMp3Track(String(pricing.mp3Price ?? 9.0));
+        setPrice(String(pricing.wavPrice ?? 580.0));
+        setPriceCustomMix(String(pricing.stemsPrice ?? 300.0));
+        setPriceWavTrack(String(pricing.wavTrackPrice ?? 300.0));
+        setPriceMp3Track(String(pricing.mp3Price ?? 180.0));
         setMtPriceTouched(false);
         setZipFolderName(''); setCoverUrl(''); setCoverFileId(''); setUploadProgress(0); setMtError('');
     };

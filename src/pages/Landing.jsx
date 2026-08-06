@@ -46,7 +46,7 @@ export default function Landing() {
     const [multitracksForSale, setMultitracksForSale] = useState([]);
     const [showOptionsModal, setShowOptionsModal] = useState(false);
     const [selectedSongForOptions, setSelectedSongForOptions] = useState(null);
-    const [pricing, setPricing] = useState({ wavPrice: 29.00, stemsPrice: 15.00, mp3Price: 9.00, wavTrackPrice: 9.00 });
+    const [pricing, setPricing] = useState({ wavPrice: 580.00, stemsPrice: 300.00, mp3Price: 180.00, wavTrackPrice: 180.00 });
     const [selectedMixOption, setSelectedMixOption] = useState('wav'); // wav | stems | custom | wav_track | mp3 | single_wav | single_mp3
     const [playingSimpleTrack, setPlayingSimpleTrack] = useState(null);
     const simpleAudioRef = React.useRef(null);
@@ -744,7 +744,7 @@ export default function Landing() {
                                 ] : [
                                     { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos WAV individuales de alta calidad.', price: parseFloat(selectedSongForOptions.price) || 0, format: 'WAV/ZIP', icon: <Layers size={20} /> },
                                     { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, Guitarras, etc).', price: pricing.stemsPrice, format: 'WAV Stems', icon: <Music2 size={20} /> },
-                                    { id: 'wav_track', name: 'Acompañamiento (WAV)', desc: 'Versión WAV de alta fidelidad sin voz principal.', price: pricing.wavTrackPrice || 15.00, format: 'WAV High Quality', icon: <Music size={20} /> },
+                                    { id: 'wav_track', name: 'Acompañamiento (WAV)', desc: 'Versión WAV de alta fidelidad sin voz principal.', price: pricing.wavTrackPrice || 180.00, format: 'WAV High Quality', icon: <Music size={20} /> },
                                     { id: 'mp3', name: 'Acompañamiento (MP3)', desc: 'Versión MP3 lista para cantar sin voz principal.', price: pricing.mp3Price, format: 'MP3 High Quality', icon: <Music size={20} /> }
                                 ]).map((option) => (
                                     <div 

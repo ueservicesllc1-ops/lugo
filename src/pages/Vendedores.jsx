@@ -114,7 +114,7 @@ function Vendedores() {
     const [songKey, setSongKey] = useState('');
     const [tempo, setTempo] = useState('');
     const [timeSignature, setTimeSignature] = useState('4/4');
-    const [price, setPrice] = useState('9.99');
+    const [price, setPrice] = useState('580.00');
     const [zipFolderName, setZipFolderName] = useState('');
     const [coverUrl, setCoverUrl] = useState('');
     const [coverFileId, setCoverFileId] = useState('');
@@ -450,7 +450,7 @@ function Vendedores() {
 
     const resetWizard = () => {
         setStep('idle'); setFileList([]); setSongName(''); setArtist('');
-        setSongKey(''); setTempo(''); setTimeSignature('4/4'); setPrice('9.99');
+        setSongKey(''); setTempo(''); setTimeSignature('4/4'); setPrice('580.00');
         setZipFolderName(''); setCoverUrl(''); setCoverFileId('');
     };
 
