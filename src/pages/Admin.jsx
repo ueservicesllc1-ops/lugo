@@ -885,19 +885,19 @@ export default function Admin() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Secuencia WAV/ZIP (USD)</label>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Secuencia WAV/ZIP (MXN)</label>
                                         <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={price} onChange={e => { setPrice(e.target.value); setMtPriceTouched(true); }} />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>CustomMix WAV (USD)</label>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>CustomMix WAV (MXN)</label>
                                         <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceCustomMix} onChange={e => { setPriceCustomMix(e.target.value); setMtPriceTouched(true); }} />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Acompañamiento WAV (USD)</label>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Acompañamiento WAV (MXN)</label>
                                         <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceWavTrack} onChange={e => { setPriceWavTrack(e.target.value); setMtPriceTouched(true); }} />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Acompañamiento MP3 (USD)</label>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Acompañamiento MP3 (MXN)</label>
                                         <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceMp3Track} onChange={e => { setPriceMp3Track(e.target.value); setMtPriceTouched(true); }} />
                                     </div>
                                     <div style={{ gridColumn: 'span 2' }}>

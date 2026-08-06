@@ -41,13 +41,13 @@ const PayPalCheckoutForm = ({ total, subtotal, discount, cart, onPaymentSuccess,
                 Pagar con PayPal
             </h4>
 
-            <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD' }}>
+            <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'MXN' }}>
                 <PayPalButtons
                     style={{ layout: 'vertical', color: 'gold', shape: 'rect', label: 'pay', height: 50 }}
                     createOrder={(_data, actions) =>
                         actions.order.create({
                             purchase_units: [{
-                                amount: { value: String(total), currency_code: 'USD' },
+                                amount: { value: String(total), currency_code: 'MXN' },
                                 description: cart.length > 1
                                     ? `${cart.length} pistas multitracks - Junior Lugo`
                                     : `${cart[0]?.name || 'Pista'} - Junior Lugo Producciones`

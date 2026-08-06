@@ -837,7 +837,7 @@ function Vendedores() {
                                         </div>
 
                                         <div style={{ gridColumn: 'span 2' }}>
-                                            <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Precio de Venta (USD)</label>
+                                            <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Precio de Venta (MXN)</label>
                                             <input type="number" step="0.01" min="0" className="btn-ghost" style={{ width: '100%', background: 'white', color: '#1e293b', border: '2px solid #00bcd430', textAlign: 'left', fontSize: '1.2rem', fontWeight: '900' }} value={pvPrice} onChange={e => setPvPrice(e.target.value)} />
                                         </div>
 
@@ -1022,7 +1022,7 @@ function Vendedores() {
                                     </div>
                                     <div style={{ gridColumn: 'span 2' }}>
                                         <label style={{ fontSize: '0.75rem', fontWeight: '800', color: (myProducts.length % 11 === 0) ? '#94a3b8' : '#00bcd4', display: 'block', marginBottom: '8px' }}>
-                                            PRECIO DE VENTA (USD) {(myProducts.length % 11 === 0) && '- BLOQUEADO GRATIS'}
+                                            PRECIO DE VENTA (MXN) {(myProducts.length % 11 === 0) && '- BLOQUEADO GRATIS'}
                                         </label>
                                         <input
                                             type="number"

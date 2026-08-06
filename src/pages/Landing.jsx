@@ -971,7 +971,7 @@ export default function Landing() {
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <div style={{ fontSize: '1.3rem', fontWeight: '900', color: 'white' }}>${Number(option.price).toFixed(2)}</div>
-                                            <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: '800', letterSpacing: '1px' }}>USD</div>
+                                            <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: '800', letterSpacing: '1px' }}>MXN</div>
                                         </div>
                                     </div>
                                 ))}

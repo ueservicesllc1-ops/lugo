@@ -782,7 +782,7 @@ export default function Store() {
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <div style={{ fontSize: '1.2rem', fontWeight: '900', color: 'white' }}>${option.price.toFixed(2)}</div>
-                                            <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: '700' }}>USD</div>
+                                            <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: '700' }}>MXN</div>
                                         </div>
                                     </div>
                                 ))}
