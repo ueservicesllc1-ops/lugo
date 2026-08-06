@@ -195,15 +195,7 @@ export default function Navbar({ cartCount }) {
                         ))}
                     </div>
                 </div>
-
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <button 
-                        onClick={toggleLanguage}
-                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
-                    >
-                        <Globe size={13} /> {language === 'es' ? 'EN' : 'ES'}
-                    </button>
-
                     {currentUser && (
                         <div style={{ position: 'relative' }}>
                             <div
