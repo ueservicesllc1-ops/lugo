@@ -904,7 +904,7 @@ export default function Store() {
                             }}>
                                 <h4 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0 }}>Paquete 5 Secuencias Stems</h4>
                                 <div style={{ fontSize: '2rem', fontWeight: '900', color: '#f97316' }}>$7,500 <span style={{ fontSize: '1rem', color: '#cbd5e1' }}>MXN</span></div>
-                                <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>Valor en <strong>$1,500 MXN</strong> por canción</div>
+                                <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>Valor: <strong>$1,500 MXN</strong> por canción</div>
                                 <div style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e', fontSize: '0.8rem', fontWeight: '800', padding: '6px 12px', borderRadius: '50px', marginTop: '10px' }}>
                                     AHORRAS $1,500 MXN
                                 </div>
@@ -937,7 +937,7 @@ export default function Store() {
                                 </div>
                                 <h4 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, marginTop: '5px' }}>Paquete 5 Full Playbacks</h4>
                                 <div style={{ fontSize: '2rem', fontWeight: '900', color: '#f97316' }}>$15,000 <span style={{ fontSize: '1rem', color: '#cbd5e1' }}>MXN</span></div>
-                                <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>Valor en <strong>$3,000 MXN</strong> por canción</div>
+                                <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>Valor: <strong>$3,000 MXN</strong> por canción</div>
                                 <div style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e', fontSize: '0.8rem', fontWeight: '800', padding: '6px 12px', borderRadius: '50px', marginTop: '10px' }}>
                                     AHORRAS $2,500 MXN
                                 </div>
