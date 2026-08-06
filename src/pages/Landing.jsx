@@ -634,15 +634,6 @@ export default function Landing() {
                             { label: 'Portafolio', action: () => navigate('/portfolio') },
                             { label: 'Galería', action: () => navigate('/gallery') },
                             { label: 'Academia', action: () => navigate('/academy') },
-                            {
-                                label: 'Recursos',
-                                dropdown: [
-                                    { label: 'Software', desc: 'Aplicaciones y utilidades oficiales', action: () => navigate('/software') },
-                                    { label: 'Librerías de Loops', desc: 'Loops y samples premium', action: () => navigate('/library') },
-                                    { label: 'Recursos de Audio', desc: 'Recursos educativos y multipistas', action: () => navigate('/recursos/audio') },
-                                    { label: 'Otros Recursos', desc: 'Descargas y herramientas adicionales', action: () => navigate('/recursos') }
-                                ]
-                            },
                             { label: 'Trayectoria', action: () => document.getElementById('creditos')?.scrollIntoView({ behavior: 'smooth' }) },
                             { label: 'Contacto', action: () => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' }) },
                         ].map(item => (
