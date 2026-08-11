@@ -588,11 +588,11 @@ export default function Admin() {
                             <input style={S.input} type="text" placeholder="Artista" required value={newProduct.artist} onChange={e => setNewProduct({ ...newProduct, artist: e.target.value })} />
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 <div style={{ flex: 1 }}>
-                                    <label style={{ fontSize: '0.7rem', color: '#64748b', display: 'block', marginBottom: '4px' }}>Precio WAV ($):</label>
+                                    <label style={{ fontSize: '0.7rem', color: '#64748b', display: 'block', marginBottom: '4px' }}>Precio WAV (MXN):</label>
                                     <input style={S.input} type="number" placeholder="Precio WAV" required value={newProduct.priceWav} onChange={e => setNewProduct({ ...newProduct, priceWav: e.target.value })} />
                                 </div>
                                 <div style={{ flex: 1 }}>
-                                    <label style={{ fontSize: '0.7rem', color: '#64748b', display: 'block', marginBottom: '4px' }}>Precio MP3 ($):</label>
+                                    <label style={{ fontSize: '0.7rem', color: '#64748b', display: 'block', marginBottom: '4px' }}>Precio MP3 (MXN):</label>
                                     <input style={S.input} type="number" placeholder="Precio MP3" required value={newProduct.priceMp3} onChange={e => setNewProduct({ ...newProduct, priceMp3: e.target.value })} />
                                 </div>
                             </div>
@@ -1113,7 +1113,7 @@ export default function Admin() {
                                         <img src={getProxyUrl(p.coverUrl || '/logo.png')} style={{ width: '60px', height: '60px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ fontWeight: '800', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
-                                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '6px' }}>{p.artist} · ${p.price}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '6px' }}>{p.artist} · ${p.price} MXN</div>
                                             <button
                                                 onClick={() => setRoutesModalSong(p)}
                                                 style={{ marginBottom: '8px', background: 'rgba(0,188,212,0.12)', color: '#00bcd4', border: '1px solid rgba(0,188,212,0.35)', borderRadius: '8px', padding: '4px 10px', fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }}
@@ -1158,7 +1158,7 @@ export default function Admin() {
                                         <img src={getProxyUrl(p.coverUrl || '/logo.png')} style={{ width: '54px', height: '54px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ fontWeight: '800', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
-                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{p.artist} · ${p.price}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{p.artist} · ${p.price} MXN</div>
                                         </div>
                                         <button onClick={() => deleteItem('songs', p.id, p)} style={{ padding: '8px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', borderRadius: '8px', cursor: 'pointer', flexShrink: 0 }}><Trash2 size={16} /></button>
                                     </div>
@@ -1193,7 +1193,7 @@ export default function Admin() {
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <span style={{ fontWeight: '900', color: '#10b981', fontSize: '1.1rem' }}>${pv.price}</span>
+                                            <span style={{ fontWeight: '900', color: '#10b981', fontSize: '1.1rem' }}>${pv.price} MXN</span>
                                             <div style={{ display: 'flex', gap: '8px' }}>
                                                 {pv.pdfUrl && (
                                                     <a href={getProxyUrl(pv.pdfUrl)} target="_blank" rel="noreferrer" style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.05)', color: 'white', textDecoration: 'none', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
