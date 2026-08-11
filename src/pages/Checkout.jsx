@@ -16,17 +16,17 @@ const PayPalCheckoutForm = ({ total, subtotal, discount, cart, onPaymentSuccess,
         <div style={{ background: '#f8fafc', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem' }}>
                 <span style={{ color: '#64748b', fontWeight: '600' }}>Subtotal:</span>
-                <span style={{ fontWeight: '700', color: '#0f172a' }}>${subtotal}</span>
+                <span style={{ fontWeight: '700', color: '#0f172a' }}>${subtotal} <span style={{ fontSize: '0.75rem', fontWeight: '600', color: '#94a3b8' }}>MXN</span></span>
             </div>
             {parseFloat(discount) > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#166534' }}>
                     <span style={{ fontWeight: '600' }}>Descuento:</span>
-                    <span style={{ fontWeight: '700' }}>-${discount}</span>
+                    <span style={{ fontWeight: '700' }}>-${discount} <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>MXN</span></span>
                 </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', paddingTop: '10px', borderTop: '1px solid #e2e8f0' }}>
                 <span style={{ fontWeight: '800', color: '#0f172a' }}>Total a pagar:</span>
-                <span style={{ fontWeight: '900', color: '#0000FF' }}>${total}</span>
+                <span style={{ fontWeight: '900', color: '#0000FF' }}>${total} <span style={{ fontSize: '0.9rem', fontWeight: '700' }}>MXN</span></span>
             </div>
         </div>
 
@@ -99,7 +99,7 @@ export default function Checkout() {
         return () => unsub();
     }, []);
 
-    const cartSubtotal = cart.reduce((acc, item) => acc + (parseFloat(item.price) || 9.99), 0);
+    const cartSubtotal = cart.reduce((acc, item) => acc + (parseFloat(item.price) || 580), 0);
     const discountAmount = appliedCoupon ? (cartSubtotal * (appliedCoupon.discount / 100)) : 0;
     const cartTotal = (cartSubtotal - discountAmount).toFixed(2);
 
@@ -460,7 +460,7 @@ export default function Checkout() {
                                     </div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontWeight: '900', fontSize: '1.2rem', color: '#0f172a' }}>${item.price}</div>
+                                    <div style={{ fontWeight: '900', fontSize: '1.2rem', color: '#0f172a' }}>${item.price} <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b' }}>MXN</span></div>
                                     <button 
                                         onClick={() => removeFromCart(item.cartId)} 
                                         style={{ 

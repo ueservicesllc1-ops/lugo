@@ -125,7 +125,7 @@ const SongCard = ({ song, onPreview, onBuy, navigate }) => {
                     {realSellerName}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#fff' }}>${song.price || '9.99'}</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#fff' }}>${song.price || '580'} <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: '700' }}>MXN</span></div>
                     <button
                         onClick={(e) => { e.stopPropagation(); onBuy(); }}
                         style={{ background: '#00A3FF', border: 'none', color: '#fff', padding: '5px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}
@@ -330,7 +330,7 @@ export default function Store() {
                 name: song.name,
                 artist: song.artist,
                 coverUrl: song.coverUrl,
-                price: variant ? variant.price : (song.price || 49.00),
+                price: variant ? variant.price : (song.price || 580),
                 variantName: variant ? variant.name : (song.isMultitrack ? 'Multitrack (Secuencia)' : 'Pista Instrumental'),
                 format: variant ? variant.format : (song.isMultitrack ? 'WAV/ZIP' : 'MP3'),
                 meta: variant?.meta || null
@@ -651,7 +651,7 @@ export default function Store() {
                                                     <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>{opt.name}</div>
                                                     <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{opt.desc}</div>
                                                 </div>
-                                                <div style={{ fontWeight: '900', fontSize: '1rem', color: selectedMixOption === opt.id ? 'white' : '#64748b' }}>${opt.price.toFixed(2)}</div>
+                                                <div style={{ fontWeight: '900', fontSize: '1rem', color: selectedMixOption === opt.id ? 'white' : '#64748b' }}>${opt.price.toFixed(2)} <span style={{ fontSize: '0.65rem', fontWeight: '700' }}>MXN</span></div>
                                             </div>
                                         </div>
                                     ))}

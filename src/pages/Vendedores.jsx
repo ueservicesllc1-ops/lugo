@@ -135,7 +135,7 @@ function Vendedores() {
     const [pvTitle, setPvTitle] = useState('');
     const [pvInstrument, setPvInstrument] = useState('');
     const [pvLevel, setPvLevel] = useState('Básica');
-    const [pvPrice, setPvPrice] = useState('2.99');
+    const [pvPrice, setPvPrice] = useState('49');
     const [pvFile, setPvFile] = useState(null);
     const [pvUploading, setPvUploading] = useState(false);
     const [pvRatingMap, setPvRatingMap] = useState({}); // partituraId -> {avg, count, userRating}
@@ -475,7 +475,7 @@ function Vendedores() {
                 status: 'active',
                 createdAt: serverTimestamp()
             });
-            setPvTitle(''); setPvInstrument(''); setPvLevel('Básica'); setPvPrice('2.99'); setPvFile(null);
+            setPvTitle(''); setPvInstrument(''); setPvLevel('Básica'); setPvPrice('49'); setPvFile(null);
             alert('✅ ¡Partitura publicada para venta!');
         } catch (e) {
             alert('Error: ' + e.message);
@@ -562,7 +562,7 @@ function Vendedores() {
                                 <div className="card-premium" style={{ background: 'white', padding: '30px', textAlign: 'left' }}>
                                     <CreditCard style={{ color: '#00bcd4', marginBottom: '15px' }} />
                                     <h4 style={{ fontWeight: '800' }}>Promoción Limitada</h4>
-                                    <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Sólo $1.99 los primeros 3 meses.</p>
+                                    <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Sólo $39 MXN los primeros 3 meses.</p>
                                 </div>
                             </div>
 
@@ -622,11 +622,11 @@ function Vendedores() {
                             <div style={{ background: '#f8fafc', padding: '24px', borderRadius: '24px', marginBottom: '40px', border: '1px solid #e2e8f0' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: '700' }}>
                                     <span>Promo 3 Meses</span>
-                                    <span style={{ color: '#10b981' }}>$1.99 / mes</span>
+                                    <span style={{ color: '#10b981' }}>$39 MXN / mes</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748b' }}>
                                     <span>Luego de 3 meses</span>
-                                    <span>$9.99 / mes</span>
+                                    <span>$199 MXN / mes</span>
                                 </div>
                             </div>
 
@@ -763,10 +763,10 @@ function Vendedores() {
                             <>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
                                     {[
-                                        { label: 'Ventas Totales', value: `$${stats.totalSales}`, icon: <TrendingUp />, color: '#10b981' },
+                                        { label: 'Ventas Totales', value: `$${stats.totalSales} MXN`, icon: <TrendingUp />, color: '#10b981' },
                                         { label: 'Canciones en Venta', value: myProducts.length, icon: <Package />, color: '#00bcd4' },
-                                        { label: 'Saldo Pendiente', value: `$0.00`, icon: <Timer />, color: '#f59e0b' },
-                                        { label: 'Balance Retirable', value: `$${stats.availableBalance}`, icon: <Wallet />, color: '#8b5cf6' },
+                                        { label: 'Saldo Pendiente', value: `$0.00 MXN`, icon: <Timer />, color: '#f59e0b' },
+                                        { label: 'Balance Retirable', value: `$${stats.availableBalance} MXN`, icon: <Wallet />, color: '#8b5cf6' },
                                     ].map((s, i) => (
                                         <div key={i} style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                                             <div style={{ color: s.color, background: `${s.color}10`, width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>{s.icon}</div>
@@ -788,7 +788,7 @@ function Vendedores() {
                                                             <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{p.artist} • {p.key}</div>
                                                         </div>
                                                     </div>
-                                                    <div style={{ fontWeight: '900', color: '#00bcd4' }}>${p.price}</div>
+                                                    <div style={{ fontWeight: '900', color: '#00bcd4' }}>${p.price} <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b' }}>MXN</span></div>
                                                 </div>
                                             ))}
                                     </div>
@@ -886,7 +886,7 @@ function Vendedores() {
                                                             </div>
                                                         </div>
                                                         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                                                            <div style={{ fontWeight: '900', fontSize: '1.1rem', color: '#00bcd4' }}>${parseFloat(pv.price || 0).toFixed(2)}</div>
+                                                            <div style={{ fontWeight: '900', fontSize: '1.1rem', color: '#00bcd4' }}>${parseFloat(pv.price || 0).toFixed(2)} <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#64748b' }}>MXN</span></div>
                                                             <div style={{ display: 'flex', gap: '8px', marginTop: '6px', justifyContent: 'flex-end' }}>
                                                                 <a href={pv.pdfUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.72rem', color: '#64748b', background: '#e2e8f0', padding: '4px 10px', borderRadius: '6px', textDecoration: 'none', fontWeight: '700' }}>Ver PDF</a>
                                                                 <button onClick={() => handlePvDelete(pv.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}><Trash2 size={14} /></button>
@@ -914,7 +914,7 @@ function Vendedores() {
                                         {myProducts.map(p => (
                                             <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                                 <td style={{ padding: '16px', fontWeight: '800' }}>{p.name}</td>
-                                                <td style={{ padding: '16px', fontWeight: '900' }}>${p.price}</td>
+                                                <td style={{ padding: '16px', fontWeight: '900' }}>${p.price} <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b' }}>MXN</span></td>
                                                 <td style={{ padding: '16px' }}><span style={{ color: '#10b981', background: '#10b98115', padding: '4px 10px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: '800' }}>{p.status === 'pending_review' ? 'En Revisión' : 'Activa'}</span></td>
                                                 <td style={{ padding: '16px' }}><button className="btn-ghost" style={{ fontSize: '0.75rem', padding: '8px' }}>Ver detalles</button></td>
                                             </tr>

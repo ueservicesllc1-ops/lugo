@@ -105,7 +105,7 @@ export default function SellerProfile() {
                             <div style={{ padding: '15px' }}>
                                 <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', fontWeight: '800', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.name}</h3>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#00d2d3' }}>${song.price || '9.99'}</div>
+                                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#00d2d3' }}>${song.price || '580'} <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: '700' }}>MXN</span></div>
                                     <button
                                         onClick={() => navigate(`/store`)}
                                         style={{ background: '#00d2d3', border: 'none', color: '#fff', padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '800', cursor: 'pointer' }}
