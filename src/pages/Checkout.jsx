@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { ArrowLeft, X, Loader2, CheckCircle2, ShieldCheck, LogOut, Globe, Download, Trash2 } from 'lucide-react';
 import JSZip from 'jszip';
-import { getDoc, setDoc, doc, updateDoc, arrayUnion, collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { getDoc, setDoc, doc, updateDoc, arrayUnion, collection, addDoc, serverTimestamp, query, where, getDocs, increment } from 'firebase/firestore';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import Footer from '../components/Footer';
 import { audioEngine } from '../AudioEngine';
@@ -122,7 +122,16 @@ export default function Checkout() {
             if (snap.empty) {
                 showToast('Cupón no válido', 'error');
             } else {
-                const couponData = snap.docs[0].data();
+                const couponDoc = snap.docs[0];
+                const couponData = { id: couponDoc.id, ...couponDoc.data() };
+                const maxUses = couponData.maxUses !== undefined && couponData.maxUses !== null ? parseInt(couponData.maxUses) : null;
+                const usesCount = couponData.usesCount || 0;
+
+                if (maxUses !== null && maxUses > 0 && usesCount >= maxUses) {
+                    showToast('Este cupón ha alcanzado el límite de usos', 'error');
+                    return;
+                }
+
                 setAppliedCoupon(couponData);
                 showToast(`¡Cupón aplicado! ${couponData.discount}% de descuento`);
             }
@@ -183,8 +192,14 @@ export default function Checkout() {
                     status: 'completed',
                     paymentMethod: 'paypal'
                 });
+
+                if (appliedCoupon && appliedCoupon.id) {
+                    await updateDoc(doc(db, 'coupons', appliedCoupon.id), {
+                        usesCount: increment(1)
+                    });
+                }
             } catch (salesErr) {
-                console.error('Error recording sale:', salesErr);
+                console.error('Error recording sale or coupon usage:', salesErr);
             }
 
             setCart([]);

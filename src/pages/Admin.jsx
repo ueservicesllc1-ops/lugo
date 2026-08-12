@@ -37,7 +37,8 @@ import {
     Search,
     CreditCard,
     Music2,
-    X
+    X,
+    Tag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -110,9 +111,14 @@ export default function Admin() {
     const [users, setUsers] = useState([]);
     const [partiturasVenta, setPartiturasVenta] = useState([]);
     const [usersSearch, setUsersSearch] = useState('');
-    const [userSortField, setUserSortField] = useState('createdAt'); // 'createdAt' | 'mtCount'
+    const [usersSortField, setUsersSortField] = useState('createdAt'); // 'createdAt' | 'mtCount'
     const [userSortOrder, setUserSortOrder] = useState('desc'); // 'asc' | 'desc'
     const [sales, setSales] = useState([]);
+    const [coupons, setCoupons] = useState([]);
+    const [newCouponCode, setNewCouponCode] = useState('');
+    const [newCouponDiscount, setNewCouponDiscount] = useState('');
+    const [newCouponMaxUses, setNewCouponMaxUses] = useState('');
+    const [isCreatingCoupon, setIsCreatingCoupon] = useState(false);
     const [salesSearch, setSalesSearch] = useState('');
 
     // Derived: split catalog into MTs vs simple songs
@@ -217,14 +223,43 @@ export default function Admin() {
         const unsubS = onSnapshot(query(collection(db, 'sales'), orderBy('createdAt', 'desc')), (snap) => {
             setSales(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         });
+        const unsubC = onSnapshot(query(collection(db, 'coupons'), orderBy('createdAt', 'desc')), (snap) => {
+            setCoupons(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
         const unsubU = onSnapshot(query(collection(db, 'users'), orderBy('createdAt', 'desc')), (snap) => {
             setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         });
         getDoc(doc(db, 'settings', 'multitrack_pricing')).then(snap => { 
             if (snap.exists()) setPricing(snap.data()); 
         });
-        return () => { unsubP(); unsubG(); unsubV(); unsubPV(); unsubS(); unsubU(); };
+        return () => { unsubP(); unsubG(); unsubV(); unsubPV(); unsubS(); unsubC(); unsubU(); };
     }, [isAdmin]);
+
+    const handleCreateCoupon = async (e) => {
+        e.preventDefault();
+        if (!newCouponCode.trim() || !newCouponDiscount) return alert('Por favor completa el código y el porcentaje.');
+        const cleanCode = newCouponCode.trim().toUpperCase();
+        const discountNum = parseFloat(newCouponDiscount);
+        if (isNaN(discountNum) || discountNum <= 0 || discountNum > 100) return alert('El porcentaje debe ser un número entre 1 y 100.');
+        const maxUsesNum = newCouponMaxUses ? parseInt(newCouponMaxUses) : null;
+        setIsCreatingCoupon(true);
+        try {
+            await addDoc(collection(db, 'coupons'), {
+                code: cleanCode,
+                discount: discountNum,
+                maxUses: maxUsesNum,
+                usesCount: 0,
+                createdAt: serverTimestamp()
+            });
+            setNewCouponCode('');
+            setNewCouponDiscount('');
+            setNewCouponMaxUses('');
+        } catch (err) {
+            alert('Error al crear cupón: ' + err.message);
+        } finally {
+            setIsCreatingCoupon(false);
+        }
+    };
 
     useEffect(() => {
         if (mtPriceTouched) return;
@@ -744,6 +779,7 @@ export default function Admin() {
                     <button onClick={() => setActiveTab('portfolio')} style={S.sideBtn(activeTab === 'portfolio')}><Video size={18} /> Portafolio ({videos.length})</button>
                     <button onClick={() => setActiveTab('users')} style={S.sideBtn(activeTab === 'users')}><Users size={18} /> Usuarios ({users.length})</button>
                     <button onClick={() => setActiveTab('sales')} style={S.sideBtn(activeTab === 'sales')}><DollarSign size={18} /> Ventas ({sales.length})</button>
+                    <button onClick={() => setActiveTab('coupons')} style={S.sideBtn(activeTab === 'coupons')}><Tag size={18} /> Cupones ({coupons.length})</button>
                     <button onClick={() => setActiveTab('pricing')} style={S.sideBtn(activeTab === 'pricing')}><CreditCard size={18} /> Precios MT</button>
                     <button onClick={() => setActiveTab('socials')} style={S.sideBtn(activeTab === 'socials')}><Share2 size={18} /> Redes</button>
                 </nav>
@@ -1541,6 +1577,127 @@ export default function Admin() {
                                             <tr>
                                                 <td colSpan="6" style={{ padding: '60px', textAlign: 'center', color: '#475569' }}>
                                                     No hay ventas registradas todavía.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── TAB: CUPONES ── */}
+                {activeTab === 'coupons' && (
+                    <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
+                        <header style={{ marginBottom: '40px' }}>
+                            <h1 style={{ margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Gestión de Cupones</h1>
+                            <p style={{ color: '#64748b', margin: 0 }}>Crea y administra códigos de descuento para el carrito de compras.</p>
+                        </header>
+
+                        {/* Formulario de creación de cupón */}
+                        <div style={{ background: '#080d1a', padding: '30px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '40px' }}>
+                            <h3 style={{ margin: '0 0 20px', textTransform: 'uppercase', fontSize: '1.1rem', fontWeight: '900' }}>Crear Nuevo Cupón</h3>
+                            <form onSubmit={handleCreateCoupon} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '20px', alignItems: 'end' }}>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#64748b', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Código de Descuento</label>
+                                    <input 
+                                        style={{ ...S.input, margin: 0, textTransform: 'uppercase', fontWeight: '900', letterSpacing: '1px' }} 
+                                        placeholder="EJ: PROMO20" 
+                                        value={newCouponCode}
+                                        onChange={e => setNewCouponCode(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#64748b', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Descuento (%)</label>
+                                    <input 
+                                        type="number"
+                                        min="1"
+                                        max="100"
+                                        step="1"
+                                        style={{ ...S.input, margin: 0, fontWeight: '900' }} 
+                                        placeholder="EJ: 20" 
+                                        value={newCouponDiscount}
+                                        onChange={e => setNewCouponDiscount(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#64748b', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Límite de Usos (Opcional)</label>
+                                    <input 
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        style={{ ...S.input, margin: 0, fontWeight: '900' }} 
+                                        placeholder="Ilimitado si se deja vacío" 
+                                        value={newCouponMaxUses}
+                                        onChange={e => setNewCouponMaxUses(e.target.value)}
+                                    />
+                                </div>
+                                <button 
+                                    type="submit" 
+                                    disabled={isCreatingCoupon}
+                                    style={{ ...S.btnTeal, height: '48px', padding: '0 30px', display: 'flex', alignItems: 'center', gap: '10px', whiteSpace: 'nowrap' }}
+                                >
+                                    <Plus size={18} /> {isCreatingCoupon ? 'Guardando...' : 'CREAR CUPÓN'}
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* Lista de Cupones */}
+                        <div style={{ background: '#080d1a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', overflow: 'hidden' }}>
+                            <div style={{ padding: '24px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <h3 style={{ margin: 0, fontWeight: '800', fontSize: '1.2rem' }}>Cupones Activos ({coupons.length})</h3>
+                            </div>
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                    <thead>
+                                        <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
+                                            <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>Código</th>
+                                            <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>Descuento</th>
+                                            <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>Usos Realizados / Límite</th>
+                                            <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>Fecha de Creación</th>
+                                            <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', textAlign: 'right' }}>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {coupons.map((coupon) => {
+                                            const uses = coupon.usesCount || 0;
+                                            const max = coupon.maxUses;
+                                            const isExpired = max && uses >= max;
+                                            return (
+                                                <tr key={coupon.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', opacity: isExpired ? 0.6 : 1 }}>
+                                                    <td style={{ padding: '20px 24px' }}>
+                                                        <span style={{ background: isExpired ? 'rgba(239,68,68,0.12)' : 'rgba(0,188,212,0.12)', color: isExpired ? '#ef4444' : '#00bcd4', padding: '6px 14px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '900', letterSpacing: '1px' }}>
+                                                            {coupon.code} {isExpired ? '(Agotado)' : ''}
+                                                        </span>
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px', fontWeight: '900', color: '#10b981', fontSize: '1rem' }}>
+                                                        -{coupon.discount}%
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px', fontSize: '0.85rem', fontWeight: '800', color: isExpired ? '#ef4444' : '#e2e8f0' }}>
+                                                        {uses} / {max ? max : '∞ (Ilimitado)'}
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px', fontSize: '0.85rem', color: '#94a3b8' }}>
+                                                        {coupon.createdAt?.toDate().toLocaleDateString() || 'Reciente'}
+                                                    </td>
+                                                    <td style={{ padding: '20px 24px', textAlign: 'right' }}>
+                                                        <button
+                                                            onClick={() => deleteItem('coupons', coupon.id, coupon)}
+                                                            style={{ padding: '8px 14px', background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', cursor: 'pointer', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
+                                                            title="Eliminar este cupón"
+                                                        >
+                                                            <Trash2 size={15} /> Borrar
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                        {coupons.length === 0 && (
+                                            <tr>
+                                                <td colSpan="4" style={{ padding: '60px', textAlign: 'center', color: '#475569' }}>
+                                                    No hay cupones creados aún. ¡Crea el primero arriba!
                                                 </td>
                                             </tr>
                                         )}
