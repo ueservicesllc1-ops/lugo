@@ -712,8 +712,8 @@ export default function Store() {
                                     { id: 'single_mp3', name: 'Licencia Básica (MP3)', desc: 'Versión MP3 lista para maquetar o uso personal.', price: selectedSongForOptions.priceMp3 || 0, format: 'MP3', icon: <Music size={18} /> }
                                 ] : [
                                     { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos de audio individuales para Lugo Stage o DAW.', price: getSequencePrice(selectedSongForOptions), format: 'MULTITRACK', icon: <Layers size={18} /> },
-                                    { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, etc).', price: getOptionPrice(selectedSongForOptions, 'priceCustomMix', pricing.stemsPrice, 300.0), format: 'WAV Stems', icon: <Music2 size={18} /> },
-                                    { id: 'wav_track', name: 'Acompañamiento (WAV)', desc: 'Archivo WAV de alta fidelidad sin voz principal.', price: getOptionPrice(selectedSongForOptions, 'priceWavTrack', pricing.wavTrackPrice, 180.0), format: 'WAV High Quality', icon: <Music size={18} /> },
+                                    { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, etc).', price: getOptionPrice(selectedSongForOptions, 'priceCustomMix', pricing.stemsPrice, 300.0), format: 'MP3 Stems', icon: <Music2 size={18} /> },
+                                    { id: 'wav_track', name: 'Acompañamiento (MP3)', desc: 'Archivo MP3 de alta fidelidad sin voz principal.', price: getOptionPrice(selectedSongForOptions, 'priceWavTrack', pricing.wavTrackPrice, 180.0), format: 'MP3 High Quality', icon: <Music size={18} /> },
                                     { id: 'mp3', name: 'Acompañamiento (MP3)', desc: 'Archivo MP3 de alta calidad sin voz principal.', price: getOptionPrice(selectedSongForOptions, 'priceMp3', pricing.mp3Price, 180.0), format: 'MP3 High Quality', icon: <Music size={18} /> }
                                 ]).map((option) => (
                                     <div 
