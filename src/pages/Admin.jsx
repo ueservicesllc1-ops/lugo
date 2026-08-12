@@ -111,7 +111,7 @@ export default function Admin() {
     const [users, setUsers] = useState([]);
     const [partiturasVenta, setPartiturasVenta] = useState([]);
     const [usersSearch, setUsersSearch] = useState('');
-    const [usersSortField, setUsersSortField] = useState('createdAt'); // 'createdAt' | 'mtCount'
+    const [userSortField, setUserSortField] = useState('createdAt'); // 'createdAt' | 'mtCount'
     const [userSortOrder, setUserSortOrder] = useState('desc'); // 'asc' | 'desc'
     const [sales, setSales] = useState([]);
     const [coupons, setCoupons] = useState([]);
@@ -226,8 +226,10 @@ export default function Admin() {
         const unsubC = onSnapshot(query(collection(db, 'coupons'), orderBy('createdAt', 'desc')), (snap) => {
             setCoupons(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         });
-        const unsubU = onSnapshot(query(collection(db, 'users'), orderBy('createdAt', 'desc')), (snap) => {
+        const unsubU = onSnapshot(query(collection(db, 'users')), (snap) => {
             setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        }, (err) => {
+            console.error('Error fetching users:', err);
         });
         getDoc(doc(db, 'settings', 'multitrack_pricing')).then(snap => { 
             if (snap.exists()) setPricing(snap.data()); 
@@ -1130,8 +1132,14 @@ export default function Admin() {
                                                 return !usersSearch || u.email?.toLowerCase().includes(s) || u.displayName?.toLowerCase().includes(s);
                                             })
                                             .sort((a, b) => {
-                                                let valA = userSortField === 'createdAt' ? (a.createdAt?.toMillis() || 0) : a.mtCount;
-                                                let valB = userSortField === 'createdAt' ? (b.createdAt?.toMillis() || 0) : b.mtCount;
+                                                const getMillis = (u) => {
+                                                    if (!u.createdAt) return 0;
+                                                    if (typeof u.createdAt.toMillis === 'function') return u.createdAt.toMillis();
+                                                    if (u.createdAt.seconds) return u.createdAt.seconds * 1000;
+                                                    return new Date(u.createdAt).getTime() || 0;
+                                                };
+                                                let valA = userSortField === 'createdAt' ? getMillis(a) : a.mtCount;
+                                                let valB = userSortField === 'createdAt' ? getMillis(b) : a.mtCount;
                                                 return userSortOrder === 'asc' ? valA - valB : valB - valA;
                                             })
                                             .map(user => (

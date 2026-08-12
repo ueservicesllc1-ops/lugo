@@ -213,7 +213,8 @@ export default function Checkout() {
 
     const handlePayPalError = (err) => {
         console.error('PayPal error:', err);
-        showToast('Error en el pago con PayPal. Intenta de nuevo.', 'error');
+        const detailMsg = err?.message || (typeof err === 'string' ? err : 'Error en la transacción');
+        showToast(`Error en el pago con PayPal: ${detailMsg}`, 'error');
     };
 
     const downloadAsZip = async (song) => {
