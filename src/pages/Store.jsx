@@ -631,9 +631,9 @@ export default function Store() {
                                         { id: 'single_wav', name: 'Licencia Premium (WAV)', desc: 'Versión WAV de alta fidelidad para uso profesional.', price: previewSong.priceWav || previewSong.price || 0, icon: <Music size={18} /> },
                                         { id: 'single_mp3', name: 'Licencia Básica (MP3)', desc: 'Versión MP3 lista para maquetar o uso personal.', price: previewSong.priceMp3 || 0, icon: <Music size={18} /> }
                                     ] : [
-                                        { id: 'wav', name: 'Secuencia (Multitrack)', desc: 'Sesión completa con tracks individuales en alta fidelidad.', price: getSequencePrice(previewSong), icon: <Layers size={18} /> },
-                                        { id: 'custom', name: 'CustomMix', desc: 'Crea tu propia mezcla personalizada exportada a tu gusto.', price: getOptionPrice(previewSong, 'priceCustomMix', pricing.stemsPrice, 300.0), icon: <Disc size={18} /> },
-                                        { id: 'wav_track', name: 'Pista Instrumental (WAV)', desc: 'Pista de acompañamiento con coros de fondo en alta calidad.', price: getOptionPrice(previewSong, 'priceWavTrack', pricing.wavTrackPrice, 180.0), icon: <Music size={18} /> }
+                                        { id: 'wav', name: 'Secuencia (Multitrack)', desc: 'Sesión completa con tracks individuales en formato MP3.', price: getSequencePrice(previewSong), icon: <Layers size={18} /> },
+                                        { id: 'custom', name: 'CustomMix (Mezcla MP3)', desc: 'Crea tu propia mezcla personalizada exportada en MP3.', price: getOptionPrice(previewSong, 'priceCustomMix', pricing.stemsPrice, 300.0), icon: <Disc size={18} /> },
+                                        { id: 'wav_track', name: 'Pista Instrumental (MP3)', desc: 'Pista de acompañamiento con coros de fondo en alta calidad.', price: getOptionPrice(previewSong, 'priceWavTrack', pricing.wavTrackPrice, 180.0), icon: <Music size={18} /> }
                                     ]).map(opt => (
                                         <div 
                                             key={opt.id}
@@ -664,9 +664,9 @@ export default function Store() {
                                                 { id: 'single_wav', name: 'Licencia Premium (WAV)', price: previewSong.priceWav || previewSong.price || 0, format: 'WAV' },
                                                 { id: 'single_mp3', name: 'Licencia Básica (MP3)', price: previewSong.priceMp3 || 0, format: 'MP3' }
                                             ] : [
-                                                { id: 'wav', name: 'Secuencia (Multitrack)', price: getSequencePrice(previewSong), format: 'WAV/ZIP' },
-                                                { id: 'custom', name: 'CustomMix (Mezcla WAV)', price: getOptionPrice(previewSong, 'priceCustomMix', pricing.stemsPrice, 300.0), format: 'Custom WAV' },
-                                                { id: 'wav_track', name: 'Pista Instrumental (WAV)', price: getOptionPrice(previewSong, 'priceWavTrack', pricing.wavTrackPrice, 180.0), format: 'WAV' }
+                                                { id: 'wav', name: 'Secuencia (Multitrack)', price: getSequencePrice(previewSong), format: 'MP3/ZIP' },
+                                                { id: 'custom', name: 'CustomMix (Mezcla MP3)', price: getOptionPrice(previewSong, 'priceCustomMix', pricing.stemsPrice, 300.0), format: 'Custom MP3' },
+                                                { id: 'wav_track', name: 'Pista Instrumental (MP3)', price: getOptionPrice(previewSong, 'priceWavTrack', pricing.wavTrackPrice, 180.0), format: 'MP3' }
                                             ]).find(o => o.id === selectedMixOption);
                                             
                                             const meta = selectedMixOption === 'custom' 
