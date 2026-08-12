@@ -33,17 +33,34 @@ export default function Navbar({ cartCount }) {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
-                    const userSnap = await getDoc(doc(db, 'users', user.uid));
-                    if (userSnap.exists()) {
+                    const userRef = doc(db, 'users', user.uid);
+                    const userSnap = await getDoc(userRef);
+                    if (!userSnap.exists()) {
+                        const nameParts = (user.displayName || '').split(' ');
+                        const firstName = nameParts[0] || 'Usuario';
+                        const lastName = nameParts.slice(1).join(' ') || '';
+                        await setDoc(userRef, {
+                            firstName,
+                            lastName,
+                            displayName: user.displayName || firstName,
+                            email: user.email || '',
+                            photoURL: user.photoURL || null,
+                            planId: 'free',
+                            createdAt: serverTimestamp()
+                        }, { merge: true });
+                        setCurrentUser({
+                            ...user,
+                            displayName: user.displayName || firstName
+                        });
+                    } else {
                         const userData = userSnap.data();
                         setCurrentUser({
                             ...user,
-                            displayName: userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : user.displayName
+                            displayName: userData.displayName || (userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : user.displayName)
                         });
-                    } else {
-                        setCurrentUser(user);
                     }
                 } catch (e) {
+                    console.error("Error sync user in Firestore:", e);
                     setCurrentUser(user);
                 }
             } else {

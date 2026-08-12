@@ -1150,8 +1150,10 @@ export default function Admin() {
                                                                 {user.displayName?.[0] || user.email?.[0]?.toUpperCase()}
                                                             </div>
                                                             <div>
-                                                                <div style={{ fontWeight: '800', fontSize: '0.95rem' }}>{user.displayName || 'Sin Nombre'}</div>
-                                                                <div style={{ fontSize: '0.8rem', color: '#475569' }}>{user.email}</div>
+                                                                <div style={{ fontWeight: '800', fontSize: '0.95rem' }}>
+                                                                    {user.displayName || (user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Usuario Registrado')}
+                                                                </div>
+                                                                <div style={{ fontSize: '0.8rem', color: '#475569' }}>{user.email || 'Sin correo'}</div>
                                                             </div>
                                                         </div>
                                                     </td>
