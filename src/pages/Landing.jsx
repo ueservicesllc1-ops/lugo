@@ -744,7 +744,6 @@ export default function Landing() {
                                 ] : [
                                     { id: 'wav', name: 'Multitrack (Secuencia)', desc: 'Archivos de audio individuales de alta calidad.', price: parseFloat(selectedSongForOptions.price) || 0, format: 'MULTITRACK', icon: <Layers size={20} /> },
                                     { id: 'stems', name: 'CustomMix (Stems)', desc: 'Grupos de instrumentos (Drums, Bass, Guitarras, etc).', price: pricing.stemsPrice, format: 'MP3 Stems', icon: <Music2 size={20} /> },
-                                    { id: 'wav_track', name: 'Acompañamiento (MP3)', desc: 'Versión MP3 de alta fidelidad sin voz principal.', price: pricing.wavTrackPrice || 180.00, format: 'MP3 High Quality', icon: <Music size={20} /> },
                                     { id: 'mp3', name: 'Acompañamiento (MP3)', desc: 'Versión MP3 lista para cantar sin voz principal.', price: pricing.mp3Price, format: 'MP3 High Quality', icon: <Music size={20} /> }
                                 ]).map((option) => (
                                     <div 

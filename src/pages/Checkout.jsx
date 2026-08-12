@@ -234,6 +234,22 @@ export default function Checkout() {
 
             if (isCustom || isTrackOnly) {
                 // Caso: MEZCLA (Custom o Pista)
+                if (isTrackOnly && wantsMp3(song)) {
+                    // Opción 2: Entregar el MP3 ya exportado/disponible en la canción
+                    const exportedMp3Url = song.mp3Url || song.tracks?.find(t => t.name === '__PreviewMix' || t.name?.toLowerCase().includes('pista'))?.url || song.tracks?.find(t => t.url?.endsWith('.mp3'))?.url;
+                    if (exportedMp3Url) {
+                        showToast('Descargando Pista MP3...', 'info');
+                        const res = await fetch(`${proxyBase}/api/download?url=${encodeURIComponent(exportedMp3Url)}`);
+                        if (!res.ok) throw new Error(`Fallo al descargar pista MP3 (${res.status})`);
+                        const blob = await res.blob();
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `${song.name} - Pista.mp3`;
+                        link.click();
+                        return;
+                    }
+                }
+
                 showToast(`Generando ${isCustom ? 'Mezcla Personalizada' : 'Pista'}...`, 'info');
                 
                 // Necesitamos cargar los buffers en el motor offline
@@ -255,12 +271,10 @@ export default function Checkout() {
 
                 const renderedBlob = await audioEngine.renderMix();
                 if (renderedBlob) {
-                    if (wantsMp3(song)) {
-                        throw new Error('La opción MP3 no está disponible para mezcla renderizada en este momento. Usa WAV.');
-                    }
+                    const ext = wantsMp3(song) ? 'mp3' : 'wav';
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(renderedBlob);
-                    link.download = `${song.name} - ${isCustom ? 'Custom Mix' : 'Pista'}.wav`;
+                    link.download = `${song.name} - ${isCustom ? 'Custom Mix' : 'Pista'}.${ext}`;
                     link.click();
                 }
             } else {

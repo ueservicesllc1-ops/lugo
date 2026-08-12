@@ -119,6 +119,10 @@ function Vendedores() {
     const [coverUrl, setCoverUrl] = useState('');
     const [coverFileId, setCoverFileId] = useState('');
     const [isUploadingCover, setIsUploadingCover] = useState(false);
+    const [trackAudioUrl, setTrackAudioUrl] = useState('');
+    const [trackAudioFileId, setTrackAudioFileId] = useState('');
+    const [isUploadingTrack, setIsUploadingTrack] = useState(false);
+    const trackInputRef = useRef();
     const [stats] = useState({
         totalSales: 0,
         revenue: 0,
@@ -261,6 +265,30 @@ function Vendedores() {
             alert("Error al subir portada: " + err.message);
         } finally {
             setIsUploadingCover(false);
+        }
+    };
+
+    const handleTrackAudioUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file || !currentUser) return;
+        setIsUploadingTrack(true);
+        try {
+            const formData = new FormData();
+            formData.append('audioFile', file);
+            const trackExt = String(file.name.split('.').pop() || 'mp3').toLowerCase();
+            const folder = zipFolderName || `seller_${currentUser.uid}_${Date.now()}`;
+            formData.append('fileName', `multitracks/sellers/${currentUser.uid}/${folder}/track_accompaniment.${trackExt}`);
+
+            const res = await fetch(`${proxyBase}/api/upload`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.url) {
+                setTrackAudioUrl(data.url);
+                setTrackAudioFileId(data.fileId);
+            }
+        } catch (err) {
+            alert("Error al subir pista de acompañamiento: " + err.message);
+        } finally {
+            setIsUploadingTrack(false);
         }
     };
 
@@ -427,6 +455,8 @@ function Vendedores() {
                 userId: currentUser.uid,
                 userEmail: currentUser.email,
                 tracks: uploadedTracksInfo,
+                mp3Url: trackAudioUrl || '',
+                trackAudioFileId: trackAudioFileId || '',
                 coverUrl: coverUrl,
                 coverFileId: coverFileId,
                 createdAt: serverTimestamp(),
@@ -1059,6 +1089,25 @@ function Vendedores() {
                                             onChange={e => setPrice(e.target.value)}
                                         />
                                     </div>
+
+                                    <div style={{ gridColumn: 'span 2' }}>
+                                         <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b', display: 'block', marginBottom: '12px' }}>PISTA DE ACOMPAÑAMIENTO EXPORTADA (Opcional - MP3/WAV)</label>
+                                         <div onClick={() => trackInputRef.current.click()} style={{ border: `2px dashed ${trackAudioUrl ? '#86efac' : '#e2e8f0'}`, borderRadius: '16px', padding: '20px', textAlign: 'center', cursor: 'pointer', background: trackAudioUrl ? '#f0fdf4' : '#f8fafc', overflow: 'hidden', marginBottom: '16px' }}>
+                                             {isUploadingTrack ? <Loader2 className="animate-spin" style={{ margin: '0 auto' }} /> : (
+                                                 trackAudioUrl ? (
+                                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#166534', fontWeight: '700', fontSize: '0.85rem' }}>
+                                                         <CheckIcon size={18} /> Pista de Acompañamiento cargada correctamente
+                                                     </div>
+                                                 ) : (
+                                                     <div style={{ color: '#64748b', fontSize: '0.85rem' }}>
+                                                         <Music size={24} style={{ margin: '0 auto 6px', color: '#94a3b8' }} />
+                                                         <div>Haz clic para subir la pista de acompañamiento MP3 exportada</div>
+                                                     </div>
+                                                 )
+                                             )}
+                                         </div>
+                                         <input ref={trackInputRef} type="file" accept="audio/*" style={{ display: 'none' }} onChange={handleTrackAudioUpload} />
+                                     </div>
 
                                     <div style={{ gridColumn: 'span 2' }}>
                                         <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b', display: 'block', marginBottom: '12px' }}>PORTADA DE LA CANCIÓN (400x400 Recomendado)</label>
