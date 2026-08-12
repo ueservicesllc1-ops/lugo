@@ -670,7 +670,13 @@ export default function Store() {
                                             ]).find(o => o.id === selectedMixOption);
                                             
                                             const meta = selectedMixOption === 'custom' 
-                                                ? { selectedTracks: previewTracks.filter(t => t.selected).map(t => t.name) }
+                                                ? { 
+                                                    selectedTracks: previewTracks.filter(t => t.selected).map(t => t.name),
+                                                    trackSettings: previewTracks.reduce((acc, t) => {
+                                                        acc[t.name] = { volume: t.volume ?? 1, pan: t.pan ?? 0, muted: !!t.muted };
+                                                        return acc;
+                                                    }, {})
+                                                }
                                                 : null;
                                             
                                             addToCart(previewSong, { ...opt, meta });

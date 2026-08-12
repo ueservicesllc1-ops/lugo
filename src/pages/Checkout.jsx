@@ -292,6 +292,7 @@ export default function Checkout() {
                 await audioEngine.clear();
                 
                 const selectedNames = isCustom ? (song.purchaseMeta?.selectedTracks || []) : null;
+                const trackSettings = isCustom ? (song.purchaseMeta?.trackSettings || {}) : {};
                 
                 for (let i = 0; i < allTracks.length; i++) {
                     const track = allTracks[i];
@@ -302,6 +303,14 @@ export default function Checkout() {
                     const res = await fetch(`${proxyBase}/api/download?url=${encodeURIComponent(track.url)}`);
                     const blob = await res.blob();
                     await audioEngine.addTrack(track.name, null, blob);
+
+                    // Aplicar volumen, paneo y silencio personalizados si existen
+                    const settings = trackSettings[track.name];
+                    if (settings) {
+                        if (settings.volume !== undefined) audioEngine.setTrackVolume(track.name, settings.volume);
+                        if (settings.pan !== undefined) audioEngine.setTrackPan(track.name, settings.pan);
+                        if (settings.muted !== undefined) audioEngine.setTrackMute(track.name, settings.muted);
+                    }
                 }
 
                 const renderedBlob = await audioEngine.renderMix();

@@ -494,7 +494,8 @@ class AudioEngine {
             gain.gain.value = t.muted ? 0 : t.volume;
             
             const panner = offlineCtx.createStereoPanner();
-            panner.pan.value = t.panner?.pan.value || 0;
+            const panVal = (typeof t.panner?.pan?.value === 'number') ? t.panner.pan.value : (typeof t.panner?.pan === 'number' ? t.panner.pan : 0);
+            panner.pan.value = panVal;
 
             src.connect(panner);
             panner.connect(gain);
