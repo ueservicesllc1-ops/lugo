@@ -30,42 +30,61 @@ const PayPalCheckoutForm = ({ total, subtotal, discount, cart, onPaymentSuccess,
             </div>
         </div>
 
-        {/* Botones PayPal */}
+        {/* Botones PayPal o Botón de Obtener Gratis si el descuento es del 100% */}
         <div style={{ background: 'white', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-            <h4 style={{ color: '#0f172a', marginBottom: '20px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1rem' }}>
-                {/* PayPal logo color */}
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z" fill="#003087"/>
-                    <path d="M19.28 7.2c-.078.5-.17 1.006-.288 1.526-1.016 5.225-4.393 7.092-8.73 7.092H8.07c-.53 0-.977.386-1.06.91l-1.12 7.106-.32 2.026a.637.637 0 0 0 .629.73h4.414c.466 0 .862-.338.934-.798l.038-.198.741-4.694.047-.258c.072-.46.468-.797.934-.797h.588c3.808 0 6.79-1.548 7.66-6.02.364-1.869.176-3.43-.785-4.527a3.73 3.73 0 0 0-1.49-.9z" fill="#0070ba"/>
-                </svg>
-                Pagar con PayPal
-            </h4>
+            {parseFloat(total) <= 0 ? (
+                <div>
+                    <h4 style={{ color: '#0f172a', marginBottom: '12px', fontWeight: '800', fontSize: '1rem' }}>
+                        ¡Tu pedido es 100% gratuito con este cupón!
+                    </h4>
+                    <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '20px' }}>
+                        No se requiere pago. Haz clic abajo para reclamar tus canciones de inmediato.
+                    </p>
+                    <button 
+                        onClick={onPaymentSuccess} 
+                        style={{ width: '100%', padding: '16px', background: '#10b981', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                    >
+                        <CheckCircle2 size={20} /> RECLAMAR GRATIS AHORA
+                    </button>
+                </div>
+            ) : (
+                <>
+                    <h4 style={{ color: '#0f172a', marginBottom: '20px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1rem' }}>
+                        {/* PayPal logo color */}
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z" fill="#003087"/>
+                            <path d="M19.28 7.2c-.078.5-.17 1.006-.288 1.526-1.016 5.225-4.393 7.092-8.73 7.092H8.07c-.53 0-.977.386-1.06.91l-1.12 7.106-.32 2.026a.637.637 0 0 0 .629.73h4.414c.466 0 .862-.338.934-.798l.038-.198.741-4.694.047-.258c.072-.46.468-.797.934-.797h.588c3.808 0 6.79-1.548 7.66-6.02.364-1.869.176-3.43-.785-4.527a3.73 3.73 0 0 0-1.49-.9z" fill="#0070ba"/>
+                        </svg>
+                        Pagar con PayPal
+                    </h4>
 
-            <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'MXN' }}>
-                <PayPalButtons
-                    style={{ layout: 'vertical', color: 'gold', shape: 'rect', label: 'pay', height: 50 }}
-                    createOrder={(_data, actions) =>
-                        actions.order.create({
-                            purchase_units: [{
-                                amount: { value: String(total), currency_code: 'MXN' },
-                                description: cart.length > 1
-                                    ? `${cart.length} pistas multitracks - Junior Lugo`
-                                    : `${cart[0]?.name || 'Pista'} - Junior Lugo Producciones`
-                            }]
-                        })
-                    }
-                    onApprove={async (_data, actions) => {
-                        const details = await actions.order.capture();
-                        if (details.status === 'COMPLETED') onPaymentSuccess();
-                    }}
-                    onError={onError}
-                    onCancel={() => console.log('PayPal: pago cancelado por usuario')}
-                />
-            </PayPalScriptProvider>
+                    <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'MXN' }}>
+                        <PayPalButtons
+                            style={{ layout: 'vertical', color: 'gold', shape: 'rect', label: 'pay', height: 50 }}
+                            createOrder={(_data, actions) =>
+                                actions.order.create({
+                                    purchase_units: [{
+                                        amount: { value: String(total), currency_code: 'MXN' },
+                                        description: cart.length > 1
+                                            ? `${cart.length} pistas multitracks - Junior Lugo`
+                                            : `${cart[0]?.name || 'Pista'} - Junior Lugo Producciones`
+                                    }]
+                                })
+                            }
+                            onApprove={async (_data, actions) => {
+                                const details = await actions.order.capture();
+                                if (details.status === 'COMPLETED') onPaymentSuccess();
+                            }}
+                            onError={onError}
+                            onCancel={() => console.log('PayPal: pago cancelado por usuario')}
+                        />
+                    </PayPalScriptProvider>
 
-            <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.75rem', marginTop: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                <ShieldCheck size={14} /> Pago 100% seguro vía PayPal
-            </p>
+                    <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.75rem', marginTop: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                        <ShieldCheck size={14} /> Pago 100% seguro vía PayPal
+                    </p>
+                </>
+            )}
         </div>
     </div>
 );
