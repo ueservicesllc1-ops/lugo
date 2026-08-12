@@ -907,7 +907,7 @@ export default function Admin() {
                                         <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceCustomMix} onChange={e => { setPriceCustomMix(e.target.value); setMtPriceTouched(true); }} />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Acompañamiento WAV (MXN)</label>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Acompañamiento MP3 (MXN)</label>
                                         <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceWavTrack} onChange={e => { setPriceWavTrack(e.target.value); setMtPriceTouched(true); }} />
                                     </div>
                                     <div>
