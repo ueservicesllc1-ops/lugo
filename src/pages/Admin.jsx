@@ -843,7 +843,21 @@ export default function Admin() {
                                                     onChange={e => { const l = [...fileList]; l[idx].displayName = e.target.value; setFileList(l); }}
                                                 />
                                             </div>
-                                            <div style={{ color: '#475569', fontSize: '0.8rem', fontWeight: '700', flexShrink: 0 }}>.{track.extension}</div>
+                                            <div style={{ width: '100px', flexShrink: 0 }}>
+                                                <div style={{ fontSize: '0.65rem', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase', fontWeight: '800' }}>Formato</div>
+                                                <select
+                                                    style={{ ...S.inputLight, background: '#1e293b', border: '1px solid #334155', color: '#00bcd4', padding: '9px 8px', fontWeight: '800', cursor: 'pointer' }}
+                                                    value={track.extension}
+                                                    onChange={e => { const l = [...fileList]; l[idx].extension = e.target.value; setFileList(l); }}
+                                                >
+                                                    <option value="mp3">MP3</option>
+                                                    <option value="wav">WAV</option>
+                                                    <option value="m4a">M4A</option>
+                                                    <option value="ogg">OGG</option>
+                                                    <option value="flac">FLAC</option>
+                                                    <option value="aac">AAC</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -885,11 +899,11 @@ export default function Admin() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Secuencia WAV/ZIP (MXN)</label>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Secuencia Multitrack (MXN)</label>
                                         <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={price} onChange={e => { setPrice(e.target.value); setMtPriceTouched(true); }} />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>CustomMix WAV (MXN)</label>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>CustomMix (MXN)</label>
                                         <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceCustomMix} onChange={e => { setPriceCustomMix(e.target.value); setMtPriceTouched(true); }} />
                                     </div>
                                     <div>

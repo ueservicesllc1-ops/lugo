@@ -983,8 +983,25 @@ function Vendedores() {
                                                     }}
                                                 />
                                             </div>
-                                            <div style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: '700' }}>
-                                                .{track.extension}
+                                            <div style={{ width: '110px', flexShrink: 0 }}>
+                                                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '4px', textTransform: 'uppercase', fontWeight: '800' }}>Formato</div>
+                                                <select
+                                                    className="btn-ghost"
+                                                    style={{ width: '100%', textAlign: 'left', padding: '10px', boxSizing: 'border-box', border: '1px solid #cbd5e1', background: 'white', color: '#00bcd4', fontWeight: '800', cursor: 'pointer' }}
+                                                    value={track.extension}
+                                                    onChange={e => {
+                                                        const newList = [...fileList];
+                                                        newList[idx].extension = e.target.value;
+                                                        setFileList(newList);
+                                                    }}
+                                                >
+                                                    <option value="mp3">MP3</option>
+                                                    <option value="wav">WAV</option>
+                                                    <option value="m4a">M4A</option>
+                                                    <option value="ogg">OGG</option>
+                                                    <option value="flac">FLAC</option>
+                                                    <option value="aac">AAC</option>
+                                                </select>
                                             </div>
                                         </div>
                                     ))}
