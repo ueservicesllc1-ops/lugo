@@ -335,7 +335,7 @@ function Vendedores() {
                     originalName: filename,
                     displayName: finalDisplayName,
                     blob: fileData,
-                    extension: filename.split('.').pop()
+                    extension: 'mp3'
                 });
 
             }

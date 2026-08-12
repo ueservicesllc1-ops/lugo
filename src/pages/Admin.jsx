@@ -268,7 +268,7 @@ export default function Admin() {
                     originalName: filename, 
                     displayName: finalDisplayName, 
                     blob: fileData, 
-                    extension: filename.split('.').pop().toLowerCase() 
+                    extension: 'mp3'
                 });
             }
             if (extractedFiles.length === 0) throw new Error('No se encontraron archivos de audio en el ZIP.');
