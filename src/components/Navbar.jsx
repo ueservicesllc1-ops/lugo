@@ -431,9 +431,9 @@ export default function Navbar({ cartCount }) {
                         </button>
                     </div>
 
-                    <div style={{ width: '100%', maxWidth: '900px', display: 'flex', gap: '50px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         {/* Auth Card */}
-                        <div style={{ flex: '1 1 400px', backgroundColor: 'rgba(255, 255, 255, 0.02)', borderRadius: '24px', padding: '40px', boxShadow: '0 30px 60px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div style={{ flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.02)', borderRadius: '24px', padding: '40px', boxShadow: '0 30px 60px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
                             <div style={{ textAlign: 'center', marginBottom: '28px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
                                     <img src="/logo.png" alt="Junior Lugo" style={{ height: '40px', objectFit: 'contain' }} />
@@ -453,20 +453,18 @@ export default function Navbar({ cartCount }) {
                                                 onClick={() => avatarInputRef.current.click()}
                                                 style={{
                                                     width: '80px', height: '80px', borderRadius: '50%',
-                                                    background: avatarPreview ? `url(${avatarPreview}) center/cover` : 'rgba(255,255,255,0.05)',
+                                                    border: '2px dashed #00A3FF',
+                                                    backgroundImage: avatarPreview ? `url(${avatarPreview})` : 'none',
+                                                    backgroundSize: 'cover',
+                                                    backgroundPosition: 'center',
+                                                    cursor: 'pointer',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    cursor: 'pointer', border: '2px dashed rgba(255,255,255,0.2)',
-                                                    position: 'relative', overflow: 'hidden', flexShrink: 0,
+                                                    position: 'relative', overflow: 'hidden',
                                                     transition: 'border-color 0.2s'
                                                 }}
                                                 title="Agregar foto de perfil (opcional)"
                                             >
                                                 {!avatarPreview && <Camera size={26} color="#94a3b8" />}
-                                                {avatarPreview && (
-                                                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }} className="avatar-overlay">
-                                                        <Camera size={20} color="white" />
-                                                    </div>
-                                                )}
                                             </div>
                                             <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Foto de perfil <em>(opcional)</em></span>
                                             <input
@@ -506,7 +504,7 @@ export default function Navbar({ cartCount }) {
                                 )}
                                 <input
                                     type="email"
-                                    placeholder="Correo electrónico"
+                                    placeholder="Correo Electrónico"
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
                                     required
@@ -560,28 +558,6 @@ export default function Navbar({ cartCount }) {
                                 ) : (
                                     <>¿Ya tienes cuenta? <span onClick={() => setIsLogin(true)} style={{ color: '#00bcd4', fontWeight: '700', cursor: 'pointer' }}>Inicia sesión</span></>
                                 )}
-                            </div>
-                        </div>
-
-                        {/* Info Column */}
-                        <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '30px' }} className="hide-mobile">
-                            <div>
-                                <h3 style={{ fontSize: '1.3rem', fontWeight: '900', marginBottom: '12px', letterSpacing: '-0.5px' }}>Todo lo que necesitas en un solo lugar.</h3>
-                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.88rem' }}>
-                                    {[
-                                        { title: 'Gestión de Canciones Cloud', info: 'Accede a tus secuencias multitracks de forma segura.' },
-                                        { title: 'App para Móvil y Web', info: 'Sincroniza y descarga tus archivos en cualquier momento.' },
-                                        { title: 'Acompañamientos Premium', info: 'Licencia autorizada para presentaciones en vivo.' }
-                                    ].map((item, i) => (
-                                        <li key={i} style={{ display: 'flex', gap: '12px', alignItems: 'start' }}>
-                                            <CheckCircle2 size={18} color="#00bcd4" style={{ flexShrink: 0, marginTop: '2px' }} />
-                                            <div>
-                                                <div style={{ fontWeight: '800', color: 'white' }}>{item.title}</div>
-                                                <div style={{ color: '#94a3b8', fontSize: '0.8rem', marginTop: '2px', lineHeight: '1.4' }}>{item.info}</div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
                             </div>
                         </div>
                     </div>
