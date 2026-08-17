@@ -248,7 +248,7 @@ export default function Checkout() {
         }
 
         const isCustom = song.purchaseVariant?.toLowerCase().includes('personalizado') || song.purchaseVariant?.toLowerCase().includes('custom');
-        const isTrackOnly = song.purchaseVariant?.toLowerCase().includes('pista') || song.purchaseVariant?.toLowerCase().includes('acompañamiento');
+        const isTrackOnly = song.purchaseVariant?.toLowerCase().includes('pista') || song.purchaseVariant?.toLowerCase().includes('acompañamiento') || song.purchaseVariant?.toLowerCase().includes('instrumental');
 
         try {
             if (wantsSingleLicense(song)) {

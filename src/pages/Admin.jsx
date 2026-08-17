@@ -38,7 +38,10 @@ import {
     CreditCard,
     Music2,
     X,
-    Tag
+    Tag,
+    Layers,
+    Disc,
+    Edit3
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -136,6 +139,11 @@ export default function Admin() {
     const [editingVideo, setEditingVideo] = useState(null);
     const [isEditingVideo, setIsEditingVideo] = useState(false);
     const [routesModalSong, setRoutesModalSong] = useState(null);
+    const [editingMtProduct, setEditingMtProduct] = useState(null);
+    const [editPrice, setEditPrice] = useState('');
+    const [editPriceCustomMix, setEditPriceCustomMix] = useState('');
+    const [editPriceMp3, setEditPriceMp3] = useState('');
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
     const [previews, setPreviews] = useState({ photo: null, cover: null });
 
     // ── MT Wizard States (igual que Vendedores) ──────────────────────────────
@@ -267,7 +275,7 @@ export default function Admin() {
         if (mtPriceTouched) return;
         setPrice(String(pricing.wavPrice ?? 580.0));
         setPriceCustomMix(String(pricing.stemsPrice ?? 300.0));
-        setPriceWavTrack(String(pricing.wavTrackPrice ?? 300.0));
+        setPriceWavTrack(String(pricing.mp3Price ?? pricing.wavTrackPrice ?? 180.0));
         setPriceMp3Track(String(pricing.mp3Price ?? 180.0));
     }, [pricing, mtPriceTouched]);
 
@@ -412,7 +420,7 @@ export default function Admin() {
                 timeSignature,
                 price: parseFloat(price) || 0,
                 priceCustomMix: parseFloat(priceCustomMix) || 0,
-                priceWavTrack: parseFloat(priceWavTrack) || 0,
+                priceWavTrack: parseFloat(priceMp3Track) || 0,
                 priceMp3: parseFloat(priceMp3Track) || 0,
                 forSale: true,
                 status: 'active',
@@ -441,7 +449,7 @@ export default function Admin() {
         setSongKey(''); setTempo(''); setTimeSignature('4/4');
         setPrice(String(pricing.wavPrice ?? 580.0));
         setPriceCustomMix(String(pricing.stemsPrice ?? 300.0));
-        setPriceWavTrack(String(pricing.wavTrackPrice ?? 300.0));
+        setPriceWavTrack(String(pricing.mp3Price ?? 180.0));
         setPriceMp3Track(String(pricing.mp3Price ?? 180.0));
         setMtPriceTouched(false);
         setZipFolderName(''); setCoverUrl(''); setCoverFileId(''); setUploadProgress(0); setMtError('');
@@ -548,7 +556,15 @@ export default function Admin() {
     const handleUpdatePricing = async (e) => {
         e.preventDefault(); setUploading(true);
         try { 
-            await setDoc(doc(db, 'settings', 'multitrack_pricing'), pricing); 
+            const updatedPricing = {
+                ...pricing,
+                wavPrice: parseFloat(pricing.wavPrice) || 0,
+                stemsPrice: parseFloat(pricing.stemsPrice) || 0,
+                mp3Price: parseFloat(pricing.mp3Price) || 0,
+                wavTrackPrice: parseFloat(pricing.mp3Price) || 0,
+            };
+            await setDoc(doc(db, 'settings', 'multitrack_pricing'), updatedPricing); 
+            setPricing(updatedPricing);
             alert('Precios actualizados globalmente.'); 
         }
         catch (err) { alert(err.message); } finally { setUploading(false); }
@@ -719,6 +735,110 @@ export default function Admin() {
                                 <button type="submit" disabled={uploading} style={{ flex: 1, ...S.btnPurple }}>{uploading ? 'GUARDANDO...' : isEditingVideo ? 'ACTUALIZAR' : 'GUARDAR'}</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL: EDITAR PRECIOS MT */}
+            {editingMtProduct && (
+                <div style={S.overlay} onClick={() => setEditingMtProduct(null)}>
+                    <div
+                        style={{ ...S.modal, maxWidth: '520px' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <img src={getProxyUrl(editingMtProduct.coverUrl || '/logo.png')} style={{ width: '48px', height: '48px', borderRadius: '10px', objectFit: 'cover' }} />
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '800' }}>{editingMtProduct.name}</h3>
+                                    <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748b' }}>Editar precios del Multitrack</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setEditingMtProduct(null)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                            <div>
+                                <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '6px', textTransform: 'uppercase' }}>
+                                    Secuencia (Multitrack) (MXN)
+                                </label>
+                                <input
+                                    type="number"
+                                    step="any"
+                                    min="0"
+                                    style={{ ...S.input, fontSize: '1rem', fontWeight: '800' }}
+                                    value={editPrice}
+                                    onChange={e => setEditPrice(e.target.value)}
+                                    placeholder="Ej: 580"
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#10b981', display: 'block', marginBottom: '6px', textTransform: 'uppercase' }}>
+                                    Custom Mix (MXN)
+                                </label>
+                                <input
+                                    type="number"
+                                    step="any"
+                                    min="0"
+                                    style={{ ...S.input, fontSize: '1rem', fontWeight: '800' }}
+                                    value={editPriceCustomMix}
+                                    onChange={e => setEditPriceCustomMix(e.target.value)}
+                                    placeholder="Ej: 300"
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#f1c40f', display: 'block', marginBottom: '6px', textTransform: 'uppercase' }}>
+                                    Pista Instrumental MP3 (MXN)
+                                </label>
+                                <input
+                                    type="number"
+                                    step="any"
+                                    min="0"
+                                    style={{ ...S.input, fontSize: '1rem', fontWeight: '800' }}
+                                    value={editPriceMp3}
+                                    onChange={e => setEditPriceMp3(e.target.value)}
+                                    placeholder="Ej: 180"
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                onClick={() => setEditingMtProduct(null)}
+                                style={{ flex: 1, ...S.btnGhost }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                disabled={isSavingEdit}
+                                onClick={async () => {
+                                    setIsSavingEdit(true);
+                                    try {
+                                        const newPrice = parseFloat(editPrice) || 0;
+                                        const newPriceCustomMix = parseFloat(editPriceCustomMix) || 0;
+                                        const newPriceMp3 = parseFloat(editPriceMp3) || 0;
+                                        await updateDoc(doc(db, 'songs', editingMtProduct.id), {
+                                            price: newPrice,
+                                            priceCustomMix: newPriceCustomMix,
+                                            priceMp3: newPriceMp3,
+                                            priceWavTrack: newPriceMp3,
+                                        });
+                                        setProducts(prev => prev.map(p => p.id === editingMtProduct.id ? { ...p, price: newPrice, priceCustomMix: newPriceCustomMix, priceMp3: newPriceMp3, priceWavTrack: newPriceMp3 } : p));
+                                        setEditingMtProduct(null);
+                                        alert('Precios actualizados correctamente.');
+                                    } catch (err) {
+                                        alert('Error al actualizar precios: ' + err.message);
+                                    } finally {
+                                        setIsSavingEdit(false);
+                                    }
+                                }}
+                                style={{ flex: 1, ...S.btnPurple, fontWeight: '900' }}
+                            >
+                                {isSavingEdit ? 'Guardando...' : 'Guardar Precios'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -961,19 +1081,19 @@ export default function Admin() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Secuencia Multitrack (MXN)</label>
-                                        <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={price} onChange={e => { setPrice(e.target.value); setMtPriceTouched(true); }} />
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Secuencia (Multitrack) (MXN)</label>
+                                        <input type="number" step="any" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={price} onChange={e => { setPrice(e.target.value); setMtPriceTouched(true); }} placeholder="Ej: 580" />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>CustomMix (MXN)</label>
-                                        <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceCustomMix} onChange={e => { setPriceCustomMix(e.target.value); setMtPriceTouched(true); }} />
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#10b981', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Custom Mix (MXN)</label>
+                                        <input type="number" step="any" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceCustomMix} onChange={e => { setPriceCustomMix(e.target.value); setMtPriceTouched(true); }} placeholder="Ej: 300" />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#00bcd4', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Acompañamiento MP3 (MXN)</label>
-                                        <input type="number" step="0.01" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceMp3Track} onChange={e => { setPriceMp3Track(e.target.value); setMtPriceTouched(true); }} />
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#f1c40f', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Pista Instrumental MP3 (MXN)</label>
+                                        <input type="number" step="any" min="0" style={{ ...S.input, fontSize: '1.05rem', fontWeight: '900' }} value={priceMp3Track} onChange={e => { setPriceMp3Track(e.target.value); setMtPriceTouched(true); }} placeholder="Ej: 180" />
                                     </div>
                                     <div style={{ gridColumn: 'span 2' }}>
-                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#64748b', display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>Pista de Acompañamiento Exportada (Opcional - MP3/WAV)</label>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#64748b', display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>Pista Instrumental Exportada (Opcional - MP3/WAV)</label>
                                         <div
                                             onClick={() => trackInputRef.current.click()}
                                             style={{ border: `2px dashed ${trackAudioUrl ? '#10b981' : '#334155'}`, borderRadius: '16px', padding: '20px', textAlign: 'center', cursor: 'pointer', background: trackAudioUrl ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.02)', transition: 'all 0.2s', marginBottom: '16px' }}
@@ -982,12 +1102,12 @@ export default function Admin() {
                                                 <Loader2 size={24} style={{ margin: '0 auto', color: '#00bcd4', animation: 'spin 1s linear infinite' }} />
                                             ) : trackAudioUrl ? (
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#10b981', fontWeight: '700', fontSize: '0.85rem' }}>
-                                                    <CheckIcon size={18} /> Pista de Acompañamiento cargada correctamente
+                                                    <CheckIcon size={18} /> Pista Instrumental cargada correctamente
                                                 </div>
                                             ) : (
                                                 <div style={{ color: '#64748b', fontSize: '0.85rem' }}>
                                                     <Music size={24} style={{ margin: '0 auto 6px' }} />
-                                                    <div style={{ fontWeight: '600' }}>Haz clic para subir la pista de acompañamiento MP3 exportada</div>
+                                                    <div style={{ fontWeight: '600' }}>Haz clic para subir la pista instrumental MP3 exportada</div>
                                                 </div>
                                             )}
                                         </div>
@@ -1213,13 +1333,28 @@ export default function Admin() {
                                         <img src={getProxyUrl(p.coverUrl || '/logo.png')} style={{ width: '60px', height: '60px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ fontWeight: '800', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
-                                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '6px' }}>{p.artist} · ${p.price} MXN</div>
-                                            <button
-                                                onClick={() => setRoutesModalSong(p)}
-                                                style={{ marginBottom: '8px', background: 'rgba(0,188,212,0.12)', color: '#00bcd4', border: '1px solid rgba(0,188,212,0.35)', borderRadius: '8px', padding: '4px 10px', fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }}
-                                            >
-                                                Ver rutas
-                                            </button>
+                                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '6px' }}>{p.artist} · ${p.price || pricing.wavPrice} MXN</div>
+                                            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingMtProduct(p);
+                                                        setEditPrice(String(p.price ?? pricing.wavPrice ?? 580));
+                                                        setEditPriceCustomMix(String(p.priceCustomMix ?? pricing.stemsPrice ?? 300));
+                                                        setEditPriceMp3(String(p.priceMp3 ?? p.priceWavTrack ?? pricing.mp3Price ?? 180));
+                                                    }}
+                                                    style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid rgba(16,185,129,0.35)', borderRadius: '8px', padding: '4px 10px', fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                                    title="Ajustar precios individuales de este Multitrack"
+                                                >
+                                                    <DollarSign size={13} /> Precios
+                                                </button>
+                                                <button
+                                                    onClick={() => setRoutesModalSong(p)}
+                                                    style={{ background: 'rgba(0,188,212,0.12)', color: '#00bcd4', border: '1px solid rgba(0,188,212,0.35)', borderRadius: '8px', padding: '4px 10px', fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                                    title="Ver rutas de archivos B2"
+                                                >
+                                                    <ExternalLink size={13} /> Ruta
+                                                </button>
+                                            </div>
                                             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                                 {p.key && <span style={{ background: 'rgba(0,163,255,0.15)', color: '#00A3FF', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700' }}>{p.key}</span>}
                                                 {p.tempo && <span style={{ background: 'rgba(0,188,212,0.1)', color: '#00bcd4', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700' }}>{p.tempo} BPM</span>}
@@ -1231,7 +1366,7 @@ export default function Admin() {
                                              style={{ padding: '8px 14px', background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '800' }}
                                              title="Eliminar Multitrack"
                                          >
-                                             <Trash2 size={15} /> Borrar
+                                             <Trash2 size={15} /> Eliminar
                                          </button>
                                     </div>
                                 ))}
@@ -1421,52 +1556,63 @@ export default function Admin() {
                     <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
                         <header style={{ marginBottom: '30px' }}>
                             <h1 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>Precios de Multitracks</h1>
-                            <p style={{ color: '#64748b', margin: 0 }}>Define los precios globales para las opciones de compra de multitracks.</p>
+                            <p style={{ color: '#64748b', margin: 0 }}>Define los precios globales en pesos mexicanos (MXN) para las opciones de compra de multitracks en la tienda.</p>
                         </header>
                         
                         <div style={{ background: '#080d1a', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', maxWidth: '650px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
                             <form onSubmit={handleUpdatePricing} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 
-
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0, 188, 212, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(0, 188, 212, 0.1)' }}>
+                                {/* Opción 1: Secuencia (Multitrack) */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0, 188, 212, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(0, 188, 212, 0.15)' }}>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ element: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', display: 'flex' }}>
-                                            <Music2 size={18} color="#00bcd4" />
-                                            <label style={{ fontWeight: '900', fontSize: '1rem' }}>CustomMix (Stems)</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                                            <Layers size={18} color="#00bcd4" />
+                                            <label style={{ fontWeight: '900', fontSize: '1rem', color: '#fff' }}>Secuencia (Multitrack)</label>
                                         </div>
-                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Grupos de instrumentos (Drums, Bass, etc).</p>
+                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Sesión completa con todas las pistas individuales (ZIP).</p>
                                     </div>
-                                    <div style={{ position: 'relative', width: '130px' }}>
-                                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#00bcd4' }}>$</span>
-                                        <input type="number" step="0.01" value={pricing.stemsPrice} onChange={e => setPricing({ ...pricing, stemsPrice: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '25px', textAlign: 'right', fontWeight: '900' }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <div style={{ position: 'relative', width: '140px' }}>
+                                            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#00bcd4' }}>$</span>
+                                            <input type="number" step="any" min="0" value={pricing.wavPrice ?? 580} onChange={e => setPricing({ ...pricing, wavPrice: parseFloat(e.target.value) || 0 })} style={{ ...S.input, paddingLeft: '25px', textAlign: 'right', fontWeight: '900' }} />
+                                        </div>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#00bcd4' }}>MXN</span>
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(16, 185, 129, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
+                                {/* Opción 2: Custom Mix */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(16, 185, 129, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ element: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', display: 'flex' }}>
-                                            <Music size={18} color="#10b981" />
-                                            <label style={{ fontWeight: '900', fontSize: '1rem' }}>Acompañamiento (MP3)</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                                            <Disc size={18} color="#10b981" />
+                                            <label style={{ fontWeight: '900', fontSize: '1rem', color: '#fff' }}>Custom Mix</label>
                                         </div>
-                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Archivo MP3 de alta calidad sin voz.</p>
+                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Mezcla personalizada de instrumentos y volumen en el reproductor.</p>
                                     </div>
-                                    <div style={{ position: 'relative', width: '130px' }}>
-                                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#10b981' }}>$</span>
-                                        <input type="number" step="0.01" value={pricing.mp3Price} onChange={e => setPricing({ ...pricing, mp3Price: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '25px', textAlign: 'right', fontWeight: '900' }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <div style={{ position: 'relative', width: '140px' }}>
+                                            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#10b981' }}>$</span>
+                                            <input type="number" step="any" min="0" value={pricing.stemsPrice ?? 300} onChange={e => setPricing({ ...pricing, stemsPrice: parseFloat(e.target.value) || 0 })} style={{ ...S.input, paddingLeft: '25px', textAlign: 'right', fontWeight: '900' }} />
+                                        </div>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#10b981' }}>MXN</span>
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(241, 196, 15, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(241, 196, 15, 0.1)' }}>
+                                {/* Opción 3: Pista Instrumental MP3 */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(241, 196, 15, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(241, 196, 15, 0.15)' }}>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ element: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', display: 'flex' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                                             <Music size={18} color="#f1c40f" />
-                                            <label style={{ fontWeight: '900', fontSize: '1rem' }}>Acompañamiento (WAV)</label>
+                                            <label style={{ fontWeight: '900', fontSize: '1rem', color: '#fff' }}>Pista Instrumental MP3</label>
                                         </div>
-                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Archivo WAV de alta fidelidad sin voz.</p>
+                                        <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>Pista de acompañamiento de alta fidelidad sin voz principal.</p>
                                     </div>
-                                    <div style={{ position: 'relative', width: '130px' }}>
-                                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#f1c40f' }}>$</span>
-                                        <input type="number" step="0.01" value={pricing.wavTrackPrice || 15.00} onChange={e => setPricing({ ...pricing, wavTrackPrice: parseFloat(e.target.value) })} style={{ ...S.input, paddingLeft: '25px', textAlign: 'right', fontWeight: '900' }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <div style={{ position: 'relative', width: '140px' }}>
+                                            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: '#f1c40f' }}>$</span>
+                                            <input type="number" step="any" min="0" value={pricing.mp3Price ?? 180} onChange={e => setPricing({ ...pricing, mp3Price: parseFloat(e.target.value) || 0, wavTrackPrice: parseFloat(e.target.value) || 0 })} style={{ ...S.input, paddingLeft: '25px', textAlign: 'right', fontWeight: '900' }} />
+                                        </div>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#f1c40f' }}>MXN</span>
                                     </div>
                                 </div>
 
